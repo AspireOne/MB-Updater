@@ -32,6 +32,10 @@ public class Utils {
         prefsEditor.putString(key, value).apply();
     }
 
+    public static boolean isEmptyOrNull(String str) {
+        return str == null || str == "";
+    }
+
     public static String getPref(Context context, String key, String defaultValue) {
         SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
 
