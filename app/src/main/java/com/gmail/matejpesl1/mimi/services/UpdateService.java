@@ -11,6 +11,7 @@ import android.util.Pair;
 
 import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
+import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
@@ -49,7 +50,7 @@ public class UpdateService extends IntentService {
 
         // Execute only if internet connection could be established.
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled))
-            execute();
+            Updater.update(this);
         else
             Notifications.PostDefaultNotification(this, "Nelze aktualizovat Mimibazar",
                     "nelze získat internetové připojení.");
@@ -82,10 +83,6 @@ public class UpdateService extends IntentService {
 
         wakeLock.acquire(minutes * 60 * 1000L);
         return wakeLock;
-    }
-
-    private void execute() {
-
     }
 
     private boolean tryAssertHasInternet(DataState initialDataState, boolean initialWifiEnabled) {

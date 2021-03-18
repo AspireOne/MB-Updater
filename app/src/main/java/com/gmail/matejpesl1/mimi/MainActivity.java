@@ -49,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
         requestBatteryException();
 
         RootUtils.askForRoot();
+    }
 
+    public void handleUpdateNowButtClick(View v) {
         AsyncTask.execute(() -> Updater.update(this));
     }
 
