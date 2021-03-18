@@ -6,11 +6,13 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.Pair;
 
 import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
+import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -142,7 +144,7 @@ public class UpdateService extends IntentService {
 
             return output.contains("2") ? DataState.DATA_ENABLED : DataState.DATA_DISABLED;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("UpdateService", Utils.getExceptionAsString(e));
         }
 
         return DataState.DATA_UNKNOWN;
@@ -164,6 +166,7 @@ public class UpdateService extends IntentService {
             InetAddress ipAddress = InetAddress.getByName("google.com");
             return !"".equals(ipAddress);
         } catch (Exception e) {
+            Log.e("UpdateService", Utils.getExceptionAsString(e));
             return false;
         }
     }
