@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Calendar;
 
 public class Utils {
@@ -30,6 +32,13 @@ public class Utils {
         SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
         SharedPreferences.Editor prefsEditor = prefs.edit();
         prefsEditor.putString(key, value).apply();
+    }
+
+    public static String getExceptionAsString(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 
     public static boolean isEmptyOrNull(String str) {
