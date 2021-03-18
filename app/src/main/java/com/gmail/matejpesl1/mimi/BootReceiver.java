@@ -7,6 +7,8 @@ import android.content.Intent;
 
 public class BootReceiver extends BroadcastReceiver {
 
+    // The alarm is unregistered on reboot, so we re-register it on boot (if it should
+    // be registered).
     @SuppressLint("UnsafeProtectedBroadcastReceiver")
     @Override
     public void onReceive(Context context, Intent intent) {

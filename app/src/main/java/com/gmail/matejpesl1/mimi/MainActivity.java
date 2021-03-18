@@ -3,14 +3,11 @@ package com.gmail.matejpesl1.mimi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
@@ -22,13 +19,7 @@ import android.widget.TextView;
 
 import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
-import com.gmail.matejpesl1.mimi.utils.Utils;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Locale;
 
@@ -58,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
         requestBatteryException();
 
         RootUtils.askForRoot();
+
+        AsyncTask.execute(() -> Updater.update(this));
     }
 
     private void requestBatteryException() {
