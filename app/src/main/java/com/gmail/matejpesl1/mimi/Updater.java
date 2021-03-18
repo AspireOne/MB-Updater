@@ -39,6 +39,19 @@ public class Updater {
             .add("log_in", "ok")
             .build();
 
+    public void changeAmountOfUpdatedPages(Context context, int amount) {
+        writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
+    }
+
+    public boolean tryForceRecreateIdList(Context context) {
+        boolean recreated = tryRecreatePrefIds(context);
+        if (!recreated)
+            return false;
+
+        writePref(context, PREF_CURR_ID_INDEX, "0");
+        return true;
+    }
+
     public static void update(Context context) {
         if (!makeChecksAndNotifyAboutErrors(context))
             return;
@@ -93,7 +106,7 @@ public class Updater {
             if (getPageIdsOrEmpty(1, null).isEmpty())
                 return "Nelze získat IDs položek na mimibazaru.";
 
-            if (getRemainingUpdates() == -1)
+            if (tryGetRemainingUpdates() == -1)
                 return "Nelze získat zbývající aktualizace na mimibazaru.";
 
         } catch (Exception e) {
@@ -113,25 +126,60 @@ public class Updater {
 
     private static String execute(Context context) {
         int currIdIndex = Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
+        int remainingUpdates = tryGetRemainingUpdates();
         String[] ids = getIdsFromPrefs(context);
 
         if (ids.length == 0) {
-            boolean couldRecreate = tryRecreatePrefIds(context);
+            boolean created = tryRecreatePrefIds(context);
 
-            if (!couldRecreate)
+            if (!created)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
 
             ids = getIdsFromPrefs(context);
         }
 
-        for (; currIdIndex < ids.length; ++currIdIndex) {
-            tryUpdatePhoto(ids[currIdIndex]);
+        if (remainingUpdates == -1)
+            return "Nelze získat zbývající aktualizace.";
+
+        int iterationCount = 0;
+        int photoUpdateErrorCount = 0;
+        final int maxPhotoUpdateErrors = 5;
+        final int maxIterations = 120;
+
+        String error = null;
+        while (remainingUpdates > 0 && ++iterationCount < maxIterations) {
+            if (currIdIndex >= ids.length - 1) {
+                currIdIndex = 0;
+                if (!tryRecreatePrefIds(context)) {
+                    error = "Nelze znovu-vytvořit seznam ID položek z mimibazaru.";
+                    break;
+                }
+
+                ids = getIdsFromPrefs(context);
+            }
+
+            if (!tryUpdatePhoto(ids[currIdIndex])) {
+                if (++photoUpdateErrorCount >= maxPhotoUpdateErrors) {
+                    error = String.format("Při aktualizaci fotek nastala chyba více jak %s-krát.", maxPhotoUpdateErrors);
+                    break;
+                }
+            } else {
+                int remainingFromServer = tryGetRemainingUpdates();
+                if (remainingFromServer == -1)
+                    --remainingUpdates;
+                else
+                    remainingUpdates = remainingFromServer;
+            }
+
+            ++currIdIndex;
         }
 
-
+        writePref(context, PREF_CURR_ID_INDEX, currIdIndex+"");
+        return error;
     }
 
-    private static int getRemainingUpdates() {
+    // Returns -1 if can't get.
+    private static int tryGetRemainingUpdates() {
         String url = "https://www.mimibazar.cz/bazar.php?user=106144";
         Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
 
@@ -165,10 +213,13 @@ public class Updater {
     private static boolean tryRecreatePrefIds(Context context) {
         int amountOfPages = Integer.parseInt(getPref(context, PREF_AMOUNT_OF_PAGES, "25"));
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
+        if (newIds.isEmpty())
+            return false;
+
         String newPrefIds = String.join("\n", newIds);
         writePref(context, PREF_IDS, newPrefIds);
 
-        return newPrefIds.isEmpty();
+        return true;
     }
 
     private static Set<String> createIdListOrEmpty(int amountOfPages) {
