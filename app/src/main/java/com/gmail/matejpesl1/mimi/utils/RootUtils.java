@@ -37,12 +37,12 @@ public class RootUtils {
     }
 
     public static Pair<Boolean, Process> runCommandAsSu(String command) {
-        Process su = null;
-        boolean success = true;
+        Process p = null;
+        boolean success;
 
         try {
-            su = Runtime.getRuntime().exec("su");
-            DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+            p = Runtime.getRuntime().exec("su");
+            DataOutputStream outputStream = new DataOutputStream(p.getOutputStream());
 
             outputStream.writeBytes(command + (command.endsWith("\n ") ? "" : command.endsWith("\n") ? " " : "\n "));
             outputStream.flush();
@@ -50,19 +50,20 @@ public class RootUtils {
             outputStream.writeBytes("exit\n");
             outputStream.flush();
             try {
-                su.waitFor();
+                p.waitFor();
+                success = p.exitValue() == 0;
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 success = false;
             }
 
             outputStream.close();
-        } catch(IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             success = false;
         }
 
-        return new Pair(new Boolean(success && su != null), su);
+        return new Pair(new Boolean(success), p);
     }
 
     public static boolean setMobileDataConnection(boolean enabled) {
