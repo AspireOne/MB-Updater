@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Mimibazar Aktualizace</string>
+    <string name="update_switch">Aktualizovat</string>
+    <string name="updating_on_text">Aktualizování je zapnuto.</string>
+    <string name="next_update_in">Další aktualizace proběhne</string>
+    <string name="updating_off_text">Aktualizování je vypnuto.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+</resources>
