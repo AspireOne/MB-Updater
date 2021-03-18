@@ -1,10 +1,13 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -53,16 +56,18 @@ public class Updater {
     }
 
     public static void update(Context context) {
-        if (!makeChecksAndNotifyAboutErrors(context))
+        if (makeChecksAndNotifyAboutErrors(context))
             return;
 
-        String error = execute(context);
+        String error = null;//execute(context);
 
         if (error != null) {
             Notifications.PostDefaultNotification(
                     context,
                     "Nelze aktualizovat Mimibazar kvůli runtime chybě",
                     error);
+        } else {
+            Notifications.PostDefaultNotification(context, "Mimibazar úspěšně aktualizován", "");
         }
     }
 
@@ -94,7 +99,7 @@ public class Updater {
             {
                 Pair<Boolean, Response> result = tryMakeRequest("https://www.google.com", RequestMethod.GET);
 
-                if (result.first.booleanValue())
+                if (!result.first.booleanValue())
                     return "Nelze navázat spojení se stránkami.";
 
                 if (getBodyOrNull(result) == null)
@@ -110,7 +115,8 @@ public class Updater {
                 return "Nelze získat zbývající aktualizace na mimibazaru.";
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Updater", getExceptionAsString(e));
+
             return "Při testu externích chyb nastala neočekávaná chyba.";
         }
 
@@ -119,7 +125,7 @@ public class Updater {
 
     private static String checkInternalErrors(Context context) {
         try {Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0")); }
-        catch (Exception e) { e.printStackTrace(); writePref(context, PREF_CURR_ID_INDEX, "50"); }
+        catch (Exception e) { Log.e("Updater", getExceptionAsString(e)); writePref(context, PREF_CURR_ID_INDEX, "50"); }
 
         return null;
     }
@@ -161,6 +167,7 @@ public class Updater {
             if (!tryUpdatePhoto(ids[currIdIndex])) {
                 if (++photoUpdateErrorCount >= maxPhotoUpdateErrors) {
                     error = String.format("Při aktualizaci fotek nastala chyba více jak %s-krát.", maxPhotoUpdateErrors);
+                    Log.e("UpdateService", error);
                     break;
                 }
             } else {
@@ -183,23 +190,27 @@ public class Updater {
         String url = "https://www.mimibazar.cz/bazar.php?user=106144";
         Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
 
-        if (!result.first)
+        if (!result.first.booleanValue())
             return -1;
 
         String html = getBodyOrNull(result);
         if (isEmptyOrNull(html))
             return -1;
 
-        String amount = UPDATES_AMOUNT_REGEX_PATTERN.matcher(html).group(1);
+        String amount = null;
+        Matcher matcher = UPDATES_AMOUNT_REGEX_PATTERN.matcher(html);
+        if (matcher.find())
+            amount = matcher.group();
+
         if (!isEmptyOrNull(amount)) {
             try {
                 return Integer.parseInt(amount);
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                Log.e("Updater", getExceptionAsString(e));
             }
         }
 
-        if (UPDATES_NONE_REGEX_PATTERN.matcher(html).matches())
+        if (UPDATES_NONE_REGEX_PATTERN.matcher(html).find())
             return 0;
 
         return -1;
@@ -235,7 +246,7 @@ public class Updater {
     private static boolean tryUpdatePhoto(String id) {
         String url = "https://www.mimibazar.cz/bazar.php?id=" + id + "&updfoto=ok";
         Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
-        return result.first;
+        return result.first.booleanValue();
     }
 
     // The body cannot be logged because it's too long.
@@ -261,13 +272,13 @@ public class Updater {
     }
 
     private static @Nullable String getBodyOrNull(Pair<Boolean, Response> result) {
-        if (!result.first)
+        if (!result.first.booleanValue())
             return null;
 
         try {
             return result.second.body().string();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Updater", getExceptionAsString(e));
             return null;
         }
     }
@@ -288,7 +299,7 @@ public class Updater {
         try {
             response = call.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Updater", getExceptionAsString(e));
         }
 
         return new Pair(response != null && response.isSuccessful(), response);
