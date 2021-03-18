@@ -24,12 +24,18 @@ import okhttp3.Response;
 import static com.gmail.matejpesl1.mimi.utils.Utils.*;
 
 public class Updater {
+    // Prefs
     private static final String PREF_IDS = "IDs Of Items";
     private static final String PREF_AMOUNT_OF_PAGES = "Amount Of Pages To Update";
     private static final String PREF_CURR_ID_INDEX = "Index Of Current ID";
+
+    // Patterns
     private static final Pattern ID_REGEX_PATTERN = Pattern.compile("(?<=href=\"https:\\/\\/www\\.mimibazar\\.cz\\/inzerat\\/)\\d+(?=\\/.*\")");
     private static final Pattern UPDATES_AMOUNT_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít ).*(?= aktualiza)");
+    private static final Pattern UPDATES_ONE_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít )jednu(?= aktualiza)");
     private static final Pattern UPDATES_NONE_REGEX_PATTERN = Pattern.compile("Dnes jste využili všechny aktualizace");
+
+    // HTTP
     private enum RequestMethod {POST, GET}
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -41,6 +47,11 @@ public class Updater {
             .add("password", "yourPassword")
             .add("log_in", "ok")
             .build();
+
+    // Other
+    private final static int REQUEST_THROTTLE_MS = 400;
+    private static long lastRequest = 0;
+
 
     public void changeAmountOfUpdatedPages(Context context, int amount) {
         writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
@@ -56,10 +67,16 @@ public class Updater {
     }
 
     public static void update(Context context) {
-        if (makeChecksAndNotifyAboutErrors(context))
+        if (!makeChecksAndNotifyAboutErrors(context))
             return;
 
-        String error = null;//execute(context);
+        if (tryGetRemainingUpdates() == 0) {
+            Log.d("", "Mimibazar was attempted to be updated for the 2nd time, but it's already" +
+                    "updated");
+            return;
+        }
+
+        String error = execute(context);
 
         if (error != null) {
             Notifications.PostDefaultNotification(
@@ -79,7 +96,7 @@ public class Updater {
                     context,
                     "Nelze aktualizovat Mimibazar kvůli externí chybě",
                     externalError);
-            return true;
+            return false;
         }
 
         String internalError = checkInternalErrors(context);
@@ -88,10 +105,10 @@ public class Updater {
                     context,
                     "Nelze aktualizovat Mimibazar kvůli interní chybě",
                     internalError);
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private static String checkExternalErrors() {
@@ -116,7 +133,6 @@ public class Updater {
 
         } catch (Exception e) {
             Log.e("Updater", getExceptionAsString(e));
-
             return "Při testu externích chyb nastala neočekávaná chyba.";
         }
 
@@ -124,6 +140,7 @@ public class Updater {
     }
 
     private static String checkInternalErrors(Context context) {
+        // If the CURR_ID_INDEX is not a digit, overwrite it to 50.
         try {Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0")); }
         catch (Exception e) { Log.e("Updater", getExceptionAsString(e)); writePref(context, PREF_CURR_ID_INDEX, "50"); }
 
@@ -131,29 +148,37 @@ public class Updater {
     }
 
     private static String execute(Context context) {
+        // Initialization.
         int currIdIndex = Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
         int remainingUpdates = tryGetRemainingUpdates();
         String[] ids = getIdsFromPrefs(context);
 
-        if (ids.length == 0) {
+        // Checks.
+        if (ids.length == 0 || ids.length == 1) {
             boolean created = tryRecreatePrefIds(context);
 
-            if (!created)
+            if (!created || ids.length == 0 || ids.length == 1)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
 
             ids = getIdsFromPrefs(context);
         }
 
+        Log.e("", "IDS LENGHT: " + ids.length);
+        if (ids.length < 50)
+            return "Seznam ID položek je příliš malý.";
+
         if (remainingUpdates == -1)
             return "Nelze získat zbývající aktualizace.";
 
+        // Loop variables initialization.
         int iterationCount = 0;
         int photoUpdateErrorCount = 0;
         final int maxPhotoUpdateErrors = 5;
-        final int maxIterations = 120;
+        final int maxIterations = 100;
 
         String error = null;
         while (remainingUpdates > 0 && ++iterationCount < maxIterations) {
+
             if (currIdIndex >= ids.length - 1) {
                 currIdIndex = 0;
                 if (!tryRecreatePrefIds(context)) {
@@ -167,7 +192,6 @@ public class Updater {
             if (!tryUpdatePhoto(ids[currIdIndex])) {
                 if (++photoUpdateErrorCount >= maxPhotoUpdateErrors) {
                     error = String.format("Při aktualizaci fotek nastala chyba více jak %s-krát.", maxPhotoUpdateErrors);
-                    Log.e("UpdateService", error);
                     break;
                 }
             } else {
@@ -197,18 +221,17 @@ public class Updater {
         if (isEmptyOrNull(html))
             return -1;
 
-        String amount = null;
-        Matcher matcher = UPDATES_AMOUNT_REGEX_PATTERN.matcher(html);
-        if (matcher.find())
-            amount = matcher.group();
-
-        if (!isEmptyOrNull(amount)) {
+        Matcher amountMatcher = UPDATES_AMOUNT_REGEX_PATTERN.matcher(html);
+        if (amountMatcher.find()) {
             try {
-                return Integer.parseInt(amount);
+                return Integer.parseInt(amountMatcher.group());
             } catch (NumberFormatException e) {
                 Log.e("Updater", getExceptionAsString(e));
             }
         }
+
+        if (UPDATES_ONE_REGEX_PATTERN.matcher(html).find())
+            return 1;
 
         if (UPDATES_NONE_REGEX_PATTERN.matcher(html).find())
             return 0;
@@ -218,7 +241,8 @@ public class Updater {
 
     private static String[] getIdsFromPrefs(Context context) {
         String prefIds = getPref(context, PREF_IDS, "");
-        return prefIds.split("\\r?\\n");
+        Log.e("ids from prefs", prefIds);
+        return prefIds.split(" ");
     }
 
     private static boolean tryRecreatePrefIds(Context context) {
@@ -227,9 +251,8 @@ public class Updater {
         if (newIds.isEmpty())
             return false;
 
-        String newPrefIds = String.join("\n", newIds);
+        String newPrefIds = String.join(" ", newIds);
         writePref(context, PREF_IDS, newPrefIds);
-
         return true;
     }
 
@@ -251,17 +274,18 @@ public class Updater {
 
     // The body cannot be logged because it's too long.
     private static Set<String> getPageIdsOrEmpty(int page, @Nullable Set<String> set) {
-        Set<String> allMatches = set == null ? new HashSet<>() : set;
+        if (set == null)
+            set = new HashSet<String>();
 
         String html = getPageHtmlOrNull(page);
         if (html == null)
-            return allMatches;
+            return set;
 
         Matcher m = ID_REGEX_PATTERN.matcher(html);
         while (m.find())
-            allMatches.add(m.group());
+            set.add(m.group());
 
-        return allMatches;
+        return set;
     }
 
     private static @Nullable String getPageHtmlOrNull(int page) {
@@ -276,7 +300,9 @@ public class Updater {
             return null;
 
         try {
-            return result.second.body().string();
+            String body =  result.second.body().string();
+            result.second.close();
+            return body;
         } catch (Exception e) {
             Log.e("Updater", getExceptionAsString(e));
             return null;
@@ -284,6 +310,16 @@ public class Updater {
     }
 
     private static Pair<Boolean, Response> tryMakeRequest(String url, RequestMethod method) {
+        while ((System.currentTimeMillis() - lastRequest) < REQUEST_THROTTLE_MS) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Log.e("", getExceptionAsString(e));
+            }
+        }
+
+        lastRequest = System.currentTimeMillis();
+
         Request.Builder requestBuilder = new Request.Builder()
                 .url(url);
 
