@@ -22,6 +22,7 @@ import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
+import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
 import java.util.Locale;
@@ -30,26 +31,24 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "AppPrefs";
-    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch updateSwitch;
     private TextView stateDescriptionText;
-    private EditText updateTimeBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        updateSwitch = (Switch)findViewById(R.id.updateSwitch);
-        stateDescriptionText = (TextView)findViewById(R.id.updatingStateDescription);
-        updateTimeBox = (EditText)findViewById(R.id.updateTimeBox);
+        // Elements initialization
+        updateSwitch = findViewById(R.id.updateSwitch);
+        stateDescriptionText = findViewById(R.id.updatingStateDescription);
 
         updateSwitch.setOnCheckedChangeListener(this::onSwitch);
-        updateTimeBox.setOnClickListener(this::onTimePickerClick);
 
         updateView();
-        // TODO: Disable this if you can.
-        requestBatteryException();
+
+        if (!Utils.hasBatteryException(this))
+            Utils.requestBatteryException(this);
 
         RootUtils.askForRoot();
     }
@@ -63,31 +62,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void requestBatteryException() {
-        String packageName = getPackageName();
-        PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
-        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-            Intent intent = new Intent();
-            intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-            intent.setData(Uri.parse("package:" + packageName));
-            startActivity(intent);
-        }
-    }
-
-    private void onTimePickerClick(View v) {
-        TimePickerFragment picker = new TimePickerFragment(this::handleTimePicked, Calendar.getInstance());
-        picker.show(getSupportFragmentManager(), "timePicker");
-    }
-
-    private void handleTimePicked(int hour, int minute) {
-        Log.d("", String.format("hour: %s, minute: %s", hour, minute));
-        UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        updateView();
-    }
-
     private void updateView() {
-        updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
         if (UpdateServiceAlarmManager.isRegistered(this)) {
             updateSwitch.setChecked(true);
             String nextUpdateTime = dateToCzech(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime());
@@ -100,10 +75,6 @@ public class MainActivity extends AppCompatActivity {
             updateSwitch.setChecked(false);
             stateDescriptionText.setText(R.string.updating_off_text);
         }
-    }
-
-    public static String dateToDigitalTime(Date time) {
-        return new SimpleDateFormat("HH:mm", new Locale("cs", "CZ")).format(time);
     }
 
     public static String dateToCzech(Date time) {

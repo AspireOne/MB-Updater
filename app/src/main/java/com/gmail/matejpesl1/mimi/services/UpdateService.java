@@ -18,20 +18,28 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class UpdateService extends IntentService {
+    private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
+    private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
-    public enum UpdateResult {
-        FULL_SUCCESS, PARTIAL_SUCCESS, //TODO finish this or move it to update class.
-    }
-
-    private enum DataState {
-        DATA_UNKNOWN, DATA_ENABLED, DATA_DISABLED
-    }
+    private enum DataState { UNKNOWN, ENABLED, DISABLED}
 
     public UpdateService() {
         super("UpdateService");
+    }
+
+    public static void setAllowDataChange(Context context, boolean allow) {
+        Utils.writePref(context, PREF_ALLOW_DATA_CHANGE, allow+"");
+    }
+    public static boolean getAllowDataChange(Context context) {
+        return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_DATA_CHANGE, "true"));
+    }
+    public static void setAllowWifiChange(Context context, boolean allow) {
+        Utils.writePref(context, PREF_ALLOW_WIFI_CHANGE, allow+"");
+    }
+    public static boolean getAllowWifiChange(Context context) {
+        return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_WIFI_CHANGE, "true"));
     }
 
     public static void startUpdateImmediately(Context context) {
@@ -65,7 +73,7 @@ public class UpdateService extends IntentService {
             ((WifiManager)getSystemService(WIFI_SERVICE)).setWifiEnabled(prevWifiEnabled);
 
         if (prevDataState != getMobileDataState())
-            RootUtils.setMobileDataConnection(prevDataState == DataState.DATA_ENABLED ? true : false);
+            RootUtils.setMobileDataConnection(prevDataState == DataState.ENABLED ? true : false);
     }
 
     private boolean isWifiEnabled() {
@@ -91,35 +99,40 @@ public class UpdateService extends IntentService {
         if (isConnectionAvailable())
             return true;
 
-        // If connection is not available and the WIFI is off, turn it on
-        // and return true if connection is now available.
-        WifiManager wManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        if (getAllowWifiChange(this)) {
+            // If connection is not available and the WIFI is off, turn it on
+            // and return true if connection is now available.
+            WifiManager wManager = (WifiManager) getSystemService(WIFI_SERVICE);
 
-        if (!initialWifiEnabled) {
-            wManager.setWifiEnabled(true);
+            if (!initialWifiEnabled) {
+                wManager.setWifiEnabled(true);
 
-            if (pingConnection())
-                return true;
+                if (pingConnection())
+                    return true;
+            }
+
+            // If connection is not available even when the WIFI is on, turn it off
+            // (so that it doesn't interfere with mobile data).
+            wManager.setWifiEnabled(false);
+
+            // If data were already enabled (or unknown) and wifi too, check if the
+            // data will work now without the wifi interfering and return it.
+            // If data were already enabled (or unknown) but wifi not, return false - we can't
+            // do anything else.
+            if (initialDataState == DataState.ENABLED || initialDataState == DataState.UNKNOWN)
+                return initialWifiEnabled ? pingConnection() : false;
         }
 
-        // If connection is not available even when the WIFI is on, turn it off
-        // (so that it doesn't interfere with mobile data).
-        wManager.setWifiEnabled(false);
+        if (getAllowDataChange(this)) {
+            // If the data were already enabled or we don't have permission to read it (and thus
+            // change it), we can't do anything else.
+            if (initialDataState == DataState.ENABLED || initialDataState == DataState.UNKNOWN)
+                return false;
 
-        // If data were already enabled (or unknown) and wifi too, check if the
-        // data will work now without the wifi interfering and return it.
-        // If data were already enabled (or unknown) but wifi not, return false - we can't
-        // do anything else.
-        if (initialDataState == DataState.DATA_ENABLED || initialDataState == DataState.DATA_UNKNOWN)
-            return initialWifiEnabled ? pingConnection() : false;
-
-        // The data state at this point can only be DISABLED - and if we could get this
-        // information, it means that we have root, so we will turn data on and return
-        // if connection now works (but we're still checking if it was succesfully set -
-        // and if not, we don't check the connection and return false right away.
-        boolean set = RootUtils.setMobileDataConnection(true);
-        if (set)
-            return pingConnection();
+            boolean set = RootUtils.setMobileDataConnection(true);
+            if (set)
+                return pingConnection();
+        }
 
         return false;
     }
@@ -130,7 +143,7 @@ public class UpdateService extends IntentService {
             Process p = pair.second;
 
             if (!pair.first.booleanValue() || p == null)
-                return DataState.DATA_UNKNOWN;
+                return DataState.UNKNOWN;
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
@@ -139,12 +152,12 @@ public class UpdateService extends IntentService {
             while ((s = stdInput.readLine()) != null)
                 output += (s);
 
-            return output.contains("2") ? DataState.DATA_ENABLED : DataState.DATA_DISABLED;
+            return output.contains("2") ? DataState.ENABLED : DataState.DISABLED;
         } catch (Exception e) {
             Log.e("UpdateService", Utils.getExceptionAsString(e));
         }
 
-        return DataState.DATA_UNKNOWN;
+        return DataState.UNKNOWN;
     }
 
     // Will try to connect for 30 seconds in 3 second intervals.
