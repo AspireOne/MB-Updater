@@ -8,8 +8,6 @@ import androidx.annotation.Nullable;
 
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +35,7 @@ public class Updater {
     private static final Pattern UPDATES_AMOUNT_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít ).*(?= aktualiza)");
     private static final Pattern UPDATES_ONE_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít )jednu(?= aktualiza)");
     private static final Pattern UPDATES_NONE_REGEX_PATTERN = Pattern.compile("Dnes jste využili všechny aktualizace");
+    private static final Pattern UPDATES_MAX_REGEX_PATTERN = Pattern.compile("(?<=Denně můžete aktualizovat ).*(?= inzertních)");
 
     // HTTP
     private enum RequestMethod {POST, GET}
@@ -227,9 +226,6 @@ public class Updater {
         String url = "https://www.mimibazar.cz/bazar.php?user=106144";
         Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
 
-        if (!result.first.booleanValue())
-            return -1;
-
         String html = getBodyOrNull(result);
         if (isEmptyOrNull(html))
             return -1;
@@ -250,6 +246,24 @@ public class Updater {
             return 0;
 
         return -1;
+    }
+
+    public static int tryGetMaxUpdates() {
+        String url = "https://www.mimibazar.cz/bazar.php?user=106144";
+        Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
+
+        String html = getBodyOrNull(result);
+        if (isEmptyOrNull(html))
+            return -1;
+
+        Matcher matcher = UPDATES_MAX_REGEX_PATTERN.matcher(html);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group());
+            } catch (NumberFormatException e) {
+                Log.e("Updater", getExceptionAsString(e));
+            }
+        }
     }
 
     private static String[] getIdsFromPrefs(Context context) {
