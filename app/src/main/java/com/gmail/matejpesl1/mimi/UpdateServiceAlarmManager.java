@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.icu.util.Calendar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.renderscript.Sampler;
@@ -11,8 +12,6 @@ import android.util.Log;
 
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.Utils;
-
-import java.util.Calendar;
 
 public class UpdateServiceAlarmManager {
     private static final String PREF_ACTIVE = "Alarm Scheduled";

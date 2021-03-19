@@ -95,12 +95,18 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void onTimePickerClick(View v) {
-        TimePickerFragment picker = new TimePickerFragment(this::handleTimePicked, Calendar.getInstance());
+        TimePickerFragment picker = new TimePickerFragment(
+                this::handleTimePicked,
+                UpdateServiceAlarmManager.getCurrUpdateCalendar(this));
         picker.show(getSupportFragmentManager(), "timePicker");
     }
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
+        if (UpdateServiceAlarmManager.isRegistered(this)) {
+            UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+            UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
+        }
         updateView();
     }
 
