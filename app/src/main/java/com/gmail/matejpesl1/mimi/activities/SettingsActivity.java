@@ -31,10 +31,12 @@ public class SettingsActivity extends AppCompatActivity {
     private Spinner updatedPagesSpinner;
     private Switch allowChangeWifiSwitch;
     private Switch allowChangeDataSwitch;
+    private Switch notifyAboutSuccesfullUpdateSwitch;
     private TextView rootAllowedTxt;
     private TextView backgroundRunAllowedTxt;
     private Button allowRootButt;
     private Button allowBackgroundRunButt;
+
     private boolean rootAllowedCached = false;
     private boolean backgroundRunAllowedCached = false;
 
@@ -57,6 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
         rootAllowedTxt = findViewById(R.id.rootAllowedValue);
         allowRootButt = findViewById(R.id.allowRootButt);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
+        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.notifyAboutSuccesfullUpdateSwitch);
 
         // Initial data initialization (of data that are not updated in UpdateView method.
         int posFromPrefs = Integer.parseInt(Utils.getPref(this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, "4"));
@@ -67,6 +70,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         allowBackgroundRunButt.setOnClickListener((View v) -> Utils.requestBatteryException(this));
         allowRootButt.setOnClickListener((View v) -> RootUtils.askForRoot());
+
+        notifyAboutSuccesfullUpdateSwitch.setOnCheckedChangeListener(
+                (CompoundButton buttonView, boolean isChecked)
+                        -> Updater.setNotifyAboutSuccesfullUpdate(this, isChecked));
 
         allowChangeDataSwitch.setOnCheckedChangeListener(
                 (CompoundButton buttonView, boolean isChecked)
@@ -112,6 +119,8 @@ public class SettingsActivity extends AppCompatActivity {
         updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
         allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this));
         allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
+        notifyAboutSuccesfullUpdateSwitch.setChecked(Updater.getNotifyAboutSuccesfullUpdate(this));
+
         if (!rootAllowedCached && RootUtils.isRootAvailable()) {
             rootAllowedTxt.setText("ano");
             allowRootButt.setVisibility(View.INVISIBLE);

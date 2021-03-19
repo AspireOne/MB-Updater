@@ -11,6 +11,17 @@
         android:padding="16sp">
 
         <TextView
+            android:id="@+id/notifyAboutSuccesfullUpdateTxt"
+            android:layout_width="159dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="20dp"
+            android:text="Oznámit o úspěšné aktualizaci"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/backgroundRunAllowedTxt" />
+
+        <TextView
             android:id="@+id/backgroundRunAllowedValue"
             android:layout_width="43dp"
             android:layout_height="22dp"
@@ -158,6 +169,13 @@
             android:text="Povolit"
             app:layout_constraintStart_toEndOf="@+id/backgroundRunAllowedValue"
             app:layout_constraintTop_toBottomOf="@+id/allowRootButt" />
+
+        <Switch
+            android:id="@+id/notifyAboutSuccesfullUpdateSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:layout_editor_absoluteX="182dp"
+            tools:layout_editor_absoluteY="352dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
