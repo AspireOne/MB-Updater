@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "AppPrefs";
     private Switch updateSwitch;
     private TextView stateDescriptionText;
+    private TextView todayUpdatedValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         // Elements initialization
         updateSwitch = findViewById(R.id.updateSwitch);
         stateDescriptionText = findViewById(R.id.updatingStateDescription);
+        todayUpdatedValue = findViewById(R.id.todayUpdatedValue);
 
         updateSwitch.setOnCheckedChangeListener(this::onSwitch);
 
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
             Utils.requestBatteryException(this);
 
         RootUtils.askForRoot();
+
     }
 
     public void handleUpdateNowButtClick(View v) {
