@@ -1,10 +1,7 @@
 package com.gmail.matejpesl1.mimi.activities;
 
 import android.icu.text.SimpleDateFormat;
-import android.icu.util.Calendar;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -16,7 +13,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceFragmentCompat;
 
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
@@ -35,10 +31,12 @@ public class SettingsActivity extends AppCompatActivity {
     private Spinner updatedPagesSpinner;
     private Switch allowChangeWifiSwitch;
     private Switch allowChangeDataSwitch;
-    private TextView rootAllowed;
-    private TextView backgroundRunAllowed;
+    private TextView rootAllowedTxt;
+    private TextView backgroundRunAllowedTxt;
     private Button allowRootButt;
     private Button allowBackgroundRunButt;
+    private boolean rootAllowedCached = false;
+    private boolean backgroundRunAllowedCached = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +53,8 @@ public class SettingsActivity extends AppCompatActivity {
         updatedPagesSpinner = findViewById(R.id.updatedPagesSpinner);
         allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
         allowChangeDataSwitch = findViewById(R.id.allowChangeDataSwitch);
-        backgroundRunAllowed = findViewById(R.id.backgroundRunAllowedValue);
-        rootAllowed = findViewById(R.id.rootAllowedValue);
+        backgroundRunAllowedTxt = findViewById(R.id.backgroundRunAllowedValue);
+        rootAllowedTxt = findViewById(R.id.rootAllowedValue);
         allowRootButt = findViewById(R.id.allowRootButt);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
 
@@ -114,19 +112,21 @@ public class SettingsActivity extends AppCompatActivity {
         updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
         allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this));
         allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
-        if (RootUtils.isRootAvailable()) {
-            rootAllowed.setText("ano");
+        if (!rootAllowedCached && RootUtils.isRootAvailable()) {
+            rootAllowedTxt.setText("ano");
             allowRootButt.setVisibility(View.INVISIBLE);
+            rootAllowedCached = true;
         } else {
-            rootAllowed.setText("ne");
+            rootAllowedTxt.setText("ne");
             allowRootButt.setVisibility(View.VISIBLE);
         }
 
-        if (Utils.hasBatteryException(this)) {
-            backgroundRunAllowed.setText("ano");
+        if (!backgroundRunAllowedCached && Utils.hasBatteryException(this)) {
+            backgroundRunAllowedTxt.setText("ano");
             allowBackgroundRunButt.setVisibility(View.INVISIBLE);
+            backgroundRunAllowedCached = true;
         } else {
-            backgroundRunAllowed.setText("ne");
+            backgroundRunAllowedTxt.setText("ne");
             allowBackgroundRunButt.setVisibility(View.VISIBLE);
         }
     }
