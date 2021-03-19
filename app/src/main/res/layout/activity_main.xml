@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
     <Switch
         android:id="@+id/updateSwitch"
@@ -49,35 +49,15 @@
         app:layout_constraintTop_toBottomOf="@+id/updateSwitch"
         app:layout_constraintVertical_bias="0.226" />
 
-    <TextView
-        android:id="@+id/updateTimeBoxLabel"
-        android:layout_width="120dp"
-        android:layout_height="40dp"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="76dp"
-        android:gravity="bottom"
-        android:text="Aktualizovat v"
-        android:textAlignment="textStart"
-        android:textSize="18sp"
-        android:textStyle="normal"
-        app:layout_constraintHorizontal_chainStyle="packed"
+        android:layout_marginTop="16dp"
+        android:onClick="openSettings"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/updatingStateDescription" />
-
-    <EditText
-        android:id="@+id/updateTimeBox"
-        android:layout_width="76dp"
-        android:layout_height="43dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="80dp"
-        android:ems="10"
-        android:focusable="false"
-        android:inputType="time"
-        android:longClickable="false"
-        android:selectAllOnFocus="false"
-        android:text="7:45"
-        android:textIsSelectable="false"
-        app:layout_constraintStart_toEndOf="@+id/updateTimeBoxLabel"
-        app:layout_constraintTop_toBottomOf="@+id/updatingStateDescription" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/baseline_settings_blue_grey_900_24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

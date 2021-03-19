@@ -1,0 +1,30 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+
+    <string-array name="updated_pages_entries">
+        <item>5 (105 položek)</item>
+        <item>10 (210 položek)</item>
+        <item>15 (315 položek)</item>
+        <item>20 (420 položek)</item>
+        <item>25 (525 položek)</item>
+        <item>30 (630 položek)</item>
+    </string-array>
+
+    <string-array name="updated_pages_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+    </string-array>
+</resources>
