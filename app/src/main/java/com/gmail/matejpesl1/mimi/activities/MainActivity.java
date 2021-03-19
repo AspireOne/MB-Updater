@@ -1,4 +1,4 @@
-package com.gmail.matejpesl1.mimi;
+package com.gmail.matejpesl1.mimi.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.gmail.matejpesl1.mimi.R;
+import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
+import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 
@@ -53,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void handleUpdateNowButtClick(View v) {
         AsyncTask.execute(() -> Updater.update(this));
+    }
+
+    public void openSettings(View v) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void requestBatteryException() {
