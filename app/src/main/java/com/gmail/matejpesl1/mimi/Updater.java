@@ -6,6 +6,8 @@ import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import com.gmail.matejpesl1.mimi.utils.Utils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ public class Updater {
     private static final String PREF_IDS = "IDs Of Items";
     private static final String PREF_AMOUNT_OF_PAGES = "Amount Of Pages To Update";
     private static final String PREF_CURR_ID_INDEX = "Index Of Current ID";
+    private static final String PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE = "Allow Mobile Data Change";
 
     // Patterns
     private static final Pattern ID_REGEX_PATTERN = Pattern.compile("(?<=href=\"https:\\/\\/www\\.mimibazar\\.cz\\/inzerat\\/)\\d+(?=\\/.*\")");
@@ -52,6 +55,13 @@ public class Updater {
     private final static int REQUEST_THROTTLE_MS = 400;
     private static long lastRequest = 0;
 
+    public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
+        Utils.writePref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, notify+"");
+    }
+    public static boolean getNotifyAboutSuccesfullUpdate(Context context) {
+        return Boolean.parseBoolean(
+                Utils.getPref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, "true"));
+    }
 
     public static void changeAmountOfUpdatedPages(Context context, int amount) {
         writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
@@ -87,9 +97,8 @@ public class Updater {
                     context,
                     "Nelze aktualizovat Mimibazar kvůli runtime chybě",
                     error);
-        } else {
+        } else if (getNotifyAboutSuccesfullUpdate(context))
             Notifications.PostDefaultNotification(context, "Mimibazar úspěšně aktualizován", "");
-        }
     }
 
     private static boolean makeChecksAndNotifyAboutErrors(Context context) {
