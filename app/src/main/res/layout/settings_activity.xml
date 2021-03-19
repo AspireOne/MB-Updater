@@ -10,12 +10,58 @@
         android:layout_height="match_parent"
         android:padding="16sp">
 
+        <TextView
+            android:id="@+id/backgroundRunAllowedValue"
+            android:layout_width="43dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="36dp"
+            android:text="ano"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/backgroundRunAllowedTxt"
+            app:layout_constraintTop_toBottomOf="@+id/rootAllowedValue" />
+
+        <TextView
+            android:id="@+id/backgroundRunAllowedTxt"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="20dp"
+            android:text="Chod na pozadí povolen:"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rootAllowedTxt" />
+
+        <TextView
+            android:id="@+id/rootAllowedValue"
+            android:layout_width="43dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="24dp"
+            android:text="ano"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/rootAllowedTxt"
+            app:layout_constraintTop_toBottomOf="@+id/allowChangeInternetTxt" />
+
+        <TextView
+            android:id="@+id/rootAllowedTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="24dp"
+            android:text="Root povolen:"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/allowChangeInternetTxt" />
+
         <EditText
             android:id="@+id/updateTimeBox"
             android:layout_width="76dp"
             android:layout_height="43dp"
-            android:layout_marginStart="76dp"
             android:layout_marginTop="4dp"
+            android:layout_marginEnd="112dp"
             android:ems="10"
             android:focusable="false"
             android:inputType="time"
@@ -23,22 +69,23 @@
             android:selectAllOnFocus="false"
             android:text="7:45"
             android:textIsSelectable="false"
-            app:layout_constraintStart_toEndOf="@+id/updateInTxt"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Spinner
             android:id="@+id/updatedPagesSpinner"
             android:layout_width="175dp"
             android:layout_height="48dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:entries="@array/updated_pages_entries"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/pagesToUpdateTxt" />
+            app:layout_constraintTop_toBottomOf="@+id/updateTimeBox" />
 
         <TextView
             android:id="@+id/allowChangeInternetTxt"
-            android:layout_width="255dp"
-            android:layout_height="91dp"
+            android:layout_width="242dp"
+            android:layout_height="88dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="16dp"
             android:text="Povolit zapnutí internetu pokud v čase aktualizace chybí připojení (po aktualizaci bude vrácen do původního stavu)"
@@ -70,23 +117,47 @@
 
         <Switch
             android:id="@+id/allowChangeWifiSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_width="91dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:text="WiFi"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/allowChangeInternetTxt"
             app:layout_constraintTop_toTopOf="@+id/allowChangeInternetTxt" />
 
         <Switch
             android:id="@+id/allowChangeDataSwitch"
             android:layout_width="90dp"
             android:layout_height="27dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
             android:text="Data"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/allowChangeInternetTxt"
             app:layout_constraintTop_toBottomOf="@+id/allowChangeWifiSwitch" />
+
+        <Button
+            android:id="@+id/allowRootButt"
+            android:layout_width="99dp"
+            android:layout_height="37dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="16dp"
+            android:text="Povolit"
+            app:layout_constraintStart_toEndOf="@+id/rootAllowedValue"
+            app:layout_constraintTop_toBottomOf="@+id/allowChangeInternetTxt" />
+
+        <Button
+            android:id="@+id/allowBackgroundRunButt"
+            android:layout_width="99dp"
+            android:layout_height="37dp"
+            android:layout_marginStart="27dp"
+            android:layout_marginTop="22dp"
+            android:text="Povolit"
+            app:layout_constraintStart_toEndOf="@+id/backgroundRunAllowedValue"
+            app:layout_constraintTop_toBottomOf="@+id/allowRootButt" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

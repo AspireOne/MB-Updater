@@ -53,11 +53,15 @@ public class Updater {
     private static long lastRequest = 0;
 
 
-    public void changeAmountOfUpdatedPages(Context context, int amount) {
+    public static void changeAmountOfUpdatedPages(Context context, int amount) {
         writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
     }
 
-    public boolean tryForceRecreateIdList(Context context) {
+    public static int getAmountOfUpdatedPages(Context context) {
+        return Integer.parseInt(getPref(context, PREF_AMOUNT_OF_PAGES, "25"));
+    }
+
+    public static boolean tryForceRecreateIdList(Context context) {
         boolean recreated = tryRecreatePrefIds(context);
         if (!recreated)
             return false;
@@ -246,7 +250,7 @@ public class Updater {
     }
 
     private static boolean tryRecreatePrefIds(Context context) {
-        int amountOfPages = Integer.parseInt(getPref(context, PREF_AMOUNT_OF_PAGES, "25"));
+        int amountOfPages = getAmountOfUpdatedPages(context);
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
         if (newIds.isEmpty())
             return false;

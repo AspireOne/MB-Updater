@@ -1,7 +1,10 @@
 package com.gmail.matejpesl1.mimi.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.PowerManager;
 
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
@@ -12,6 +15,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Utils {
 
@@ -35,6 +40,24 @@ public class Utils {
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         return sw.toString();
+    }
+
+    public static boolean hasBatteryException(Context context) {
+        String packageName = context.getPackageName();
+        PowerManager pm = (PowerManager)context.getSystemService(context.POWER_SERVICE);
+        return pm.isIgnoringBatteryOptimizations(packageName);
+    }
+
+    public static void requestBatteryException(Context context) {
+        String packageName = context.getPackageName();
+        PowerManager pm = (PowerManager)context.getSystemService(context.POWER_SERVICE);
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            Intent intent = new Intent();
+            intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(Uri.parse("package:" + packageName));
+            context.startActivity(intent);
+        }
     }
 
     public static boolean isEmptyOrNull(String str) {
