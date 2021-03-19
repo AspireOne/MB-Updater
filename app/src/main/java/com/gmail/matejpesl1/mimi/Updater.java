@@ -256,6 +256,7 @@ public class Updater {
         if (isEmptyOrNull(html))
             return -1;
 
+        // TODO: NOT COMPLETED AND TESTED
         Matcher matcher = UPDATES_MAX_REGEX_PATTERN.matcher(html);
         if (matcher.find()) {
             try {
@@ -264,6 +265,8 @@ public class Updater {
                 Log.e("Updater", getExceptionAsString(e));
             }
         }
+
+        return -1;
     }
 
     private static String[] getIdsFromPrefs(Context context) {
