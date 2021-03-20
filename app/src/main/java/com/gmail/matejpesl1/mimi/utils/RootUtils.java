@@ -6,8 +6,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class RootUtils {
-    private static final String ENABLE_DATA_COMMAND = "svc data enable";
-    private static final String DISABLE_DATA_COMMAND = "svc data disable";
 
     public static boolean isRootAvailable() {
         try {
