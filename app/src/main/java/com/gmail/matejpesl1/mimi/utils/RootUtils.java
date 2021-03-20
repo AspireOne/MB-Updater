@@ -7,6 +7,8 @@ import java.io.IOException;
 
 public class RootUtils {
 
+	private RootUtils() {}
+
     public static boolean isRootAvailable() {
         try {
             Process p = Runtime.getRuntime().exec("su");
