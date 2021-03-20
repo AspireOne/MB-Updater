@@ -8,8 +8,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class Notifications {
-    private static final int BASE_ID = 250165565;
-    private static int currId = BASE_ID;
+    private static int currId = 250165565;
 
     private static final String DEFAULT_CHANNEL_ID = "mimibazar_updates_default_channel";
     private static boolean defaultChannelRegistered = false;
