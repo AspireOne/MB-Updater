@@ -61,7 +61,7 @@ public class Utils {
     }
 
     public static boolean isEmptyOrNull(String str) {
-        return str == null || str == "";
+        return str == null || str.equals("");
     }
 
     public static String getPref(Context context, String key, String defaultValue) {
