@@ -10,19 +10,18 @@ import androidx.core.app.NotificationManagerCompat;
 public class Notifications {
     private static int currId = 250165565;
     private static final String DEFAULT_CHANNEL_ID = "mimibazar_updates_default_channel";
-    private static boolean defaultChannelRegistered = false;
+    private static boolean defaultChannelRegisteredCached = false;
 
     private Notifications() {}
 
     private static void RegisterDefaultNotificationChannel(Context context) {
         registerChannel(context, createDefaultNotificationChannel());
+        defaultChannelRegisteredCached = true;
     }
 
     public static void PostDefaultNotification(Context context, String title, String text) {
-        if (!defaultChannelRegistered) {
-            defaultChannelRegistered = true;
+        if (!defaultChannelRegisteredCached)
             Notifications.RegisterDefaultNotificationChannel(context);
-        }
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, Notifications.DEFAULT_CHANNEL_ID)
