@@ -53,6 +53,7 @@ public class Updater {
     // Other
     private final static int REQUEST_THROTTLE_MS = 400;
     private static long lastRequest = 0;
+    private static boolean running = false;
 
     public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
         Utils.writePref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, notify+"");
@@ -80,6 +81,17 @@ public class Updater {
     }
 
     public static void update(Context context) {
+        if (running) {
+            Log.e("Updater", "already running");
+            return;
+        }
+
+        running = true;
+        startUpdate(context);
+        running = false;
+    }
+
+    private static void startUpdate(Context context) {
         if (!makeChecksAndNotifyAboutErrors(context))
             return;
 
@@ -169,10 +181,9 @@ public class Updater {
         if (ids.length == 0 || ids.length == 1) {
             boolean created = tryRecreatePrefIds(context);
 
+            ids = getIdsFromPrefs(context);
             if (!created || ids.length == 0 || ids.length == 1)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
-
-            ids = getIdsFromPrefs(context);
         }
 
         Log.e("", "IDS LENGHT: " + ids.length);
