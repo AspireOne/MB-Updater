@@ -6,9 +6,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.PowerManager;
 
+import androidx.annotation.Nullable;
+
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,11 +26,14 @@ public class Utils {
 
     private Utils() {}
 
-    public static void writeToFile(Context context, String filename, String data, int mode) throws IOException {
-        OutputStreamWriter outputStreamWriter =
-                new OutputStreamWriter(context.openFileOutput(filename, mode));
-        outputStreamWriter.write(data);
-        outputStreamWriter.close();
+    public static void writeToFile(Context context, String filename, byte[] data) throws IOException {
+        File file = new File(context.getFilesDir(), filename);
+        if (!file.exists())
+            file.createNewFile();
+
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(data);
+        fos.close();
     }
 
     public static void writePref(Context context, String key, String value) {
@@ -68,25 +75,5 @@ public class Utils {
         SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
 
         return prefs.getString(key, defaultValue);
-    }
-
-    public static String readFromFile(Context context, String filename) throws IOException {
-        InputStream inputStream = context.openFileInput(filename);
-
-        if (inputStream != null) {
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-            StringBuilder stringBuilder = new StringBuilder();
-            String receiveString = "";
-
-            while ((receiveString = bufferedReader.readLine()) != null)
-                stringBuilder.append("\n").append(receiveString);
-
-            inputStream.close();
-            return stringBuilder.toString();
-        }
-
-        return null;
     }
 }
