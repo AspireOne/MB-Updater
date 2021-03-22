@@ -1,8 +1,10 @@
 package com.gmail.matejpesl1.mimi.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -11,12 +13,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
+import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
@@ -24,9 +30,13 @@ import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
+import com.gmail.matejpesl1.mimi.BuildConfig;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.Executor;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -36,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private Switch updateSwitch;
     private TextView stateDescriptionText;
     private TextView todayUpdatedValue;
+    private TextView appUpdateAvailableTxt;
+    private Button updateAppButt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,20 +58,23 @@ public class MainActivity extends AppCompatActivity {
         updateSwitch = findViewById(R.id.updateSwitch);
         stateDescriptionText = findViewById(R.id.updatingStateDescription);
         todayUpdatedValue = findViewById(R.id.todayUpdatedValue);
+        appUpdateAvailableTxt = findViewById(R.id.updateAvailableTxt);
+        updateAppButt = findViewById(R.id.updateAppButt);
 
+        // Listeners
         updateSwitch.setOnCheckedChangeListener(this::onSwitch);
+        updateAppButt.setOnClickListener((view) ->
+                new Thread(() -> AppUpdateManager.installDirectlyWithRoot(this)).start());
 
-        updateView();
-
+        // Logic
         if (!Utils.hasBatteryException(this))
             Utils.requestBatteryException(this);
 
         RootUtils.askForRoot();
 
-    }
+        updateView();
 
-    public void handleUpdateNowButtClick(View v) {
-        AsyncTask.execute(() -> Updater.update(this));
+        Log.e("", "update available: " + AppUpdateManager.isUpdateAvailable());
     }
 
     public void openSettings(View v) {
@@ -68,6 +83,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
+        updateAppButt.setVisibility(View.INVISIBLE);
+        appUpdateAvailableTxt.setVisibility(View.INVISIBLE);
+
+        new Thread(() -> {
+            int remaining = Updater.tryGetRemainingUpdates();
+            int max = Updater.tryGetMaxUpdates();
+
+            String maxStr = (max == -1 ? "-" : max+"");
+            String remainingStr = (remaining == -1 || max == -1 ? "-" : (max - remaining)+"");
+
+            runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
+        }).start();
+
+        new Thread(() -> {
+            boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
+            int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
+
+            runOnUiThread(() -> {
+                updateAppButt.setVisibility(visibility);
+                appUpdateAvailableTxt.setVisibility(visibility);
+            });
+
+            if (updateAvailable)
+                AppUpdateManager.downloadApk(this);
+        }).start();
+
         if (UpdateServiceAlarmManager.isRegistered(this)) {
             updateSwitch.setChecked(true);
             String nextUpdateTime = dateToCzech(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime());
@@ -80,16 +121,6 @@ public class MainActivity extends AppCompatActivity {
             updateSwitch.setChecked(false);
             stateDescriptionText.setText(R.string.updating_off_text);
         }
-
-        new Thread(() -> {
-            int remaining = Updater.tryGetRemainingUpdates();
-            int max = Updater.tryGetMaxUpdates();
-
-            String maxStr = (max == -1 ? "-" : max+"");
-            String remainingStr = (remaining == -1 || max == -1 ? "-" : (max - remaining)+"");
-
-            runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
-        }).start();
     }
 
     public static String dateToCzech(Date time) {

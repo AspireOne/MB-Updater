@@ -92,14 +92,14 @@ public class Updater {
     }
 
     private static void startUpdate(Context context) {
-        if (!makeChecksAndNotifyAboutErrors(context))
-            return;
-
         if (tryGetRemainingUpdates() == 0) {
-            Log.d("", "Mimibazar was attempted to be updated for the 2nd time, but it's already" +
-                    "updated");
+            Log.d("Updater", "Mimibazar was attempted to be updated but it already has " +
+                    "0 remaining updates.");
             return;
         }
+
+        if (!makeChecksAndNotifyAboutErrors(context))
+            return;
 
         String error = execute(context);
 
@@ -282,7 +282,6 @@ public class Updater {
 
     private static String[] getIdsFromPrefs(Context context) {
         String prefIds = getPref(context, PREF_IDS, "");
-        Log.e("ids from prefs", prefIds);
         return prefIds.split(" ");
     }
 
@@ -341,7 +340,7 @@ public class Updater {
             return null;
 
         try {
-            String body =  result.second.body().string();
+            String body = result.second.body().string();
             result.second.close();
             return body;
         } catch (Exception e) {
@@ -355,7 +354,7 @@ public class Updater {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                Log.e("", getExceptionAsString(e));
+                Log.e("Updater", getExceptionAsString(e));
             }
         }
 
