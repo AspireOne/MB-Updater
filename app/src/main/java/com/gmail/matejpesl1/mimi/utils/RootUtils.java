@@ -5,6 +5,7 @@ import android.util.Pair;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class RootUtils {
 
@@ -28,12 +29,12 @@ public class RootUtils {
         }
     }
 
-    public static void askForRoot() {
+    public static Process askForRoot() {
         try {
-            Runtime.getRuntime().exec("su");
+            return Runtime.getRuntime().exec("su");
         } catch (Exception e) {
-            e.printStackTrace();
-            // Ignored
+            Log.e("", Utils.getExceptionAsString(e));
+            return null;
         }
     }
 

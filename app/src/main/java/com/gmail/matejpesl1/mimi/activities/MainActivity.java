@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -63,14 +64,21 @@ public class MainActivity extends AppCompatActivity {
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener(this::onSwitch);
-        updateAppButt.setOnClickListener((view) ->
-                new Thread(() -> AppUpdateManager.installDirectlyWithRoot(this)).start());
-
+        updateAppButt.setOnClickListener((view) -> {
+            new Thread(() -> AppUpdateManager.installDirectlyWithRoot(this)).start();
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startMain);
+        });
         // Logic
-        if (!Utils.hasBatteryException(this))
-            Utils.requestBatteryException(this);
 
-        RootUtils.askForRoot();
+        new Thread(() -> {
+            RootUtils.askForRoot();
+
+            if (!Utils.hasBatteryException(this))
+                Utils.requestBatteryException(this);
+        }).start();
 
         updateView();
 
@@ -86,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         updateAppButt.setVisibility(View.INVISIBLE);
         appUpdateAvailableTxt.setVisibility(View.INVISIBLE);
 
+        // Update remaining updates.
         new Thread(() -> {
             int remaining = Updater.tryGetRemainingUpdates();
             int max = Updater.tryGetMaxUpdates();
@@ -96,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
         }).start();
 
+        // Update app update visibility.
         new Thread(() -> {
             boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
             int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
