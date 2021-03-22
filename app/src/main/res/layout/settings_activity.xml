@@ -174,8 +174,11 @@
             android:id="@+id/notifyAboutSuccesfullUpdateSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:layout_editor_absoluteX="182dp"
-            tools:layout_editor_absoluteY="352dp" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toEndOf="@+id/notifyAboutSuccesfullUpdateTxt"
+            app:layout_constraintTop_toBottomOf="@+id/allowBackgroundRunButt"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
