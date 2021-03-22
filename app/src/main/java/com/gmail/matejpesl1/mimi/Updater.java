@@ -28,7 +28,7 @@ public class Updater {
     private static final String PREF_IDS = "IDs Of Items";
     private static final String PREF_AMOUNT_OF_PAGES = "Amount Of Pages To Update";
     private static final String PREF_CURR_ID_INDEX = "Index Of Current ID";
-    private static final String PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE = "Allow Mobile Data Change";
+    private static final String PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE = "Notify About Sucesfull update";
 
     // Patterns
     private static final Pattern ID_REGEX_PATTERN = Pattern.compile("(?<=href=\"https:\\/\\/www\\.mimibazar\\.cz\\/inzerat\\/)\\d+(?=\\/.*\")");
@@ -51,7 +51,7 @@ public class Updater {
             .build();
 
     // Other
-    private final static int REQUEST_THROTTLE_MS = 400;
+    private final static int REQUEST_THROTTLE_MS = 300;
     private static long lastRequest = 0;
     private static boolean running = false;
 
@@ -233,7 +233,7 @@ public class Updater {
     }
 
     // Returns -1 if can't get.
-    private static int tryGetRemainingUpdates() {
+    public static int tryGetRemainingUpdates() {
         String url = "https://www.mimibazar.cz/bazar.php?user=106144";
         Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
 

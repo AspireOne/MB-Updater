@@ -32,8 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
     private Switch allowChangeWifiSwitch;
     private Switch allowChangeDataSwitch;
     private Switch notifyAboutSuccesfullUpdateSwitch;
-    private TextView rootAllowedTxt;
-    private TextView backgroundRunAllowedTxt;
+    private TextView rootAllowedValue;
+    private TextView backgroundRunAllowedValue;
     private Button allowRootButt;
     private Button allowBackgroundRunButt;
 
@@ -55,13 +55,13 @@ public class SettingsActivity extends AppCompatActivity {
         updatedPagesSpinner = findViewById(R.id.updatedPagesSpinner);
         allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
         allowChangeDataSwitch = findViewById(R.id.allowChangeDataSwitch);
-        backgroundRunAllowedTxt = findViewById(R.id.backgroundRunAllowedValue);
-        rootAllowedTxt = findViewById(R.id.rootAllowedValue);
+        backgroundRunAllowedValue = findViewById(R.id.backgroundRunAllowedValue);
+        rootAllowedValue = findViewById(R.id.rootAllowedValue);
         allowRootButt = findViewById(R.id.allowRootButt);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
         notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.notifyAboutSuccesfullUpdateSwitch);
 
-        // Initial data initialization (of data that are not updated in UpdateView method.
+        // Initial data initialization (of data that are not updated in UpdateView method).
         int posFromPrefs = Integer.parseInt(Utils.getPref(this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, "4"));
         updatedPagesSpinner.setSelection(posFromPrefs, true);
 
@@ -115,28 +115,31 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateView() {
-        updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
-        allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this));
-        allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
-        notifyAboutSuccesfullUpdateSwitch.setChecked(Updater.getNotifyAboutSuccesfullUpdate(this));
-
         if (!rootAllowedCached && RootUtils.isRootAvailable()) {
-            rootAllowedTxt.setText("ano");
+            rootAllowedValue.setText("ano");
             allowRootButt.setVisibility(View.INVISIBLE);
             rootAllowedCached = true;
         } else {
-            rootAllowedTxt.setText("ne");
+            rootAllowedValue.setText("ne");
             allowRootButt.setVisibility(View.VISIBLE);
+            rootAllowedCached = false;
         }
 
         if (!backgroundRunAllowedCached && Utils.hasBatteryException(this)) {
-            backgroundRunAllowedTxt.setText("ano");
+            backgroundRunAllowedValue.setText("ano");
             allowBackgroundRunButt.setVisibility(View.INVISIBLE);
             backgroundRunAllowedCached = true;
         } else {
-            backgroundRunAllowedTxt.setText("ne");
+            backgroundRunAllowedValue.setText("ne");
             allowBackgroundRunButt.setVisibility(View.VISIBLE);
+            backgroundRunAllowedCached = false;
         }
+
+        updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
+        allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this) && rootAllowedCached);
+        allowChangeDataSwitch.setEnabled(rootAllowedCached);
+        allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
+        notifyAboutSuccesfullUpdateSwitch.setChecked(Updater.getNotifyAboutSuccesfullUpdate(this));
     }
 
     public static String dateToDigitalTime(Date time) {

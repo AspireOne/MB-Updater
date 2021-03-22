@@ -27,6 +27,7 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -79,6 +80,16 @@ public class MainActivity extends AppCompatActivity {
             updateSwitch.setChecked(false);
             stateDescriptionText.setText(R.string.updating_off_text);
         }
+
+        new Thread(() -> {
+            int remaining = Updater.tryGetRemainingUpdates();
+            int max = Updater.tryGetMaxUpdates();
+
+            String maxStr = (max == -1 ? "-" : max+"");
+            String remainingStr = (remaining == -1 || max == -1 ? "-" : (max - remaining)+"");
+
+            runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
+        }).start();
     }
 
     public static String dateToCzech(Date time) {
