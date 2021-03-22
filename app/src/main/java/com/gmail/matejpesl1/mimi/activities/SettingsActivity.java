@@ -108,10 +108,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        if (UpdateServiceAlarmManager.isRegistered(this)) {
-            UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+        if (UpdateServiceAlarmManager.isRegistered(this))
             UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
-        }
+
         updateView();
     }
 

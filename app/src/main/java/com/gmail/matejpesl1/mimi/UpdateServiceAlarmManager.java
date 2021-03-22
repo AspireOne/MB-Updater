@@ -26,12 +26,12 @@ public class UpdateServiceAlarmManager {
         intent.setAction(UpdateService.ACTION_UPDATE);
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        manager.cancel(pendingIntent);
+
         if (register)
             manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
                     getCurrUpdateCalendar(context).getTimeInMillis(),
                     pendingIntent);
-        else
-            manager.cancel(pendingIntent);
 
         Utils.writePref(context, PREF_ACTIVE, Boolean.toString(register));
     }
@@ -58,7 +58,6 @@ public class UpdateServiceAlarmManager {
 
         // If the alarm is registered, re-register it to the new time.
         if (isRegistered(context)) {
-            changeRepeatingAlarm(context, false);
             changeRepeatingAlarm(context, true);
         }
     }
