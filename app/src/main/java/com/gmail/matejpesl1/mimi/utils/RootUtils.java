@@ -1,5 +1,6 @@
 package com.gmail.matejpesl1.mimi.utils;
 
+import android.util.Log;
 import android.util.Pair;
 
 import java.io.DataOutputStream;
@@ -53,13 +54,13 @@ public class RootUtils {
                 p.waitFor();
                 success = p.exitValue() == 0;
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Log.e("", Utils.getExceptionAsString(e));
                 success = false;
             }
 
             outputStream.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("", Utils.getExceptionAsString(e));
             success = false;
         }
 

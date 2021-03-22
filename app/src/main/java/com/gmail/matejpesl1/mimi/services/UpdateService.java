@@ -50,8 +50,8 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
         PowerManager.WakeLock wakelock = acquireWakelock(12);
+        UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
         DataState prevMobileDataState = getMobileDataState();
         boolean prevWifiEnabled = isWifiEnabled();
@@ -63,6 +63,7 @@ public class UpdateService extends IntentService {
             Notifications.PostDefaultNotification(this, "Nelze aktualizovat Mimibazar",
                     "nelze získat internetové připojení.");
 
+        // TODO: Maybe add auto-update?
         revertToInitialState(prevMobileDataState, prevWifiEnabled);
 
         wakelock.release();

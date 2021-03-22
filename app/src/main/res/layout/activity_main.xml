@@ -7,6 +7,18 @@
     tools:context=".activities.MainActivity">
 
     <TextView
+        android:id="@+id/updateAvailableTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Dostupná aktualizace aplikace!"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/updateAppButt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
         android:id="@+id/todayUpdatedValue"
         android:layout_width="90dp"
         android:layout_height="21dp"
@@ -47,14 +59,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="155dp"
-        android:layout_height="67dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginBottom="100dp"
-        android:onClick="handleUpdateNowButtClick"
-        android:text="Aktualizovat teď"
+        android:id="@+id/updateAppButt"
+        android:layout_width="153dp"
+        android:layout_height="61dp"
+        android:layout_marginBottom="16dp"
+        android:onClick="handleUpdateAppButtClick"
+        android:text="Aktualizovat aplikaci"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView

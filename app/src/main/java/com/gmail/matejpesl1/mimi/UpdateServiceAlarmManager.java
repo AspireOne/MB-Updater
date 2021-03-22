@@ -80,7 +80,7 @@ public class UpdateServiceAlarmManager {
         calendar.set(Calendar.HOUR, Integer.parseInt(hourStr));
         calendar.set(Calendar.AM_PM, Integer.parseInt(dayPartStr));
 
-        if (calendar.getTimeInMillis() < System.currentTimeMillis())
+        if (calendar.getTimeInMillis() <= System.currentTimeMillis())
             calendar.set(Calendar.DAY_OF_WEEK, calendar.get(Calendar.DAY_OF_WEEK) + 1);
 
         return calendar;

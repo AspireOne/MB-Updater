@@ -26,10 +26,13 @@ public class Utils {
 
     private Utils() {}
 
-    public static void writeToFile(Context context, String filename, byte[] data) throws IOException {
+    public static void saveFile(Context context, String filename, byte[] data) throws IOException {
         File file = new File(context.getFilesDir(), filename);
-        if (!file.exists())
-            file.createNewFile();
+
+        if (file.exists())
+            file.delete();
+
+        file.createNewFile();
 
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(data);
