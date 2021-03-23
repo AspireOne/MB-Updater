@@ -206,7 +206,7 @@ public class Updater {
         // Loop variables initialization.
         int iterationCount = 0;
         int photoUpdateErrorCount = 0;
-        final int maxPhotoUpdateErrors = 5;
+        final int maxPhotoUpdateErrors = 10;
         final int maxIterations = 300;
 
         String error = null;
