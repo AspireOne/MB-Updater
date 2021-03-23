@@ -37,6 +37,14 @@ public class AppUpdateManager {
     }
 
     public static void requestInstall(Context context) {
+        while (downloading) {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                Log.e(TAG, Utils.getExceptionAsString(e));
+            }
+        }
+        
         if (!isDownloadedApkLatest(context))
             downloadApk(context);
 
@@ -65,7 +73,6 @@ public class AppUpdateManager {
 
         if (!isDownloadedApkLatest(context))
             downloadApk(context);
-
 
         File file = getApk(context);
 
