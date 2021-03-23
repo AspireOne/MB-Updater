@@ -26,8 +26,9 @@
         android:theme="@style/Theme.Mimi">
         <activity
             android:name=".activities.SettingsActivity"
-            android:parentActivityName=".activities.MainActivity">
-            android:label="@string/title_activity_settings"></activity>
+            android:parentActivityName=".activities.MainActivity"
+            android:label="@string/title_activity_settings">
+        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -36,7 +37,8 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
+                android:resource="@xml/provider_paths">
+            </meta-data>
         </provider>
 
         <receiver
@@ -53,12 +55,12 @@
             android:name=".services.UpdateService"
             android:directBootAware="true"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true">
+        </service>
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
