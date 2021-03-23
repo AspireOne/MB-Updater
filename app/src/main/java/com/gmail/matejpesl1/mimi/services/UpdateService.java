@@ -20,13 +20,14 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 
 public class UpdateService extends IntentService {
+    private static final String TAG = "UpdateService";
     private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
     private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
     private enum DataState { UNKNOWN, ENABLED, DISABLED}
 
     public UpdateService() {
-        super("UpdateService");
+        super(TAG);
     }
 
     public static void setAllowDataChange(Context context, boolean allow) {
@@ -155,7 +156,7 @@ public class UpdateService extends IntentService {
 
             return output.contains("2") ? DataState.ENABLED : DataState.DISABLED;
         } catch (Exception e) {
-            Log.e("UpdateService", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
         }
 
         return DataState.UNKNOWN;
@@ -177,7 +178,7 @@ public class UpdateService extends IntentService {
             InetAddress ipAddress = InetAddress.getByName("google.com");
             return !"".equals(ipAddress);
         } catch (Exception e) {
-            Log.e("UpdateService", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
             return false;
         }
     }

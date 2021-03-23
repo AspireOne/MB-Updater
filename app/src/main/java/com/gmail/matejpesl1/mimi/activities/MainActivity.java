@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(startMain);
         });
-        // Logic
 
+        // Logic
         new Thread(() -> {
             RootUtils.askForRoot();
 
@@ -81,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
         }).start();
 
         updateView();
-
-        Log.e("", "update available: " + AppUpdateManager.isUpdateAvailable());
     }
 
     public void openSettings(View v) {
