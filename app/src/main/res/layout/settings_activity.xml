@@ -16,7 +16,7 @@
             android:layout_height="45dp"
             android:layout_marginStart="5dp"
             android:layout_marginTop="20dp"
-            android:text="Oznámit o úspěšné aktualizaci"
+            android:text="@string/notify_about_succesful_update"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/backgroundRunAllowedTxt" />
@@ -27,7 +27,7 @@
             android:layout_height="22dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="36dp"
-            android:text="ano"
+            android:text="@string/yes"
             android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/backgroundRunAllowedTxt"
@@ -39,7 +39,7 @@
             android:layout_height="47dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="20dp"
-            android:text="Chod na pozadí povolen:"
+            android:text="@string/background_run_allowed"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/rootAllowedTxt" />
@@ -50,7 +50,7 @@
             android:layout_height="22dp"
             android:layout_marginStart="28dp"
             android:layout_marginTop="24dp"
-            android:text="ano"
+            android:text="@string/yes"
             android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/rootAllowedTxt"
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="24dp"
-            android:text="Root povolen:"
+            android:text="@string/root_allowed"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/allowChangeInternetTxt" />
@@ -99,7 +99,7 @@
             android:layout_height="88dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="16dp"
-            android:text="Povolit zapnutí internetu pokud v čase aktualizace chybí připojení (po aktualizaci bude vrácen do původního stavu)"
+            android:text="@string/allow_internet_if_missing"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pagesToUpdateTxt" />
@@ -110,7 +110,7 @@
             android:layout_height="47dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="16dp"
-            android:text="Počet stránek na aktualizování"
+            android:text="@string/amount_of_pages_to_update"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/updateInTxt" />
@@ -121,7 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginTop="16dp"
-            android:text="Aktualizovat v"
+            android:text="@string/update_in"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -156,7 +156,7 @@
             android:layout_height="37dp"
             android:layout_marginStart="28dp"
             android:layout_marginTop="16dp"
-            android:text="Povolit"
+            android:text="@string/allow"
             app:layout_constraintStart_toEndOf="@+id/rootAllowedValue"
             app:layout_constraintTop_toBottomOf="@+id/allowChangeInternetTxt" />
 
@@ -166,7 +166,7 @@
             android:layout_height="37dp"
             android:layout_marginStart="27dp"
             android:layout_marginTop="22dp"
-            android:text="Povolit"
+            android:text="@string/allow"
             app:layout_constraintStart_toEndOf="@+id/backgroundRunAllowedValue"
             app:layout_constraintTop_toBottomOf="@+id/allowRootButt" />
 

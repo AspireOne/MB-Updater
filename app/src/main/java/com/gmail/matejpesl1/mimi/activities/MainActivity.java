@@ -2,7 +2,6 @@ package com.gmail.matejpesl1.mimi.activities;
 
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
-import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -124,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
             String nextUpdateDateStr = dateToCzech(nextUpdateDate);
 
             stateDescriptionText.setText(String.format("%s %s %s",
-                    getResources().getString(R.string.updating_on_text),
+                    getResources().getString(R.string.updating_on_description),
                     getResources().getString(R.string.next_update_in),
                     nextUpdateDateStr));
         } else {
             updateSwitch.setChecked(false);
-            stateDescriptionText.setText(R.string.updating_off_text);
+            stateDescriptionText.setText(R.string.updating_off_description);
         }
     }
 
