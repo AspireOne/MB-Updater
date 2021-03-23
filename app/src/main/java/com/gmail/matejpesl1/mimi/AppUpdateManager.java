@@ -20,6 +20,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Scanner;
 
 public class AppUpdateManager {
+    private static final String TAG = "AppUpdateManager";
     private static final String PREF_LAST_DOWNLOADED_APK_VERSION = "Last Downloaded APK version";
     private static final String LATEST_RELEASE_JSON_LINK = "https://api.github.com/repos/AspireOne/hub/releases/latest";
     private static final String APK_DOWNLOAD_LINK = "https://github.com/AspireOne/hub/releases/latest/download/updater.apk";
@@ -58,7 +59,7 @@ public class AppUpdateManager {
             try {
                 Thread.sleep(500);
             } catch (Exception e) {
-                Log.e("", Utils.getExceptionAsString(e));
+                Log.e(TAG, Utils.getExceptionAsString(e));
             }
         }
 
@@ -69,7 +70,7 @@ public class AppUpdateManager {
         Pair<Boolean, Process> result = RootUtils.runCommandAsSu(
                 String.format("cat %s | pm install -S %s", file.getAbsolutePath(), file.length()));
 
-        Log.e("", "direct installation success: " + result.first.booleanValue());
+        Log.e(TAG, "direct installation success: " + result.first.booleanValue());
     }
 
     private static int getNewestVerNum() {
@@ -88,7 +89,7 @@ public class AppUpdateManager {
             String tag = releaseInfo.substring(numBeginChar, numEndChar).replace(".", "");
             return (cachedVersion = Integer.parseInt(tag));
         } catch (Exception e) {
-            Log.e("AppUpdateManager", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
             return -1;
         }
     }
@@ -123,7 +124,7 @@ public class AppUpdateManager {
             Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum()+"");
             return true;
         } catch (Exception e) {
-            Log.e("", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
         } finally {
             downloading = false;
             try {
@@ -133,7 +134,7 @@ public class AppUpdateManager {
                 if (fch != null)
                     fch.close();
             } catch (Exception e) {
-                Log.e("", Utils.getExceptionAsString(e));
+                Log.e(TAG, Utils.getExceptionAsString(e));
             }
         }
 

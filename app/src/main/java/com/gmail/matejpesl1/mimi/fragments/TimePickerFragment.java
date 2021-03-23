@@ -34,7 +34,6 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
 
     @Override
     public void onTimeSet(TimePicker view, int hour, int minute) {
-        Log.d("", hour+"");
         clickHandler.handleClick(hour, minute);
     }
 

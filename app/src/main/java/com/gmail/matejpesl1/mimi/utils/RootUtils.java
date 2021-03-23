@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class RootUtils {
-
+    private static final String TAG = "RootUtils";
 	private RootUtils() {}
 
     public static boolean isRootAvailable() {
@@ -33,7 +33,7 @@ public class RootUtils {
         try {
             return Runtime.getRuntime().exec("su");
         } catch (Exception e) {
-            Log.e("", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
             return null;
         }
     }
@@ -55,13 +55,13 @@ public class RootUtils {
                 p.waitFor();
                 success = p.exitValue() == 0;
             } catch (InterruptedException e) {
-                Log.e("", Utils.getExceptionAsString(e));
+                Log.e(TAG, Utils.getExceptionAsString(e));
                 success = false;
             }
 
             outputStream.close();
         } catch (Exception e) {
-            Log.e("", Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExceptionAsString(e));
             success = false;
         }
 
