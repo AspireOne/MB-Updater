@@ -2,6 +2,7 @@ package com.gmail.matejpesl1.mimi.activities;
 
 import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -27,7 +28,7 @@ import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String PREF_UPDATED_PAGES_SPINNER_ITEM_POS = "Updated Pages Spinner Item Pos";
-    private EditText updateTimeBox;
+    private EditText timePicker;
     private Spinner updatedPagesSpinner;
     private Switch allowChangeWifiSwitch;
     private Switch allowChangeDataSwitch;
@@ -51,7 +52,7 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Element initialization
-        updateTimeBox = findViewById(R.id.updateTimeBox);
+        timePicker = findViewById(R.id.updateTimeBox);
         updatedPagesSpinner = findViewById(R.id.updatedPagesSpinner);
         allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
         allowChangeDataSwitch = findViewById(R.id.allowChangeDataSwitch);
@@ -66,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
         updatedPagesSpinner.setSelection(posFromPrefs, true);
 
         // Listeners
-        updateTimeBox.setOnClickListener(this::onTimePickerClick);
+        timePicker.setOnClickListener(this::onTimePickerClick);
 
         allowBackgroundRunButt.setOnClickListener((View v) -> Utils.requestBatteryException(this));
         allowRootButt.setOnClickListener((View v) -> RootUtils.askForRoot());
@@ -108,14 +109,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        if (UpdateServiceAlarmManager.isRegistered(this))
-            UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
-
+        Log.d("SettingsActivity", "time picked. hour: " + hour + " | minute: " + minute);
         updateView();
     }
 
     private void updateView() {
-        if (!rootAllowedCached && RootUtils.isRootAvailable()) {
+        if (rootAllowedCached || RootUtils.isRootAvailable()) {
             rootAllowedValue.setText("ano");
             allowRootButt.setVisibility(View.INVISIBLE);
             rootAllowedCached = true;
@@ -125,7 +124,7 @@ public class SettingsActivity extends AppCompatActivity {
             rootAllowedCached = false;
         }
 
-        if (!backgroundRunAllowedCached && Utils.hasBatteryException(this)) {
+        if (backgroundRunAllowedCached || Utils.hasBatteryException(this)) {
             backgroundRunAllowedValue.setText("ano");
             allowBackgroundRunButt.setVisibility(View.INVISIBLE);
             backgroundRunAllowedCached = true;
@@ -135,7 +134,7 @@ public class SettingsActivity extends AppCompatActivity {
             backgroundRunAllowedCached = false;
         }
 
-        updateTimeBox.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
+        timePicker.setText(dateToDigitalTime(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime()));
         allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this) && rootAllowedCached);
         allowChangeDataSwitch.setEnabled(rootAllowedCached);
         allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
