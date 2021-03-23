@@ -2,7 +2,9 @@ package com.gmail.matejpesl1.mimi.activities;
 
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
+import android.icu.util.Calendar;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
@@ -47,16 +49,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateAppButt.setOnClickListener((view) -> {
+            boolean rootAvailable = RootUtils.isRootAvailable();
+
             new Thread(() -> {
-                if (RootUtils.isRootAvailable())
+                if (rootAvailable)
                     AppUpdateManager.installDirectlyWithRoot(this);
                 else
                     AppUpdateManager.requestInstall(this);
             }).start();
-            Intent startMain = new Intent(Intent.ACTION_MAIN);
-            startMain.addCategory(Intent.CATEGORY_HOME);
-            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(startMain);
+
+            if (rootAvailable) {
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startMain);
+            }
         });
 
         // Logic
@@ -97,20 +104,22 @@ public class MainActivity extends AppCompatActivity {
                 appUpdateAvailableTxt.setVisibility(visibility);
             });
 
-            // We can invoke the download method multiple times, because if it's already downloaded,
-            // it'll just return.
-            if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this))
+            if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
+                Log.d("MainActivity", "downloading apk because the one already downloaded" +
+                        "(if any) is not latest.");
                 AppUpdateManager.downloadApk(this);
+            }
         }).start();
 
         if (UpdateServiceAlarmManager.isRegistered(this)) {
             updateSwitch.setChecked(true);
-            String nextUpdateTime = dateToCzech(UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime());
+            Date nextUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime();
+            String nextUpdateDateStr = dateToCzech(nextUpdateDate);
 
             stateDescriptionText.setText(String.format("%s %s %s",
                     getResources().getString(R.string.updating_on_text),
                     getResources().getString(R.string.next_update_in),
-                    nextUpdateTime));
+                    nextUpdateDateStr));
         } else {
             updateSwitch.setChecked(false);
             stateDescriptionText.setText(R.string.updating_off_text);
