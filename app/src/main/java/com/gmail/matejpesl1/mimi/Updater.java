@@ -110,9 +110,12 @@ public class Updater {
         if (error != null) {
             Log.e(TAG, "Updater finished WITH runtime error: " + error);
             Notifications.PostDefaultNotification(context,
-                    "Nelze aktualizovat Mimibazar kvůli runtime chybě", error);
+                    context.getResources().getString(R.string.cannot_update_mimibazar_runtime_error),
+                    error);
         } else if (getNotifyAboutSuccesfullUpdate(context))
-            Notifications.PostDefaultNotification(context, "Mimibazar úspěšně aktualizován", "");
+            Notifications.PostDefaultNotification(context,
+                    context.getResources().getString(R.string.mimibazar_sucesfully_updated),
+                    "");
 
         return error == null;
     }
@@ -124,7 +127,7 @@ public class Updater {
             Log.e(TAG, "External error encountered. Error: " + externalError);
             Notifications.PostDefaultNotification(
                     context,
-                    "Nelze aktualizovat Mimibazar kvůli externí chybě",
+                    context.getResources().getString(R.string.cannot_update_mimibazar_external_error),
                     externalError);
             return false;
         }
@@ -134,7 +137,7 @@ public class Updater {
             Log.e(TAG, "Internal error encountered. Error: " + internalError);
             Notifications.PostDefaultNotification(
                     context,
-                    "Nelze aktualizovat Mimibazar kvůli interní chybě",
+                    context.getResources().getString(R.string.cannot_update_mimibazar_internal_error),
                     internalError);
             return false;
         }

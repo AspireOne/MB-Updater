@@ -15,7 +15,7 @@ public class Notifications {
     private Notifications() {}
 
     private static void RegisterDefaultNotificationChannel(Context context) {
-        registerChannel(context, createDefaultNotificationChannel());
+        registerChannel(context, createDefaultNotificationChannel(context));
         defaultChannelRegisteredCached = true;
     }
 
@@ -40,9 +40,9 @@ public class Notifications {
         notificationManager.createNotificationChannel(channel);
     }
 
-    private static NotificationChannel createDefaultNotificationChannel() {
-        CharSequence name = "Default Channel";
-        String description = "Default Channel for Mimibazar Updates";
+    private static NotificationChannel createDefaultNotificationChannel(Context context) {
+        CharSequence name = context.getResources().getString(R.string.default_channel);
+        String description = context.getResources().getString(R.string.default_channel_description);
         int importance = NotificationManager.IMPORTANCE_HIGH;
 
         NotificationChannel channel = new NotificationChannel(DEFAULT_CHANNEL_ID, name, importance);

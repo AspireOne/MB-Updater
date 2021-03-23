@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
+    private static final String TAG = "SettingsActivity";
     private static final String PREF_UPDATED_PAGES_SPINNER_ITEM_POS = "Updated Pages Spinner Item Pos";
     private EditText timePicker;
     private Spinner updatedPagesSpinner;
@@ -109,7 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        Log.d("SettingsActivity", "time picked. hour: " + hour + " | minute: " + minute);
+        Log.d(TAG, "time picked. hour: " + hour + " | minute: " + minute);
         updateView();
     }
 
