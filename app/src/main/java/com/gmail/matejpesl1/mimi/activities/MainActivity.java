@@ -1,46 +1,24 @@
 package com.gmail.matejpesl1.mimi.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
-import android.icu.util.Calendar;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.util.Log;
-import android.util.Pair;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
-import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
-import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
-import com.gmail.matejpesl1.mimi.BuildConfig;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Scanner;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class MainActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "AppPrefs";
