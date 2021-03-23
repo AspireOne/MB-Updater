@@ -63,7 +63,11 @@ public class MainActivity extends AppCompatActivity {
         updateAppButt = findViewById(R.id.updateAppButt);
 
         // Listeners
-        updateSwitch.setOnCheckedChangeListener(this::onSwitch);
+        updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            UpdateServiceAlarmManager.changeRepeatingAlarm(MainActivity.this, updateSwitch.isChecked());
+            MainActivity.this.updateView();
+        });
+
         updateAppButt.setOnClickListener((view) -> {
             new Thread(() -> AppUpdateManager.installDirectlyWithRoot(this)).start();
             Intent startMain = new Intent(Intent.ACTION_MAIN);
@@ -89,9 +93,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
-        updateAppButt.setVisibility(View.INVISIBLE);
-        appUpdateAvailableTxt.setVisibility(View.INVISIBLE);
-
         // Update remaining updates.
         new Thread(() -> {
             int remaining = Updater.tryGetRemainingUpdates();
@@ -113,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
                 appUpdateAvailableTxt.setVisibility(visibility);
             });
 
-            if (updateAvailable)
+            // We can invoke the download method multiple times, because if it's already downloaded,
+            // it'll just return.
+            if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this))
                 AppUpdateManager.downloadApk(this);
         }).start();
 
@@ -133,10 +136,5 @@ public class MainActivity extends AppCompatActivity {
 
     public static String dateToCzech(Date time) {
         return new SimpleDateFormat("dd. MM. yyyy H:mm (EEEE)", new Locale("cs", "CZ")).format(time);
-    }
-
-    public void onSwitch(CompoundButton buttonView, boolean isChecked) {
-        UpdateServiceAlarmManager.changeRepeatingAlarm(this, updateSwitch.isChecked());
-        updateView();
     }
 }
