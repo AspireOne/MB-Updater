@@ -66,7 +66,10 @@ public class AppUpdateManager {
         if (!isDownloadedApkLatest(context))
             downloadApk(context);
 
+
         File file = getApk(context);
+
+        Log.e(TAG, String.format("cat %s | pm install -S %s", file.getAbsolutePath(), file.length()));
         Pair<Boolean, Process> result = RootUtils.runCommandAsSu(
                 String.format("cat %s | pm install -S %s", file.getAbsolutePath(), file.length()));
 
@@ -100,9 +103,10 @@ public class AppUpdateManager {
     }
 
     public static boolean isDownloadedApkLatest(Context context) {
-        return (Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0")
-                .equals(getNewestVerNum()))
-                && getApk(context).exists();
+        String pref = Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0");
+        String latest = getNewestVerNum()+"";
+
+        return pref.equals(latest) && getApk(context).exists();
     }
 
     public static boolean downloadApk(Context context) {
