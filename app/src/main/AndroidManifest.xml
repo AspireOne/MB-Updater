@@ -27,7 +27,7 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:parentActivityName=".activities.MainActivity"
-            android:label="@string/title_activity_settings">
+            android:label="@string/activity_settings_title">
         </activity>
 
         <provider

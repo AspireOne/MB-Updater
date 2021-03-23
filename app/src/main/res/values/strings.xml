@@ -1,30 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Mimibazar Aktualizace</string>
     <string name="update_switch">Aktualizovat</string>
-    <string name="updating_on_text">Aktualizování je zapnuto.</string>
+    <string name="updating_on_description">Aktualizování je zapnuto.</string>
+    <string name="updating_off_description">Aktualizování je vypnuto.</string>
     <string name="next_update_in">Další aktualizace proběhne</string>
-    <string name="updating_off_text">Aktualizování je vypnuto.</string>
     <string name="amount_of_updated_pages">Počet aktualizovaných stránek</string>
-    <string name="title_activity_settings">SettingsActivity</string>
-    <!--
-    This string is used for square devices and overridden by hello_world in
-    values-round/strings.xml for round devices.
-    -->
-    <string name="hello_world">Hello Square World!</string>
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="activity_settings_title">Nastavení</string>
+    <string name="today_updated">Dnes aktualizováno:</string>
+    <string name="update_app">Aktualizovat aplikaci</string>
+    <string name="app_update_available">Dostupná aktualizace aplikace!</string>
+    <string name="allow">povolit</string>
+    <string name="update_in">Aktualizovat v:</string>
+    <string name="amount_of_pages_to_update">Počet stránek na aktualizování:</string>
+    <string name="allow_internet_if_missing">Povolit zapnutí internetu pokud v čase aktualizace chybí připojení (po aktualizaci bude vrácen do původního stavu):</string>
+    <string name="root_allowed">Root povolen:</string>
+    <string name="yes">ano</string>
+    <string name="background_run_allowed">Chod na pozadí povolen:</string>
+    <string name="notify_about_succesful_update">Oznámit o úspěšné aktualizaci:</string>
 </resources>
