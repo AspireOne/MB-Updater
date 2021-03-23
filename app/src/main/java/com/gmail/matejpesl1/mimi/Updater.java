@@ -38,6 +38,8 @@ public class Updater {
     private static final Pattern UPDATES_MAX_REGEX_PATTERN = Pattern.compile("(?<=Denně můžete aktualizovat ).*(?= inzertních)");
 
     // HTTP
+    private final static int REQUEST_THROTTLE_MS = 300;
+    private static long lastRequest = 0;
     private enum RequestMethod {POST, GET}
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -51,9 +53,9 @@ public class Updater {
             .build();
 
     // Other
-    private final static int REQUEST_THROTTLE_MS = 300;
-    private static long lastRequest = 0;
     private static boolean running = false;
+    private static final String TAG = "Updater";
+
 
     public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
         Utils.writePref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, notify+"");
@@ -82,40 +84,44 @@ public class Updater {
 
     public static void update(Context context) {
         if (running) {
-            Log.e("Updater", "already running");
+            Log.d(TAG, "Updater is already running, returning.");
             return;
         }
 
         if (tryGetRemainingUpdates() == 0) {
-            Log.d("Updater", "Mimibazar was attempted to be updated but it already has " +
-                    "0 remaining updates.");
+            Log.d(TAG, "Mimibazar was attempted to be updated but it has" +
+                    "0 remaining updates. Returning.");
             return;
         }
 
         running = true;
-        startUpdate(context);
+        Log.d(TAG, "Started update logic.");
+        Log.d(TAG, "Update finished. Success: " + startUpdate(context));
         running = false;
     }
 
-    private static void startUpdate(Context context) {
+    private static boolean startUpdate(Context context) {
         if (!makeChecksAndNotifyAboutErrors(context))
-            return;
+            return false;
 
+        Log.d(TAG, "All pre-update checks passed, executing main update logic.");
         String error = execute(context);
 
         if (error != null) {
-            Notifications.PostDefaultNotification(
-                    context,
-                    "Nelze aktualizovat Mimibazar kvůli runtime chybě",
-                    error);
+            Log.e(TAG, "Updater finished WITH runtime error: " + error);
+            Notifications.PostDefaultNotification(context,
+                    "Nelze aktualizovat Mimibazar kvůli runtime chybě", error);
         } else if (getNotifyAboutSuccesfullUpdate(context))
             Notifications.PostDefaultNotification(context, "Mimibazar úspěšně aktualizován", "");
+
+        return error == null;
     }
 
     private static boolean makeChecksAndNotifyAboutErrors(Context context) {
         String externalError = checkExternalErrors();
 
         if (externalError != null) {
+            Log.e(TAG, "External error encountered. Error: " + externalError);
             Notifications.PostDefaultNotification(
                     context,
                     "Nelze aktualizovat Mimibazar kvůli externí chybě",
@@ -125,6 +131,7 @@ public class Updater {
 
         String internalError = checkInternalErrors(context);
         if (internalError != null) {
+            Log.e(TAG, "Internal error encountered. Error: " + internalError);
             Notifications.PostDefaultNotification(
                     context,
                     "Nelze aktualizovat Mimibazar kvůli interní chybě",
@@ -156,7 +163,7 @@ public class Updater {
                 return "Nelze získat zbývající aktualizace na mimibazaru.";
 
         } catch (Exception e) {
-            Log.e("Updater", getExceptionAsString(e));
+            Log.e(TAG, getExceptionAsString(e));
             return "Při testu externích chyb nastala neočekávaná chyba.";
         }
 
@@ -165,8 +172,14 @@ public class Updater {
 
     private static String checkInternalErrors(Context context) {
         // If the CURR_ID_INDEX is not a digit, overwrite it to 50.
-        try {Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0")); }
-        catch (Exception e) { Log.e("Updater", getExceptionAsString(e)); writePref(context, PREF_CURR_ID_INDEX, "50"); }
+        try {
+            Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
+        }
+        catch (Exception e) {
+            Log.e(TAG, "internal error check - CURR_ID_INDEX from prefs is not" +
+                    "a digit - overwriting it to 50. Exception: " + getExceptionAsString(e));
+            writePref(context, PREF_CURR_ID_INDEX, "50");
+        }
 
         return null;
     }
@@ -185,10 +198,7 @@ public class Updater {
             if (!created || ids.length == 0 || ids.length == 1)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
         }
-
-        Log.e("", "IDS LENGHT: " + ids.length);
-        if (ids.length < 50)
-            return "Seznam ID položek je příliš malý.";
+        Log.d(TAG, "ID list has " + ids.length + " items.");
 
         if (remainingUpdates == -1)
             return "Nelze získat zbývající aktualizace.";
@@ -246,7 +256,7 @@ public class Updater {
             try {
                 return Integer.parseInt(amountMatcher.group());
             } catch (NumberFormatException e) {
-                Log.e("Updater", getExceptionAsString(e));
+                Log.e(TAG, getExceptionAsString(e));
             }
         }
 
@@ -267,13 +277,12 @@ public class Updater {
         if (isEmptyOrNull(html))
             return -1;
 
-        // TODO: NOT COMPLETED AND TESTED
         Matcher matcher = UPDATES_MAX_REGEX_PATTERN.matcher(html);
         if (matcher.find()) {
             try {
                 return Integer.parseInt(matcher.group());
             } catch (NumberFormatException e) {
-                Log.e("Updater", getExceptionAsString(e));
+                Log.e(TAG, getExceptionAsString(e));
             }
         }
 
@@ -344,7 +353,7 @@ public class Updater {
             result.second.close();
             return body;
         } catch (Exception e) {
-            Log.e("Updater", getExceptionAsString(e));
+            Log.e(TAG, getExceptionAsString(e));
             return null;
         }
     }
@@ -354,7 +363,7 @@ public class Updater {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                Log.e("Updater", getExceptionAsString(e));
+                Log.e(TAG, getExceptionAsString(e));
             }
         }
 
@@ -375,7 +384,7 @@ public class Updater {
         try {
             response = call.execute();
         } catch (Exception e) {
-            Log.e("Updater", getExceptionAsString(e));
+            Log.e(TAG, getExceptionAsString(e));
         }
 
         return new Pair(response != null && response.isSuccessful(), response);
