@@ -41,16 +41,20 @@ public class UpdateServiceAlarmManager {
     }
 
     public static void changeUpdateTime(Context context, int minute, int hour) {
-        int finalHour = hour;
-        int finalDayPart = Calendar.AM;
+        int finalHour;
+        int finalDayPart;
 
-        if (hour == 12) {
+        if (hour > 12) {
+            finalHour = hour - 12;
+            finalDayPart = Calendar.PM;
+        } else if (hour == 12) {
             finalHour = 0;
             finalDayPart = Calendar.PM;
-        } else if (hour == 0) {
+        }
+        else {
+            finalHour = hour;
             finalDayPart = Calendar.AM;
-        } else if (hour > 12)
-            finalHour -= 12;
+        }
 
         Utils.writePref(context, PREF_UPDATE_MINUTE, minute+"");
         Utils.writePref(context, PREF_UPDATE_HOUR, finalHour+"");
