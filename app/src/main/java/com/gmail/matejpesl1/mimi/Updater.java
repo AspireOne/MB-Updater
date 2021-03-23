@@ -207,7 +207,7 @@ public class Updater {
         int iterationCount = 0;
         int photoUpdateErrorCount = 0;
         final int maxPhotoUpdateErrors = 5;
-        final int maxIterations = 100;
+        final int maxIterations = 300;
 
         String error = null;
         while (remainingUpdates > 0 && ++iterationCount < maxIterations) {
