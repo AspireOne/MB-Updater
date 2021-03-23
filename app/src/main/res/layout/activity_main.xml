@@ -14,6 +14,7 @@
         android:text="Dostupná aktualizace aplikace!"
         android:textSize="17sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/updateAppButt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -65,6 +66,7 @@
         android:layout_marginBottom="16dp"
         android:onClick="handleUpdateAppButtClick"
         android:text="Aktualizovat aplikaci"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
