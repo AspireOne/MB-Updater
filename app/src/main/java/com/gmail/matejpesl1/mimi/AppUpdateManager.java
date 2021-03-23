@@ -44,7 +44,7 @@ public class AppUpdateManager {
                 Log.e(TAG, Utils.getExceptionAsString(e));
             }
         }
-        
+
         if (!isDownloadedApkLatest(context))
             downloadApk(context);
 
