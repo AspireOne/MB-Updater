@@ -47,7 +47,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateAppButt.setOnClickListener((view) -> {
-            new Thread(() -> AppUpdateManager.installDirectlyWithRoot(this)).start();
+            new Thread(() -> {
+                if (RootUtils.isRootAvailable())
+                    AppUpdateManager.installDirectlyWithRoot(this);
+                else
+                    AppUpdateManager.requestInstall(this);
+            }).start();
             Intent startMain = new Intent(Intent.ACTION_MAIN);
             startMain.addCategory(Intent.CATEGORY_HOME);
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
