@@ -3,6 +3,7 @@ package com.gmail.matejpesl1.mimi.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.gmail.matejpesl1.mimi.Notifications;
+import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
@@ -61,8 +63,9 @@ public class UpdateService extends IntentService {
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled))
             Updater.update(this);
         else
-            Notifications.PostDefaultNotification(this, "Nelze aktualizovat Mimibazar",
-                    "nelze získat internetové připojení.");
+            Notifications.PostDefaultNotification(this,
+                    getResources().getString(R.string.cannot_update_mimibazar),
+                    getResources().getString(R.string.cannot_get_internet_connection));
 
         // TODO: Maybe add auto-update?
         revertToInitialState(prevMobileDataState, prevWifiEnabled);
