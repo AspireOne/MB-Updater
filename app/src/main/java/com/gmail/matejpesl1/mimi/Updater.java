@@ -86,18 +86,18 @@ public class Updater {
             return;
         }
 
-        running = true;
-        startUpdate(context);
-        running = false;
-    }
-
-    private static void startUpdate(Context context) {
         if (tryGetRemainingUpdates() == 0) {
             Log.d("Updater", "Mimibazar was attempted to be updated but it already has " +
                     "0 remaining updates.");
             return;
         }
 
+        running = true;
+        startUpdate(context);
+        running = false;
+    }
+
+    private static void startUpdate(Context context) {
         if (!makeChecksAndNotifyAboutErrors(context))
             return;
 
