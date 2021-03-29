@@ -144,10 +144,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateView() {
+        // First update root, then internet switches.
+        updateRootStatus();
         updateInternetChangeSwitches();
         updateTimePicker();
         updateBackgroundRunStatus();
-        updateRootStatus();
     }
 
     private void updateCredentials() {
