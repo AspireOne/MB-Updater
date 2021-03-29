@@ -97,4 +97,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/baseline_settings_blue_grey_900_24dp" />
 
+    <TextView
+        android:id="@+id/badCredentialsWarning"
+        android:layout_width="355dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="40dp"
+        android:text="Přihlašovací údaje chybí nebo nejsou správné. Je třeba je v nastavení změnit."
+        android:textColor="@android:color/holo_red_light"
+        android:textSize="15sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/todayUpdatedTxt" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

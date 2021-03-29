@@ -55,7 +55,7 @@ public class MimibazarRequester {
         profileUrl = BAZAR_BASE_URL + "user=" + userId;
     }
 
-    private int tryGetUserId() {
+    public int tryGetUserId() {
         String body = requester.getWebsiteBodyOrNull(
                 MAIN_PAGE_URL,
                 Requester.RequestMethod.POST,
