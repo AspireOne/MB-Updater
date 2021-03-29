@@ -14,6 +14,7 @@ import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
+import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
@@ -21,12 +22,17 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isConnectionAvailable;
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.pingConnection;
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState;
+
 public class UpdateService extends IntentService {
     private static final String TAG = "UpdateService";
     private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
     private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
-    private enum DataState { UNKNOWN, ENABLED, DISABLED}
 
     public UpdateService() {
         super(TAG);
@@ -56,8 +62,8 @@ public class UpdateService extends IntentService {
         PowerManager.WakeLock wakelock = acquireWakelock(12);
         UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
-        DataState prevMobileDataState = getMobileDataState();
-        boolean prevWifiEnabled = isWifiEnabled();
+        InternetUtils.DataState prevMobileDataState = getMobileDataState();
+        boolean prevWifiEnabled = isWifiEnabled(this);
 
         // Execute only if internet connection could be established.
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled))
@@ -68,37 +74,12 @@ public class UpdateService extends IntentService {
                     getResources().getString(R.string.cannot_get_internet_connection));
 
         // TODO: Maybe add auto-update?
-        revertToInitialState(prevMobileDataState, prevWifiEnabled);
+        revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
 
         wakelock.release();
     }
 
-    private void revertToInitialState(DataState prevDataState, boolean prevWifiEnabled) {
-        if (prevWifiEnabled != isWifiEnabled())
-            ((WifiManager)getSystemService(WIFI_SERVICE)).setWifiEnabled(prevWifiEnabled);
-
-        if (prevDataState != getMobileDataState())
-            RootUtils.setMobileDataConnection(prevDataState == DataState.ENABLED ? true : false);
-    }
-
-    private boolean isWifiEnabled() {
-        WifiManager wManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        return wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
-                || wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING;
-    }
-
-    private PowerManager.WakeLock acquireWakelock(int minutes) {
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "MimibazarUpdater::UpdateServiceWakeLock");
-
-        wakeLock.acquire(minutes * 60 * 1000L);
-        return wakeLock;
-    }
-
-    private boolean tryAssertHasInternet(DataState initialDataState, boolean initialWifiEnabled) {
+    private boolean tryAssertHasInternet(InternetUtils.DataState initialDataState, boolean initialWifiEnabled) {
         // If connection is available in the current state (= without
         // any changes), return true.
         if (isConnectionAvailable())
@@ -107,7 +88,7 @@ public class UpdateService extends IntentService {
         if (getAllowWifiChange(this)) {
             // If connection is not available and the WIFI is off, turn it on
             // and return true if connection is now available.
-            WifiManager wManager = (WifiManager) getSystemService(WIFI_SERVICE);
+            WifiManager wManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
 
             if (!initialWifiEnabled) {
                 wManager.setWifiEnabled(true);
@@ -124,14 +105,14 @@ public class UpdateService extends IntentService {
             // data will work now without the wifi interfering and return it.
             // If data were already enabled (or unknown) but wifi not, return false - we can't
             // do anything else.
-            if (initialDataState == DataState.ENABLED || initialDataState == DataState.UNKNOWN)
+            if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
                 return initialWifiEnabled ? pingConnection() : false;
         }
 
         if (getAllowDataChange(this)) {
             // If the data were already enabled or we don't have permission to read it (and thus
             // change it), we can't do anything else.
-            if (initialDataState == DataState.ENABLED || initialDataState == DataState.UNKNOWN)
+            if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
                 return false;
 
             boolean set = RootUtils.setMobileDataConnection(true);
@@ -142,47 +123,15 @@ public class UpdateService extends IntentService {
         return false;
     }
 
-    private DataState getMobileDataState() {
-        try {
-            Pair<Boolean, Process> pair = RootUtils.runCommandAsSu("dumpsys telephony.registry | grep mDataConnectionState");
-            Process p = pair.second;
+    private PowerManager.WakeLock acquireWakelock(int minutes) {
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 
-            if (!pair.first.booleanValue() || p == null)
-                return DataState.UNKNOWN;
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "MimibazarUpdater::UpdateServiceWakeLock");
 
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-            String output = "";
-            String s;
-            while ((s = stdInput.readLine()) != null)
-                output += (s);
-
-            return output.contains("2") ? DataState.ENABLED : DataState.DISABLED;
-        } catch (Exception e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
-        }
-
-        return DataState.UNKNOWN;
+        wakeLock.acquire(minutes * 60 * 1000L);
+        return wakeLock;
     }
 
-    // Will try to connect for 30 seconds in 3 second intervals.
-    private boolean pingConnection() {
-        for (byte i = 0; i < 10; ++i) {
-            SystemClock.sleep(2950);
-            if (isConnectionAvailable())
-                return true;
-        }
-
-        return false;
-    }
-
-    private boolean isConnectionAvailable() {
-        try {
-            InetAddress ipAddress = InetAddress.getByName("google.com");
-            return !"".equals(ipAddress);
-        } catch (Exception e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
-            return false;
-        }
-    }
 }
