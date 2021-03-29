@@ -12,7 +12,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
+import com.gmail.matejpesl1.mimi.MimibazarRequester;
 import com.gmail.matejpesl1.mimi.R;
+import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
@@ -22,7 +24,10 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String PREFS_NAME = "AppPrefs";
+    public static final String GLOBAL_PREFS_NAME = "AppPrefs";
+    private static final String TAG = "MainActivity";
+    private Requester requester;
+    private MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
     private TextView stateDescriptionText;
     private TextView todayUpdatedValue;
@@ -34,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Fields initialization
+        requester = new Requester(0);
+
         // Elements initialization
         updateSwitch = findViewById(R.id.updateSwitch);
         stateDescriptionText = findViewById(R.id.updatingStateDescription);
@@ -44,12 +52,11 @@ public class MainActivity extends AppCompatActivity {
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             UpdateServiceAlarmManager.changeRepeatingAlarm(MainActivity.this, updateSwitch.isChecked());
-            MainActivity.this.updateView();
+            updateAlarm();
         });
 
         updateAppButt.setOnClickListener((view) -> {
             boolean rootAvailable = RootUtils.isRootAvailable();
-
             new Thread(() -> {
                 if (rootAvailable)
                     AppUpdateManager.installDirectlyWithRoot(this);
@@ -81,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -90,37 +96,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateView() {
         // Update remaining updates.
-        new Thread(() -> {
-            int remaining = Updater.tryGetRemainingUpdates();
-            int max = Updater.tryGetMaxUpdates();
-
-            String maxStr = (max == -1 ? "-" : max+"");
-            String remainingStr = (remaining == -1 || max == -1 ? "-" : (max - remaining)+"");
-
-            runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
-        }).start();
-
+        new Thread(() -> updateRemaining()).start();
         // Update app update visibility.
-        new Thread(() -> {
-            boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
-            int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
+        new Thread(() -> updateAppUpdateVisibility()).start();
+        // Update alarm manager state & description.
+        updateAlarm();
+    }
 
-            runOnUiThread(() -> {
-                updateAppButt.setVisibility(visibility);
-                appUpdateAvailableTxt.setVisibility(visibility);
-            });
-
-            if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
-                Log.d("MainActivity", "downloading apk because the one already downloaded" +
-                        "(if any) is not latest.");
-                AppUpdateManager.downloadApk(this);
-            }
-        }).start();
-
+    private void updateAlarm() {
         if (UpdateServiceAlarmManager.isRegistered(this)) {
             updateSwitch.setChecked(true);
             Date nextUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime();
-            String nextUpdateDateStr = dateToCzech(nextUpdateDate);
+            String nextUpdateDateStr = Utils.dateToCzech(nextUpdateDate);
 
             stateDescriptionText.setText(String.format("%s %s %s",
                     getResources().getString(R.string.updating_on_description),
@@ -132,7 +119,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static String dateToCzech(Date time) {
-        return new SimpleDateFormat("dd. MM. yyyy H:mm (EEEE)", new Locale("cs", "CZ")).format(time);
+    private void updateAppUpdateVisibility() {
+        boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
+        int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
+
+        runOnUiThread(() -> {
+            updateAppButt.setVisibility(visibility);
+            appUpdateAvailableTxt.setVisibility(visibility);
+        });
+
+        if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
+            Log.d("MainActivity", "downloading apk because the one already downloaded" +
+                    "(if any) is not latest.");
+            AppUpdateManager.downloadApk(this);
+        }
+    }
+
+    private void updateRemaining() {
+        try {
+            mimibazarRequester = new MimibazarRequester(requester,
+                    Updater.getUsername(this),
+                    Updater.getPassword(this));
+        } catch (MimibazarRequester.CouldNotGetAccIdException e) {
+            Log.e(TAG, Utils.getExceptionAsString(e));
+        }
+
+        int remaining = -1;
+        int max = -1;
+        if (mimibazarRequester != null) {
+            String pageBody = mimibazarRequester.getPageBodyOrNull(1, true);
+            remaining = mimibazarRequester.tryGetRemainingUpdates(pageBody);
+            max = mimibazarRequester.tryGetMaxUpdates(pageBody);
+        }
+
+        String maxStr = (max == -1 ? "-" : max+"");
+        String remainingStr = (max == -1 || remaining == -1 ? "-" : (max - remaining)+"");
+
+        runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
     }
 }

@@ -23,6 +23,8 @@
     <string name="default_channel_description">Výchozí kanál pro oznámení Mimibazar aktualizací</string>
     <string name="cannot_update_mimibazar_runtime_error">Nelze aktualizovat Mimibazar kvůli runtime chybě</string>
     <string name="mimibazar_sucesfully_updated">Mimibazar úspěšně aktualizován</string>
+    <string name="missing_credentials">Chybí přihlašovací údaje</string>
+    <string name="cannot_update_invalid_credentials_or_external_error">Nelze aktualizovat Mimibazar buď kvůli nesprávným přihlašovacím údajům, nebo externí chybě</string>
     <string name="cannot_update_mimibazar_external_error">Nelze aktualizovat Mimibazar kvůli externí chybě</string>
     <string name="cannot_update_mimibazar_internal_error">Nelze aktualizovat Mimibazar kvůli interní chybě</string>
     <string name="app_name">Mimibazar aktualizace</string>

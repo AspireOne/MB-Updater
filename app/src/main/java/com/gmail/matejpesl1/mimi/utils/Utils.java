@@ -3,28 +3,29 @@ package com.gmail.matejpesl1.mimi.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.PowerManager;
 
-import androidx.annotation.Nullable;
-
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
+import java.util.Locale;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Utils {
 
     private Utils() {}
+
+    public static String dateToCzech(Date time) {
+        return new SimpleDateFormat("dd. MM. yyyy H:mm (EEEE)", new Locale("cs", "CZ")).format(time);
+    }
 
     public static void saveFile(Context context, String filename, byte[] data) throws IOException {
         File file = new File(context.getFilesDir(), filename);
@@ -40,7 +41,7 @@ public class Utils {
     }
 
     public static void writePref(Context context, String key, String value) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
+        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
         SharedPreferences.Editor prefsEditor = prefs.edit();
         prefsEditor.putString(key, value).apply();
     }
@@ -75,7 +76,7 @@ public class Utils {
     }
 
     public static String getPref(Context context, String key, String defaultValue) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
+        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
 
         return prefs.getString(key, defaultValue);
     }
