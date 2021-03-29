@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView stateDescriptionText;
     private TextView todayUpdatedValue;
     private TextView appUpdateAvailableTxt;
+    private TextView badCredentialsWarning;
     private Button updateAppButt;
 
     @Override
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         todayUpdatedValue = findViewById(R.id.todayUpdatedValue);
         appUpdateAvailableTxt = findViewById(R.id.updateAvailableTxt);
         updateAppButt = findViewById(R.id.updateAppButt);
+        badCredentialsWarning = findViewById(R.id.badCredentialsWarning);
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -95,12 +97,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
-        // Update remaining updates.
-        new Thread(() -> updateRemaining()).start();
         // Update app update visibility.
         new Thread(() -> updateAppUpdateVisibility()).start();
+
+        // Updates that require mimibazarRequester to be initialized.
+        new Thread(() -> {
+            try {
+                mimibazarRequester = new MimibazarRequester(requester,
+                        Updater.getUsername(this),
+                        Updater.getPassword(this));
+            } catch (MimibazarRequester.CouldNotGetAccIdException e) {
+                Log.e(TAG, Utils.getExceptionAsString(e));
+            }
+
+            // Update remaining updates.
+            new Thread(() -> updateRemaining()).start();
+            // Update credentials.
+            new Thread(() -> updateCredentialsWarning()).start();
+        }).start();
+
         // Update alarm manager state & description.
         updateAlarm();
+    }
+
+    private void updateCredentialsWarning() {
+        String username = Updater.getUsername(this);
+        String password = Updater.getPassword(this);
+
+        if (Utils.isEmptyOrNull(username) || Utils.isEmptyOrNull(password) || mimibazarRequester.tryGetUserId() == -1) {
+            badCredentialsWarning.setVisibility(View.VISIBLE);
+            if (updateSwitch.isEnabled()) {
+                updateSwitch.setEnabled(false);
+                UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+                updateAlarm();
+            }
+        } else {
+            badCredentialsWarning.setVisibility(View.INVISIBLE);
+            if (!updateSwitch.isEnabled()) {
+                updateSwitch.setEnabled(true);
+                UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
+                updateAlarm();
+            }
+        }
     }
 
     private void updateAlarm() {
@@ -136,14 +174,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateRemaining() {
-        try {
-            mimibazarRequester = new MimibazarRequester(requester,
-                    Updater.getUsername(this),
-                    Updater.getPassword(this));
-        } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
-        }
-
         int remaining = -1;
         int max = -1;
         if (mimibazarRequester != null) {
