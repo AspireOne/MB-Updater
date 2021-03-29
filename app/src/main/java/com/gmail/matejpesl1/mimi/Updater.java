@@ -3,22 +3,10 @@ package com.gmail.matejpesl1.mimi;
 import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
-
-import androidx.annotation.Nullable;
-
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.*;
@@ -29,34 +17,18 @@ public class Updater {
     private static final String PREF_AMOUNT_OF_PAGES = "Amount Of Pages To Update";
     private static final String PREF_CURR_ID_INDEX = "Index Of Current ID";
     private static final String PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE = "Notify About Sucesfull update";
-
-    // Patterns
-    private static final Pattern ID_REGEX_PATTERN = Pattern.compile("(?<=href=\"https:\\/\\/www\\.mimibazar\\.cz\\/inzerat\\/)\\d+(?=\\/.*\")");
-    private static final Pattern UPDATES_AMOUNT_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít ).*(?= aktualiza)");
-    private static final Pattern UPDATES_ONE_REGEX_PATTERN = Pattern.compile("(?<=Stále lze využít )jednu(?= aktualiza)");
-    private static final Pattern UPDATES_NONE_REGEX_PATTERN = Pattern.compile("Dnes jste využili všechny aktualizace");
-    private static final Pattern UPDATES_MAX_REGEX_PATTERN = Pattern.compile("(?<=Denně můžete aktualizovat ).*(?= inzertních)");
-
-    // HTTP
-    private final static int REQUEST_THROTTLE_MS = 300;
-    private static long lastRequest = 0;
-    private enum RequestMethod {POST, GET}
-    private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .build();
-    private static final RequestBody REQUEST_BODY = new FormBody.Builder()
-            .add("login", "yourUsername")
-            .add("password", "yourPassword")
-            .add("log_in", "ok")
-            .build();
+    private static final String PREF_USERNAME = "Username";
+    private static final String PREF_PASSWORD = "Password";
 
     // Other
-    private static boolean running = false;
     private static final String TAG = "Updater";
+    private static final int REQUEST_THROTTLE = 300;
+    private static boolean running = false;
+    private Requester requester;
+    private MimibazarRequester mimibazarRequester;
 
 
+    // Notify about succesfull update
     public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
         Utils.writePref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, notify+"");
     }
@@ -65,44 +37,58 @@ public class Updater {
                 Utils.getPref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, "true"));
     }
 
-    public static void changeAmountOfUpdatedPages(Context context, int amount) {
+    // Amount of Updated pages
+    public static void setAmountOfUpdatedPages(Context context, int amount) {
         writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
     }
-
     public static int getAmountOfUpdatedPages(Context context) {
         return Integer.parseInt(getPref(context, PREF_AMOUNT_OF_PAGES, "25"));
     }
 
-    public static boolean tryForceRecreateIdList(Context context) {
+    // Credentials
+    public static void setCredentials(Context context, String username, String password) {
+        writePref(context, PREF_USERNAME, username);
+        writePref(context, PREF_PASSWORD, password);
+    }
+    public static String getPassword(Context context) {
+        return getPref(context, PREF_PASSWORD, "");
+    }
+    public static String getUsername(Context context) {
+        return getPref(context, PREF_USERNAME, "");
+    }
+
+    /*public static boolean tryForceRecreateIdList(Context context) {
         boolean recreated = tryRecreatePrefIds(context);
         if (!recreated)
             return false;
 
         writePref(context, PREF_CURR_ID_INDEX, "0");
         return true;
+    }*/
+
+    public void update(Context context) {
+        running = true;
+        prepareAndExecute(context);
+        running = false;
     }
 
-    public static void update(Context context) {
+    private void prepareAndExecute(Context context) {
         if (running) {
             Log.d(TAG, "Updater is already running, returning.");
             return;
         }
 
-        if (tryGetRemainingUpdates() == 0) {
-            Log.d(TAG, "Mimibazar was attempted to be updated but it has" +
+        if (!initAndNotifyIfError(context))
+            return;
+
+        if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
+            Log.d(TAG, "Mimibazar was attempted to be updated but it has already " +
                     "0 remaining updates. Returning.");
             return;
         }
 
-        running = true;
-        Log.d(TAG, "Started update logic.");
-        Log.d(TAG, "Update finished. Success: " + startUpdate(context));
-        running = false;
-    }
-
-    private static boolean startUpdate(Context context) {
         if (!makeChecksAndNotifyAboutErrors(context))
-            return false;
+            return;
 
         Log.d(TAG, "All pre-update checks passed, executing main update logic.");
         String error = execute(context);
@@ -116,13 +102,33 @@ public class Updater {
             Notifications.PostDefaultNotification(context,
                     context.getResources().getString(R.string.mimibazar_sucesfully_updated),
                     "");
-
-        return error == null;
     }
 
-    private static boolean makeChecksAndNotifyAboutErrors(Context context) {
-        String externalError = checkExternalErrors();
+    private boolean initAndNotifyIfError(Context context) {
+        requester = new Requester(REQUEST_THROTTLE);
+        String username = getPref(context, PREF_USERNAME, "");
+        String password = getPref(context, PREF_PASSWORD, "");
+        if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
+            Notifications.PostDefaultNotification(context,
+                    context.getResources().getString(R.string.cannot_update_mimibazar),
+                    context.getResources().getString(R.string.missing_credentials));
+            return false;
+        }
 
+        try {
+            mimibazarRequester = new MimibazarRequester(requester, username, password);
+        } catch (MimibazarRequester.CouldNotGetAccIdException e) {
+            Notifications.PostDefaultNotification(context,
+                    context.getResources().getString(R.string.cannot_update_mimibazar),
+                    context.getResources().getString(R.string.cannot_update_invalid_credentials_or_external_error));
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean makeChecksAndNotifyAboutErrors(Context context) {
+        String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
             Notifications.PostDefaultNotification(
@@ -132,7 +138,7 @@ public class Updater {
             return false;
         }
 
-        String internalError = checkInternalErrors(context);
+        /*String internalError = checkInternalErrors(context);
         if (internalError != null) {
             Log.e(TAG, "Internal error encountered. Error: " + internalError);
             Notifications.PostDefaultNotification(
@@ -140,29 +146,35 @@ public class Updater {
                     context.getResources().getString(R.string.cannot_update_mimibazar_internal_error),
                     internalError);
             return false;
-        }
+        }*/
 
         return true;
     }
 
-    private static String checkExternalErrors() {
+    private String checkExternalErrors() {
         try {
             {
-                Pair<Boolean, Response> result = tryMakeRequest("https://www.google.com", RequestMethod.GET);
+                Pair<Boolean, Response> result = requester.tryMakeRequest(
+                        "https://www.google.com",
+                        Requester.RequestMethod.GET,
+                        null);
 
                 if (!result.first.booleanValue())
                     return "Nelze navázat spojení se stránkami.";
 
-                if (getBodyOrNull(result) == null)
+                if (Utils.isEmptyOrNull(requester.getBodyOrNull(result)))
                     return "Nelze získat HTML stránek.";
             }
-            if (getPageHtmlOrNull(1) == null)
+
+            String mimibazarPageBody = mimibazarRequester.getPageBodyOrNull(1, true);
+
+            if (Utils.isEmptyOrNull(mimibazarPageBody))
                 return "Nelze získat HTML mimibazar stránek.";
 
-            if (getPageIdsOrEmpty(1, null).isEmpty())
-                return "Nelze získat IDs položek na mimibazaru.";
+            if (mimibazarRequester.getIdsFromPageOrEmpty(1, null, mimibazarPageBody).isEmpty())
+                return "Nelze získat ID položek na mimibazaru.";
 
-            if (tryGetRemainingUpdates() == -1)
+            if (mimibazarRequester.tryGetRemainingUpdates(mimibazarPageBody) == -1)
                 return "Nelze získat zbývající aktualizace na mimibazaru.";
 
         } catch (Exception e) {
@@ -173,27 +185,16 @@ public class Updater {
         return null;
     }
 
-    private static String checkInternalErrors(Context context) {
-        // If the CURR_ID_INDEX is not a digit, overwrite it to 50.
-        try {
-            Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
-        }
-        catch (Exception e) {
-            Log.e(TAG, "internal error check - CURR_ID_INDEX from prefs is not" +
-                    "a digit - overwriting it to 50. Exception: " + getExceptionAsString(e));
-            writePref(context, PREF_CURR_ID_INDEX, "50");
-        }
-
-        return null;
-    }
-
-    private static String execute(Context context) {
+    private String execute(Context context) {
         // Initialization.
         int currIdIndex = Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
-        int remainingUpdates = tryGetRemainingUpdates();
+        int remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
         String[] ids = getIdsFromPrefs(context);
 
         // Checks.
+        if (remainingUpdates == -1)
+            return "Nelze získat zbývající aktualizace.";
+
         if (ids.length == 0 || ids.length == 1) {
             boolean created = tryRecreatePrefIds(context);
 
@@ -201,10 +202,8 @@ public class Updater {
             if (!created || ids.length == 0 || ids.length == 1)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
         }
-        Log.d(TAG, "ID list has " + ids.length + " items.");
 
-        if (remainingUpdates == -1)
-            return "Nelze získat zbývající aktualizace.";
+        Log.d(TAG, "ID list has " + ids.length + " items.");
 
         // Loop variables initialization.
         int iterationCount = 0;
@@ -225,15 +224,18 @@ public class Updater {
                 ids = getIdsFromPrefs(context);
             }
 
-            if (!tryUpdatePhoto(ids[currIdIndex])) {
+            if (!mimibazarRequester.tryUpdatePhoto(ids[currIdIndex])) {
+                Log.e(TAG, "Při aktualizaci fotky nastala chyba.");
                 if (++photoUpdateErrorCount >= maxPhotoUpdateErrors) {
                     error = String.format("Při aktualizaci fotek nastala chyba více jak %s-krát.", maxPhotoUpdateErrors);
                     break;
                 }
             } else {
-                int remainingFromServer = tryGetRemainingUpdates();
-                if (remainingFromServer == -1)
+                int remainingFromServer = mimibazarRequester.tryGetRemainingUpdates(null);
+                if (remainingFromServer == -1) {
+                    Log.e(TAG, "Could not get remaining updates from server.");
                     --remainingUpdates;
+                }
                 else
                     remainingUpdates = remainingFromServer;
             }
@@ -245,62 +247,16 @@ public class Updater {
         return error;
     }
 
-    // Returns -1 if can't get.
-    public static int tryGetRemainingUpdates() {
-        String url = "https://www.mimibazar.cz/bazar.php?user=106144";
-        Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
-
-        String html = getBodyOrNull(result);
-        if (isEmptyOrNull(html))
-            return -1;
-
-        Matcher amountMatcher = UPDATES_AMOUNT_REGEX_PATTERN.matcher(html);
-        if (amountMatcher.find()) {
-            try {
-                return Integer.parseInt(amountMatcher.group());
-            } catch (NumberFormatException e) {
-                Log.e(TAG, getExceptionAsString(e));
-            }
-        }
-
-        if (UPDATES_ONE_REGEX_PATTERN.matcher(html).find())
-            return 1;
-
-        if (UPDATES_NONE_REGEX_PATTERN.matcher(html).find())
-            return 0;
-
-        return -1;
-    }
-
-    public static int tryGetMaxUpdates() {
-        String url = "https://www.mimibazar.cz/bazar.php?user=106144";
-        Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
-
-        String html = getBodyOrNull(result);
-        if (isEmptyOrNull(html))
-            return -1;
-
-        Matcher matcher = UPDATES_MAX_REGEX_PATTERN.matcher(html);
-        if (matcher.find()) {
-            try {
-                return Integer.parseInt(matcher.group());
-            } catch (NumberFormatException e) {
-                Log.e(TAG, getExceptionAsString(e));
-            }
-        }
-
-        return -1;
-    }
-
     private static String[] getIdsFromPrefs(Context context) {
         String prefIds = getPref(context, PREF_IDS, "");
         return prefIds.split(" ");
     }
 
-    private static boolean tryRecreatePrefIds(Context context) {
+    private boolean tryRecreatePrefIds(Context context) {
         int amountOfPages = getAmountOfUpdatedPages(context);
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
-        if (newIds.isEmpty())
+
+        if (newIds.size() < 3)
             return false;
 
         String newPrefIds = String.join(" ", newIds);
@@ -308,88 +264,13 @@ public class Updater {
         return true;
     }
 
-    private static Set<String> createIdListOrEmpty(int amountOfPages) {
+    private Set<String> createIdListOrEmpty(int amountOfPages) {
         Set<String> ids = new HashSet<>();
         // Iterate backwards because mimibazar puts already updated items at the
         // beginning so we won't update it twice.
         for (int i = amountOfPages; i > 0; --i)
-            getPageIdsOrEmpty(i, ids);
+            mimibazarRequester.getIdsFromPageOrEmpty(i, ids, null);
 
         return ids;
-    }
-
-    private static boolean tryUpdatePhoto(String id) {
-        String url = "https://www.mimibazar.cz/bazar.php?id=" + id + "&updfoto=ok";
-        Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.POST);
-        return result.first.booleanValue();
-    }
-
-    // The body cannot be logged because it's too long.
-    private static Set<String> getPageIdsOrEmpty(int page, @Nullable Set<String> set) {
-        if (set == null)
-            set = new HashSet<String>();
-
-        String html = getPageHtmlOrNull(page);
-        if (html == null)
-            return set;
-
-        Matcher m = ID_REGEX_PATTERN.matcher(html);
-        while (m.find())
-            set.add(m.group());
-
-        return set;
-    }
-
-    private static @Nullable String getPageHtmlOrNull(int page) {
-        String url = "https://www.mimibazar.cz/bazar.php?user=106144&strana=" + page;
-        Pair<Boolean, Response> result = tryMakeRequest(url, RequestMethod.GET);
-
-        return getBodyOrNull(result);
-    }
-
-    private static @Nullable String getBodyOrNull(Pair<Boolean, Response> result) {
-        if (!result.first.booleanValue())
-            return null;
-
-        try {
-            String body = result.second.body().string();
-            result.second.close();
-            return body;
-        } catch (Exception e) {
-            Log.e(TAG, getExceptionAsString(e));
-            return null;
-        }
-    }
-
-    private static Pair<Boolean, Response> tryMakeRequest(String url, RequestMethod method) {
-        while ((System.currentTimeMillis() - lastRequest) < REQUEST_THROTTLE_MS) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Log.e(TAG, getExceptionAsString(e));
-            }
-        }
-
-        lastRequest = System.currentTimeMillis();
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url);
-
-        if (method == RequestMethod.POST) {
-            requestBuilder.post(REQUEST_BODY);
-            requestBuilder.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        }
-        else
-            requestBuilder.get();
-
-        Call call = HTTP_CLIENT.newCall(requestBuilder.build());
-        Response response = null;
-        try {
-            response = call.execute();
-        } catch (Exception e) {
-            Log.e(TAG, getExceptionAsString(e));
-        }
-
-        return new Pair(response != null && response.isSuccessful(), response);
     }
 }

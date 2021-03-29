@@ -61,7 +61,7 @@ public class UpdateService extends IntentService {
 
         // Execute only if internet connection could be established.
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled))
-            Updater.update(this);
+            new Updater().update(this);
         else
             Notifications.PostDefaultNotification(this,
                     getResources().getString(R.string.cannot_update_mimibazar),
