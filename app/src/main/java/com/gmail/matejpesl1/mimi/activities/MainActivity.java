@@ -1,7 +1,6 @@
 package com.gmail.matejpesl1.mimi.activities;
 
 import android.content.Intent;
-import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,16 +16,16 @@ import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
+import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     public static final String GLOBAL_PREFS_NAME = "AppPrefs";
     private static final String TAG = "MainActivity";
-    private Requester requester;
+    private static Requester requester = new Requester(0);
     private MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
     private TextView stateDescriptionText;
@@ -39,9 +38,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Fields initialization
-        requester = new Requester(0);
 
         // Elements initialization
         updateSwitch = findViewById(R.id.updateSwitch);
@@ -93,15 +89,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateView();
+        //updateView();
     }
 
     private void updateView() {
         // Update app update visibility.
-        new Thread(() -> updateAppUpdateVisibility()).start();
-
-        // Updates that require mimibazarRequester to be initialized.
         new Thread(() -> {
+            // Update app update section visibility.
+            updateAppUpdateVisibility();
+        }).start();
+
+        new Thread(() -> {
+            // Updates that require mimibazarRequester to be initialized.
+            if (!InternetUtils.isConnectionAvailable())
+                return;
+
+            Log.e(TAG, "Internet availability check done.");
+
             try {
                 mimibazarRequester = new MimibazarRequester(requester,
                         Updater.getUsername(this),
@@ -110,10 +114,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, Utils.getExceptionAsString(e));
             }
 
-            // Update remaining updates.
-            new Thread(() -> updateRemaining()).start();
             // Update credentials.
-            new Thread(() -> updateCredentialsWarning()).start();
+            updateCredentialsWarning();
+
+            // Update remaining updates. This comes second, because it takes longer to complete.
+            updateRemaining();
         }).start();
 
         // Update alarm manager state & description.
@@ -121,32 +126,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateCredentialsWarning() {
-        String username = Updater.getUsername(this);
-        String password = Updater.getPassword(this);
+        boolean correct =
+                !Utils.isEmptyOrNull(Updater.getUsername(this)) &&
+                !Utils.isEmptyOrNull(Updater.getPassword(this)) &&
+                mimibazarRequester != null;
 
-        if (Utils.isEmptyOrNull(username) || Utils.isEmptyOrNull(password) || mimibazarRequester.tryGetUserId() == -1) {
-            badCredentialsWarning.setVisibility(View.VISIBLE);
-            if (updateSwitch.isEnabled()) {
-                updateSwitch.setEnabled(false);
-                UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+        boolean needsUpdate =
+                (correct && !updateSwitch.isEnabled()) ||
+                (!correct && updateSwitch.isEnabled());
+
+        runOnUiThread(() -> {
+            if (needsUpdate) {
+                badCredentialsWarning.setVisibility(correct ? View.INVISIBLE : View.VISIBLE);
+                updateSwitch.setEnabled(correct);
+                UpdateServiceAlarmManager.changeRepeatingAlarm(this, correct);
+                Log.e(TAG, "needs update");
                 updateAlarm();
             }
-        } else {
-            badCredentialsWarning.setVisibility(View.INVISIBLE);
-            if (!updateSwitch.isEnabled()) {
-                updateSwitch.setEnabled(true);
-                UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
-                updateAlarm();
-            }
-        }
+        });
     }
 
     private void updateAlarm() {
         if (UpdateServiceAlarmManager.isRegistered(this)) {
-            updateSwitch.setChecked(true);
             Date nextUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime();
             String nextUpdateDateStr = Utils.dateToCzech(nextUpdateDate);
 
+            updateSwitch.setChecked(true);
             stateDescriptionText.setText(String.format("%s %s %s",
                     getResources().getString(R.string.updating_on_description),
                     getResources().getString(R.string.next_update_in),
