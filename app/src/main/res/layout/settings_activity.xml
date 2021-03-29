@@ -23,7 +23,8 @@
             android:inputType="textVisiblePassword|textPassword"
             android:textSize="15sp"
             app:layout_constraintStart_toEndOf="@+id/mimibazarPasswordTextView"
-            app:layout_constraintTop_toBottomOf="@+id/usernameTextbox" />
+            app:layout_constraintTop_toBottomOf="@+id/usernameTextbox"
+            android:autofillHints="" />
 
         <TextView
             android:id="@+id/mimibazarPasswordTextView"
@@ -148,7 +149,8 @@
             android:text="7:45"
             android:textIsSelectable="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:autofillHints="" />
 
         <Spinner
             android:id="@+id/updatedPagesSpinner"
@@ -223,9 +225,9 @@
             android:layout_height="40dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="12dp"
+            android:autofillHints=""
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="sdffsdfds"
             android:textSize="15sp"
             app:layout_constraintStart_toEndOf="@+id/mimibazarUsernameTextView"
             app:layout_constraintTop_toBottomOf="@+id/allowBackgroundRunButt" />
