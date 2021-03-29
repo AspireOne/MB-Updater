@@ -17,6 +17,8 @@
         <item>20 (420 položek)</item>
         <item>25 (525 položek)</item>
         <item>30 (630 položek)</item>
+        <item>35 (735 položek)</item>
+        <item>40 (850 položek)</item>
     </string-array>
 
     <string-array name="updated_pages_values">
@@ -26,5 +28,7 @@
         <item>20</item>
         <item>25</item>
         <item>30</item>
+        <item>35</item>
+        <item>40</item>
     </string-array>
 </resources>
