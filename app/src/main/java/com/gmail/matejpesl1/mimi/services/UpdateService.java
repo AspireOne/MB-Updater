@@ -59,19 +59,26 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.i(TAG, "Update Service intent received.");
         PowerManager.WakeLock wakelock = acquireWakelock(5);
         UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
         InternetUtils.DataState prevMobileDataState = getMobileDataState();
         boolean prevWifiEnabled = isWifiEnabled(this);
 
+        Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevMobileDataState.toString(), prevWifiEnabled));
+
         // Execute only if internet connection could be established.
-        if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled))
+        if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled)) {
+            Log.i(TAG, "Internet connection could be established, executing Update.");
             new Updater().update(this);
-        else
+        }
+        else {
+            Log.i(TAG, "Internet connection could not be established.");
             Notifications.PostDefaultNotification(this,
                     getResources().getString(R.string.cannot_update_mimibazar),
                     getResources().getString(R.string.cannot_get_internet_connection));
+        }
 
         // TODO: Maybe add auto-update?
         revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
