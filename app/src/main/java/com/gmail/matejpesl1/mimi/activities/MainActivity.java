@@ -16,6 +16,7 @@ import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
+import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView appUpdateAvailableTxt;
     private TextView badCredentialsWarning;
     private Button updateAppButt;
+    private Button updateNowButt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +50,18 @@ public class MainActivity extends AppCompatActivity {
         appUpdateAvailableTxt = findViewById(R.id.updateAvailableTxt);
         updateAppButt = findViewById(R.id.updateAppButt);
         badCredentialsWarning = findViewById(R.id.badCredentialsWarning);
+        updateNowButt = findViewById(R.id.updateNowButt);
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Log.i(TAG, "Update switch changed to " + updateSwitch.isChecked());
             UpdateServiceAlarmManager.changeRepeatingAlarm(MainActivity.this, updateSwitch.isChecked());
             updateAlarm();
+        });
+
+        updateNowButt.setOnClickListener((view) -> {
+            Log.i(TAG, "Update now button clicked.");
+            UpdateService.startUpdateImmediately(this);
         });
 
         updateAppButt.setOnClickListener((view) -> {
