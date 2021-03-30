@@ -43,8 +43,8 @@ public class SettingsActivity extends AppCompatActivity {
     private Button allowRootButt;
     private Button allowBackgroundRunButt;
 
-    private boolean rootAllowedCached = false;
-    private boolean backgroundRunAllowedCached = false;
+    private static boolean rootAllowedCached = false;
+    private static boolean backgroundRunAllowedCached = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
