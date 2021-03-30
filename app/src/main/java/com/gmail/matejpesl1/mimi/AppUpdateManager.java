@@ -37,17 +37,7 @@ public class AppUpdateManager {
     }
 
     public static void requestInstall(Context context) {
-        while (downloading) {
-            try {
-                Thread.sleep(500);
-            } catch (Exception e) {
-                Log.e(TAG, Utils.getExceptionAsString(e));
-            }
-        }
-
-        if (!isDownloadedApkLatest(context))
-            downloadApk(context);
-
+        prepareForInstall(context);
         Uri uri = FileProvider.getUriForFile(
                 context,
                 BuildConfig.APPLICATION_ID + ".provider",
@@ -62,23 +52,29 @@ public class AppUpdateManager {
         context.startActivity(intent);
     }
 
-    public static void installDirectlyWithRoot(Context context) {
+    private static void prepareForInstall(Context context) {
         while (downloading) {
             try {
                 Thread.sleep(500);
             } catch (Exception e) {
-                Log.e(TAG, Utils.getExceptionAsString(e));
+                Log.e(TAG, "E occured while waiting for download to finish. e: " +
+                        Utils.getExceptionAsString(e));
             }
         }
 
         if (!isDownloadedApkLatest(context))
             downloadApk(context);
+    }
 
+    public static void installDirectlyWithRoot(Context context) {
+        prepareForInstall(context);
         File file = getApk(context);
 
-        Log.e(TAG, String.format("cat %s | pm install -S %s", file.getAbsolutePath(), file.length()));
-        Pair<Boolean, Process> result = RootUtils.runCommandAsSu(
-                String.format("cat %s | pm install -S %s", file.getAbsolutePath(), file.length()));
+        String command = String.format("cat %s | pm install -S %s",
+                file.getAbsolutePath(), file.length());
+
+        Log.e(TAG, "Command to install: " + command);
+        Pair<Boolean, Process> result = RootUtils.runCommandAsSu(command);
 
         Log.e(TAG, "direct installation success: " + result.first.booleanValue());
     }
@@ -86,6 +82,8 @@ public class AppUpdateManager {
     private static int getNewestVerNum() {
         if ((System.currentTimeMillis() - lastVersionCheck) < VERSION_CACHE_TIME)
             return cachedVersion;
+
+        Log.i(TAG, "Checking for an updated version");
 
         lastVersionCheck = System.currentTimeMillis();
 

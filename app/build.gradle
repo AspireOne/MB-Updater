@@ -28,16 +28,18 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable true
+            debuggable false
             signingConfig signingConfigs.Release
+            multiDexEnabled false
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    ndkVersion '21.1.6352462'
 }
 
 dependencies {
