@@ -117,7 +117,7 @@ public class SettingsActivity extends AppCompatActivity {
                 usernameBox.getText().toString(),
                 passwordBox.getText().toString());
 
-        Log.d(TAG, usernameBox.getText().toString());
+        Log.i(TAG, usernameBox.getText().toString());
     }
 
     @Override
@@ -127,7 +127,7 @@ public class SettingsActivity extends AppCompatActivity {
                 usernameBox.getText().toString(),
                 passwordBox.getText().toString());
 
-        Log.d(TAG, usernameBox.getText().toString());
+        Log.i(TAG, usernameBox.getText().toString());
     }
 
     private void onTimePickerClick(View v) {
@@ -139,7 +139,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        Log.d(TAG, "time picked. hour: " + hour + " | minute: " + minute);
+        Log.i(TAG, "time picked. hour: " + hour + " | minute: " + minute);
         updateTimePicker();
     }
 

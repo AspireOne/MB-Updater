@@ -74,7 +74,7 @@ public class Updater {
 
     private void prepareAndExecute(Context context) {
         if (running) {
-            Log.d(TAG, "Updater is already running, returning.");
+            Log.i(TAG, "Updater is already running, returning.");
             return;
         }
 
@@ -82,7 +82,7 @@ public class Updater {
             return;
 
         if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
-            Log.d(TAG, "Mimibazar was attempted to be updated but it has already " +
+            Log.i(TAG, "Mimibazar was attempted to be updated but it has already " +
                     "0 remaining updates. Returning.");
             return;
         }
@@ -90,7 +90,7 @@ public class Updater {
         if (!makeChecksAndNotifyAboutErrors(context))
             return;
 
-        Log.d(TAG, "All pre-update checks passed, executing main update logic.");
+        Log.i(TAG, "All pre-update checks passed, executing main update logic.");
         String error = execute(context);
 
         if (error != null) {
@@ -203,7 +203,7 @@ public class Updater {
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
         }
 
-        Log.d(TAG, "ID list has " + ids.length + " items.");
+        Log.i(TAG, "ID list has " + ids.length + " items.");
 
         // Loop variables initialization.
         int iterationCount = 0;
