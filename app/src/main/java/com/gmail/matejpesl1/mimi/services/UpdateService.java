@@ -59,7 +59,7 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        PowerManager.WakeLock wakelock = acquireWakelock(12);
+        PowerManager.WakeLock wakelock = acquireWakelock(5);
         UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
         InternetUtils.DataState prevMobileDataState = getMobileDataState();
