@@ -127,7 +127,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void handleTimePicked(int hour, int minute) {
         UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        Log.i(TAG, "time picked. hour: " + hour + " | minute: " + minute);
         updateTimePicker();
     }
 
