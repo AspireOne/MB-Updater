@@ -111,23 +111,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        Updater.setCredentials(this,
-                usernameBox.getText().toString(),
-                passwordBox.getText().toString());
-
-        Log.i(TAG, usernameBox.getText().toString());
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         Updater.setCredentials(this,
                 usernameBox.getText().toString(),
                 passwordBox.getText().toString());
-
-        Log.i(TAG, usernameBox.getText().toString());
     }
 
     private void onTimePickerClick(View v) {
