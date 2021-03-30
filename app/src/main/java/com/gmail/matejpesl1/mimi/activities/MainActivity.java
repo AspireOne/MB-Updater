@@ -108,17 +108,17 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(() -> {
             // Updates that require mimibazarRequester to be initialized.
-            if (!InternetUtils.isConnectionAvailable())
+            if (!InternetUtils.isConnectionAvailable()) {
+                Log.i(TAG, "Internet connection not available.");
                 return;
-
-            Log.e(TAG, "Internet availability check done.");
+            }
 
             try {
                 mimibazarRequester = new MimibazarRequester(requester,
                         Updater.getUsername(this),
                         Updater.getPassword(this));
             } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-                Log.e(TAG, Utils.getExceptionAsString(e));
+                Log.e(TAG, "Could not create mimibazarRequester. E: " + Utils.getExceptionAsString(e));
             }
 
             // Update credentials.
@@ -133,21 +133,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateCredentialsWarning() {
-        boolean correct =
+        boolean credentialsValid =
                 !Utils.isEmptyOrNull(Updater.getUsername(this)) &&
                 !Utils.isEmptyOrNull(Updater.getPassword(this)) &&
                 mimibazarRequester != null;
 
         boolean needsUpdate =
-                (correct && !updateSwitch.isEnabled()) ||
-                (!correct && updateSwitch.isEnabled());
+                (credentialsValid && !updateSwitch.isEnabled()) ||
+                (!credentialsValid && updateSwitch.isEnabled());
+
+        if (!credentialsValid)
+            Log.i(TAG, "Mimibazar credentials are not valid.");
 
         runOnUiThread(() -> {
             if (needsUpdate) {
-                badCredentialsWarning.setVisibility(correct ? View.INVISIBLE : View.VISIBLE);
-                updateSwitch.setEnabled(correct);
-                UpdateServiceAlarmManager.changeRepeatingAlarm(this, correct);
-                Log.e(TAG, "needs update");
+                badCredentialsWarning.setVisibility(credentialsValid ? View.INVISIBLE : View.VISIBLE);
+                updateSwitch.setEnabled(credentialsValid);
+                UpdateServiceAlarmManager.changeRepeatingAlarm(this, credentialsValid);
                 updateAlarm();
             }
         });
@@ -171,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateAppUpdateVisibility() {
         boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
+        Log.i(TAG, "App update available: " + updateAvailable);
         int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
 
         runOnUiThread(() -> {
@@ -179,9 +182,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
-            Log.i("MainActivity", "downloading apk because the one already downloaded" +
-                    "(if any) is not latest.");
-            AppUpdateManager.downloadApk(this);
+            Log.i("MainActivity", "Downloading update apk");
+            boolean downloaded = AppUpdateManager.downloadApk(this);
+            Log.i(TAG, "App download succeeded: " + downloaded);
         }
     }
 
