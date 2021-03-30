@@ -67,17 +67,17 @@ public class Updater {
     }*/
 
     public void update(Context context) {
+        if (running) {
+            Log.i(TAG, "Updater is already running, returning.");
+            return;
+        }
+
         running = true;
         prepareAndExecute(context);
         running = false;
     }
 
     private void prepareAndExecute(Context context) {
-        if (running) {
-            Log.i(TAG, "Updater is already running, returning.");
-            return;
-        }
-
         if (!initAndNotifyIfError(context))
             return;
 
