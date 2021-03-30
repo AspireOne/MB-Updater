@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     public static final String GLOBAL_PREFS_NAME = "AppPrefs";
     private static final Requester requester = new Requester(0);
+    private static boolean requestsRequested = false;
 
     private MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
@@ -74,12 +75,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
-        new Thread(() -> {
-            RootUtils.askForRoot();
+        if (!requestsRequested) {
+            requestsRequested = true;
+            new Thread(() -> {
+                RootUtils.askForRoot();
 
-            if (!Utils.hasBatteryException(this))
-                Utils.requestBatteryException(this);
-        }).start();
+                if (!Utils.hasBatteryException(this))
+                    Utils.requestBatteryException(this);
+            }).start();
+        }
 
         updateView();
     }
