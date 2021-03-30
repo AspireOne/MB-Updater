@@ -68,7 +68,7 @@ public class Updater {
 
     public void update(Context context) {
         if (running) {
-            Log.i(TAG, "Updater is already running, returning.");
+            Log.w(TAG, "Updater is already running, returning.");
             return;
         }
 
@@ -78,11 +78,12 @@ public class Updater {
     }
 
     private void prepareAndExecute(Context context) {
+        // This method first, because it initializes the requester.
         if (!initAndNotifyIfError(context))
             return;
 
         if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
-            Log.i(TAG, "Mimibazar was attempted to be updated but it has already " +
+            Log.w(TAG, "Mimibazar was attempted to be updated but it has already " +
                     "0 remaining updates. Returning.");
             return;
         }
@@ -90,11 +91,11 @@ public class Updater {
         if (!makeChecksAndNotifyAboutErrors(context))
             return;
 
-        Log.i(TAG, "All pre-update checks passed, executing main update logic.");
+        Log.i(TAG, "All pre-update checks passed.");
         String error = execute(context);
+        Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
-            Log.e(TAG, "Updater finished WITH runtime error: " + error);
             Notifications.PostDefaultNotification(context,
                     context.getResources().getString(R.string.cannot_update_mimibazar_runtime_error),
                     error);
@@ -112,6 +113,7 @@ public class Updater {
             Notifications.PostDefaultNotification(context,
                     context.getResources().getString(R.string.cannot_update_mimibazar),
                     context.getResources().getString(R.string.missing_credentials));
+            Log.w(TAG, "Credentials are missing, cannot update. Returning.");
             return false;
         }
 
@@ -121,6 +123,7 @@ public class Updater {
             Notifications.PostDefaultNotification(context,
                     context.getResources().getString(R.string.cannot_update_mimibazar),
                     context.getResources().getString(R.string.cannot_update_invalid_credentials_or_external_error));
+            Log.w(TAG, "MimibazarRequester cannot be created - cannot get account id. Returning.");
             return false;
         }
 
