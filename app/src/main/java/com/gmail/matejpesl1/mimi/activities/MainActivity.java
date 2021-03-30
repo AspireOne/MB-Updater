@@ -23,9 +23,10 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String TAG = "MainActivity";
     public static final String GLOBAL_PREFS_NAME = "AppPrefs";
-    private static final String TAG = "MainActivity";
-    private static Requester requester = new Requester(0);
+    private static final Requester requester = new Requester(0);
+
     private MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
     private TextView stateDescriptionText;
@@ -49,11 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Log.i(TAG, "Update switch changed to " + updateSwitch.isChecked());
             UpdateServiceAlarmManager.changeRepeatingAlarm(MainActivity.this, updateSwitch.isChecked());
             updateAlarm();
         });
 
         updateAppButt.setOnClickListener((view) -> {
+            Log.i(TAG, "Update app button clicked.");
             boolean rootAvailable = RootUtils.isRootAvailable();
             new Thread(() -> {
                 if (rootAvailable)
@@ -172,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
-            Log.d("MainActivity", "downloading apk because the one already downloaded" +
+            Log.i("MainActivity", "downloading apk because the one already downloaded" +
                     "(if any) is not latest.");
             AppUpdateManager.downloadApk(this);
         }
