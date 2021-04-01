@@ -33,6 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
     private Switch allowChangeWifiSwitch;
     private Switch allowChangeDataSwitch;
     private Switch notifyAboutSuccesfullUpdateSwitch;
+    private Switch updateWhenInternetAvailableSwitch;
     private TextView rootAllowedValue;
     private TextView backgroundRunAllowedValue;
     private EditText passwordBox;
@@ -55,6 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Element initialization
         notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
+        updateWhenInternetAvailableSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
         backgroundRunAllowedValue = findViewById(R.id.backgroundRunAllowedValue);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
         allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
@@ -66,19 +68,16 @@ public class SettingsActivity extends AppCompatActivity {
         usernameBox = findViewById(R.id.usernameTextbox);
         timePicker = findViewById(R.id.updateTimeBox);
 
-        // Initial data initialization (of data that are not updated in UpdateView method).
+        // Data initialization (of data that are not updated in UpdateView method but only once, here).
         int posFromPrefs = Integer.parseInt(Utils.getPref(this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, "4"));
         updatedPagesSpinner.setSelection(posFromPrefs, true);
         updateCredentials();
 
-        // Listeners.
-        timePicker.setOnClickListener(this::onTimePickerClick);
-
-        // Root & Battery allowance buttons.
+        // Listeners - Root & Battery allowance buttons.
         allowBackgroundRunButt.setOnClickListener((View v) -> Utils.requestBatteryException(this));
         allowRootButt.setOnClickListener((View v) -> RootUtils.askForRoot());
 
-        // Internet switches.
+        // Listeners - Switches.
         allowChangeDataSwitch.setOnCheckedChangeListener(
                 (CompoundButton buttonView, boolean isChecked)
                         -> UpdateService.setAllowDataChange(this, isChecked));
@@ -86,10 +85,17 @@ public class SettingsActivity extends AppCompatActivity {
         allowChangeWifiSwitch.setOnCheckedChangeListener(
                 (CompoundButton buttonView, boolean isChecked)
                         -> UpdateService.setAllowWifiChange(this, isChecked));
-        // Others.
+
         notifyAboutSuccesfullUpdateSwitch.setOnCheckedChangeListener(
                 (CompoundButton buttonView, boolean isChecked)
                         -> Updater.setNotifyAboutSuccesfullUpdate(this, isChecked));
+
+        updateWhenInternetAvailableSwitch.setOnCheckedChangeListener(
+                (CompoundButton buttonView, boolean isChecked)
+                        -> UpdateService.setRetryWhenInternetAvailable(this, isChecked));
+
+        // Listeners - other.
+        timePicker.setOnClickListener(this::onTimePickerClick);
 
         updatedPagesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -133,6 +139,7 @@ public class SettingsActivity extends AppCompatActivity {
         updateInternetChangeSwitches();
         updateTimePicker();
         updateBackgroundRunStatus();
+        updateWhenInternetAvailableSwitch.setChecked(UpdateService.getRetryWhenInternetAvailable(this));
     }
 
     private void updateCredentials() {
