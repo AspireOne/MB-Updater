@@ -26,7 +26,11 @@ public class Updater {
     private static boolean running = false;
     private Requester requester;
     private MimibazarRequester mimibazarRequester;
+    private Context context;
 
+    public Updater(Context context) {
+        this.context = context;
+    }
 
     // Notify about succesfull update
     public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
@@ -66,20 +70,20 @@ public class Updater {
         return true;
     }*/
 
-    public void update(Context context) {
+    public void update() {
         if (running) {
             Log.w(TAG, "Updater is already running, returning.");
             return;
         }
 
         running = true;
-        prepareAndExecute(context);
+        prepareAndExecute();
         running = false;
     }
 
-    private void prepareAndExecute(Context context) {
+    private void prepareAndExecute() {
         // This method first, because it initializes the requester.
-        if (!initAndNotifyIfError(context))
+        if (!initAndNotifyIfError())
             return;
 
         if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
@@ -88,11 +92,11 @@ public class Updater {
             return;
         }
 
-        if (!makeChecksAndNotifyAboutErrors(context))
+        if (!makeChecksAndNotifyAboutErrors())
             return;
 
         Log.i(TAG, "All pre-update checks passed.");
-        String error = execute(context);
+        String error = execute();
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
@@ -105,7 +109,7 @@ public class Updater {
                     "");
     }
 
-    private boolean initAndNotifyIfError(Context context) {
+    private boolean initAndNotifyIfError() {
         requester = new Requester(REQUEST_THROTTLE);
         String username = getPref(context, PREF_USERNAME, "");
         String password = getPref(context, PREF_PASSWORD, "");
@@ -130,7 +134,7 @@ public class Updater {
         return true;
     }
 
-    private boolean makeChecksAndNotifyAboutErrors(Context context) {
+    private boolean makeChecksAndNotifyAboutErrors() {
         String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
@@ -188,20 +192,20 @@ public class Updater {
         return null;
     }
 
-    private String execute(Context context) {
+    private String execute() {
         // Initialization.
         int currIdIndex = Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
         int remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
-        String[] ids = getIdsFromPrefs(context);
+        String[] ids = getIdsFromPrefs();
 
         // Checks.
         if (remainingUpdates == -1)
             return "Nelze získat zbývající aktualizace.";
 
         if (ids.length == 0 || ids.length == 1) {
-            boolean created = tryRecreatePrefIds(context);
+            boolean created = tryRecreatePrefIds();
 
-            ids = getIdsFromPrefs(context);
+            ids = getIdsFromPrefs();
             if (!created || ids.length == 0 || ids.length == 1)
                 return "Nelze vytvořit seznam ID položek z mimibazaru.";
         }
@@ -219,12 +223,12 @@ public class Updater {
 
             if (currIdIndex >= ids.length - 1) {
                 currIdIndex = 0;
-                if (!tryRecreatePrefIds(context)) {
+                if (!tryRecreatePrefIds()) {
                     error = "Nelze znovu-vytvořit seznam ID položek z mimibazaru.";
                     break;
                 }
 
-                ids = getIdsFromPrefs(context);
+                ids = getIdsFromPrefs();
             }
 
             if (!mimibazarRequester.tryUpdatePhoto(ids[currIdIndex])) {
@@ -250,12 +254,12 @@ public class Updater {
         return error;
     }
 
-    private static String[] getIdsFromPrefs(Context context) {
+    private String[] getIdsFromPrefs() {
         String prefIds = getPref(context, PREF_IDS, "");
         return prefIds.split(" ");
     }
 
-    private boolean tryRecreatePrefIds(Context context) {
+    private boolean tryRecreatePrefIds() {
         int amountOfPages = getAmountOfUpdatedPages(context);
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
 
