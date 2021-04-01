@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         }
 
+        UpdateService.registerNetworkCallback(this);
         updateView();
     }
 
