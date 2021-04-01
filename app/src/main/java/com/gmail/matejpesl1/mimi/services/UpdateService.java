@@ -31,6 +31,8 @@ import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState
 public class UpdateService extends IntentService {
     private static final String TAG = "UpdateService";
     private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
+    private static final String PREF_RETRY_WHEN_INTERNET_AVAILABLE = "Retry When Internet Available";
+    private static final String PREF_RETRY_NEEDED = "Retry Needed";
     private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
 
@@ -49,6 +51,18 @@ public class UpdateService extends IntentService {
     }
     public static boolean getAllowWifiChange(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_WIFI_CHANGE, "true"));
+    }
+    public static void setRetryWhenInternetAvailable(Context context, boolean allow) {
+        Utils.writePref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, allow+"");
+    }
+    public static boolean getRetryWhenInternetAvailable(Context context) {
+        return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, "true"));
+    }
+    public static boolean getRetryNeeded(Context context) {
+        return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_NEEDED, "false"));
+    }
+    public static void setRetryNeeded(Context context, boolean needed) {
+        Utils.writePref(context, PREF_RETRY_NEEDED, needed+"");
     }
 
     public static void startUpdateImmediately(Context context) {
@@ -74,10 +88,14 @@ public class UpdateService extends IntentService {
             new Updater().update(this);
         }
         else {
+            boolean retry = getRetryWhenInternetAvailable(this);
             Log.i(TAG, "Internet connection could not be established.");
             Notifications.PostDefaultNotification(this,
                     getResources().getString(R.string.cannot_update_mimibazar),
-                    getResources().getString(R.string.cannot_get_internet_connection));
+                    "Nelze získat internetové připojení." + (retry ? " Aktualizace proběhne" +
+                            "až bude dostupné." : ""));
+
+            setRetryNeeded(this, retry);
         }
 
         // TODO: Maybe add auto-update?
