@@ -14,7 +14,7 @@
         app:layout_constraintStart_toStartOf="@+id/updateTimeBox">
 
         <TextView
-            android:id="@+id/updateWhenInternetAvailable"
+            android:id="@+id/updateWhenInternetAvailableTxt"
             android:layout_width="241dp"
             android:layout_height="61dp"
             android:layout_marginStart="4dp"
@@ -68,10 +68,10 @@
             android:text="@string/notify_about_succesful_update"
             android:textSize="17sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/updateWhenInternetAvailable" />
+            app:layout_constraintTop_toBottomOf="@+id/updateWhenInternetAvailableTxt" />
 
         <Switch
-            android:id="@+id/updateWhenInternetAvailableSwitch"
+            android:id="@+id/notifyAboutSuccesfullUpdateSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -245,14 +245,14 @@
             app:layout_constraintTop_toBottomOf="@+id/allowBackgroundRunButt" />
 
         <Switch
-            android:id="@+id/switch1"
+            android:id="@+id/updateWhenInternetAvailableSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.133"
-            app:layout_constraintStart_toEndOf="@+id/updateWhenInternetAvailable"
-            app:layout_constraintTop_toTopOf="@+id/updateWhenInternetAvailable" />
+            app:layout_constraintStart_toEndOf="@+id/updateWhenInternetAvailableTxt"
+            app:layout_constraintTop_toTopOf="@+id/updateWhenInternetAvailableTxt" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
