@@ -2,9 +2,6 @@ package com.gmail.matejpesl1.mimi.activities;
 
 import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -57,7 +54,7 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Element initialization
-        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.notifyAboutSuccesfullUpdateSwitch);
+        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
         backgroundRunAllowedValue = findViewById(R.id.backgroundRunAllowedValue);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
         allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
