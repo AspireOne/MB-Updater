@@ -1,4 +1,4 @@
-package com.gmail.matejpesl1.mimi.receivers;
+package com.gmail.matejpesl1.mimi;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
