@@ -1,9 +1,11 @@
-package com.gmail.matejpesl1.mimi;
+package com.gmail.matejpesl1.mimi.receivers;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
+import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 
 public class BootReceiver extends BroadcastReceiver {
 
