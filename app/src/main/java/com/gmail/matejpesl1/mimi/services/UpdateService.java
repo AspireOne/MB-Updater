@@ -3,12 +3,13 @@ package com.gmail.matejpesl1.mimi.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
-import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.util.Log;
-import android.util.Pair;
 
 import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.R;
@@ -17,10 +18,6 @@ import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
 
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isConnectionAvailable;
@@ -58,10 +55,10 @@ public class UpdateService extends IntentService {
     public static boolean getRetryWhenInternetAvailable(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, "true"));
     }
-    public static boolean getRetryNeeded(Context context) {
+    private static boolean getShouldRetry(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_NEEDED, "false"));
     }
-    public static void setRetryNeeded(Context context, boolean needed) {
+    private static void setShouldRetry(Context context, boolean needed) {
         Utils.writePref(context, PREF_RETRY_NEEDED, needed+"");
     }
 
@@ -85,7 +82,7 @@ public class UpdateService extends IntentService {
         // Execute only if internet connection could be established.
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled)) {
             Log.i(TAG, "Internet connection could be established, executing Update.");
-            new Updater().update(this);
+            new Updater(this).update();
         }
         else {
             boolean retry = getRetryWhenInternetAvailable(this);
@@ -95,13 +92,42 @@ public class UpdateService extends IntentService {
                     "Nelze získat internetové připojení." + (retry ? " Aktualizace proběhne" +
                             "až bude dostupné." : ""));
 
-            setRetryNeeded(this, retry);
+            setShouldRetry(this, retry);
         }
 
         // TODO: Maybe add auto-update?
         revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
 
         wakelock.release();
+    }
+    
+    public static void registerNetworkCallback(Context context) {
+        ConnectivityManager conManager =
+                (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_VPN);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE);
+        builder.addTransportType(NetworkCapabilities.TRANSPORT_LOWPAN);
+        builder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+
+        conManager.registerNetworkCallback(builder.build(),
+                new ConnectivityManager.NetworkCallback() {
+                    @Override
+                    public void onAvailable(Network network) {
+                        Log.i(TAG, "New network available");
+                        if (getShouldRetry(context) && InternetUtils.isConnectionAvailable()) {
+                            setShouldRetry(context, false);
+                            startUpdateImmediately(context);
+                        }
+                    }
+                    @Override
+                    public void onLost(Network network) {}
+                }
+        );
     }
 
     private boolean tryAssertHasInternet(InternetUtils.DataState initialDataState, boolean initialWifiEnabled) {
