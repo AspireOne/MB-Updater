@@ -55,7 +55,7 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Element initialization
-        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
+        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.notifyAboutSuccesfullUpdateSwitch);
         updateWhenInternetAvailableSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
         backgroundRunAllowedValue = findViewById(R.id.backgroundRunAllowedValue);
         allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
@@ -71,6 +71,7 @@ public class SettingsActivity extends AppCompatActivity {
         // Data initialization (of data that are not updated in UpdateView method but only once, here).
         int posFromPrefs = Integer.parseInt(Utils.getPref(this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, "4"));
         updatedPagesSpinner.setSelection(posFromPrefs, true);
+        updateWhenInternetAvailableSwitch.setChecked(UpdateService.getRetryWhenInternetAvailable(this));
         updateCredentials();
 
         // Listeners - Root & Battery allowance buttons.
@@ -139,7 +140,6 @@ public class SettingsActivity extends AppCompatActivity {
         updateInternetChangeSwitches();
         updateTimePicker();
         updateBackgroundRunStatus();
-        updateWhenInternetAvailableSwitch.setChecked(UpdateService.getRetryWhenInternetAvailable(this));
     }
 
     private void updateCredentials() {
