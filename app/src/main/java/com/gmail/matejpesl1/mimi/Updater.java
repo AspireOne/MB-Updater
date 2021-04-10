@@ -215,12 +215,14 @@ public class Updater {
         // Loop variables initialization.
         int iterationCount = 0;
         int photoUpdateErrorCount = 0;
+        int lineSaveCount = 0;
         final int maxPhotoUpdateErrors = 10;
         final int maxIterations = 300;
+        // Save the current line to preferences every x seconds to prevent loss in case of force close.
+        final int lineSaveFreq = 9;
 
         String error = null;
         while (remainingUpdates > 0 && ++iterationCount < maxIterations) {
-
             if (currIdIndex >= ids.length - 1) {
                 currIdIndex = 0;
                 if (!tryRecreatePrefIds()) {
@@ -248,6 +250,11 @@ public class Updater {
             }
 
             ++currIdIndex;
+
+            if (++lineSaveCount >= lineSaveFreq) {
+                lineSaveCount = 0;
+                writePref(context, PREF_CURR_ID_INDEX, currIdIndex+"");
+            }
         }
 
         writePref(context, PREF_CURR_ID_INDEX, currIdIndex+"");
