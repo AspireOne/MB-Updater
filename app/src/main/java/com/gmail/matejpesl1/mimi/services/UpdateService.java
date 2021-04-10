@@ -11,13 +11,24 @@ import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.util.Log;
 
+import androidx.work.BackoffPolicy;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+
 import com.gmail.matejpesl1.mimi.Notifications;
+import com.gmail.matejpesl1.mimi.QueuedUpdateWorker;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isConnectionAvailable;
@@ -31,6 +42,7 @@ public class UpdateService extends IntentService {
     private static final String PREF_RETRY_WHEN_INTERNET_AVAILABLE = "Retry When Internet Available";
     private static final String PREF_RETRY_NEEDED = "Retry Needed";
     private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
+    private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
 
     public UpdateService() {
@@ -38,28 +50,35 @@ public class UpdateService extends IntentService {
     }
 
     public static void setAllowDataChange(Context context, boolean allow) {
-        Utils.writePref(context, PREF_ALLOW_DATA_CHANGE, allow+"");
+        Utils.writePref(context, PREF_ALLOW_DATA_CHANGE, allow + "");
     }
+
     public static boolean getAllowDataChange(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_DATA_CHANGE, "true"));
     }
+
     public static void setAllowWifiChange(Context context, boolean allow) {
-        Utils.writePref(context, PREF_ALLOW_WIFI_CHANGE, allow+"");
+        Utils.writePref(context, PREF_ALLOW_WIFI_CHANGE, allow + "");
     }
+
     public static boolean getAllowWifiChange(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_WIFI_CHANGE, "true"));
     }
+
     public static void setRetryWhenInternetAvailable(Context context, boolean allow) {
-        Utils.writePref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, allow+"");
+        Utils.writePref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, allow + "");
     }
+
     public static boolean getRetryWhenInternetAvailable(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, "true"));
     }
+
     private static boolean getShouldRetry(Context context) {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_NEEDED, "false"));
     }
+
     private static void setShouldRetry(Context context, boolean needed) {
-        Utils.writePref(context, PREF_RETRY_NEEDED, needed+"");
+        Utils.writePref(context, PREF_RETRY_NEEDED, needed + "");
     }
 
     public static void startUpdateImmediately(Context context) {
@@ -83,56 +102,46 @@ public class UpdateService extends IntentService {
         if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled)) {
             Log.i(TAG, "Internet connection could be established, executing Update.");
             new Updater(this).update();
-        }
-        else {
+        } else {
             boolean retry = getRetryWhenInternetAvailable(this);
-            Log.i(TAG, "Internet connection could not be established.");
+
+            Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
             Notifications.PostDefaultNotification(this,
                     getResources().getString(R.string.cannot_update_mimibazar),
                     "Nelze získat internetové připojení." + (retry ? " Aktualizace proběhne" +
                             "až bude dostupné." : ""));
 
-            setShouldRetry(this, retry);
+            if (retry) {
+                Log.i(TAG, "Enqueing worker to retry the update when connection is available.");
+                enqueueUpdateRetryWorker(this);
+            }
         }
 
         // TODO: Maybe add auto-update?
         revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
-
         wakelock.release();
     }
-    
-    public static void registerNetworkCallback(Context context) {
-        ConnectivityManager conManager =
-                (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
 
-        NetworkRequest.Builder builder = new NetworkRequest.Builder();
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_VPN);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI_AWARE);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_LOWPAN);
-        builder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    // TODO: Change to PRIVATE after you finish debugging it.
+    public static void enqueueUpdateRetryWorker(Context context) {
+        final Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresCharging(false)
+                .setRequiresDeviceIdle(false)
+                .build();
 
-        conManager.registerNetworkCallback(builder.build(),
-                new ConnectivityManager.NetworkCallback() {
-                    @Override
-                    public void onAvailable(Network network) {
-                        Log.i(TAG, "New network available");
-                        if (getShouldRetry(context) && InternetUtils.isConnectionAvailable()) {
-                            setShouldRetry(context, false);
-                            startUpdateImmediately(context);
-                        }
-                    }
-                    @Override
-                    public void onLost(Network network) {}
-                }
-        );
+        final WorkRequest updateWorkRequest = new OneTimeWorkRequest.Builder(QueuedUpdateWorker.class)
+                .setInitialDelay(Duration.ofSeconds(10))
+                .setConstraints(constraints)
+                .addTag(RETRY_UPDATE_WORKER_TAG)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 120/*Min = 10 sec.*/, TimeUnit.SECONDS)
+                .build();
+
+        WorkManager.getInstance(context).enqueue(updateWorkRequest);
     }
 
     private boolean tryAssertHasInternet(InternetUtils.DataState initialDataState, boolean initialWifiEnabled) {
-        // If connection is available in the current state (= without
-        // any changes), return true.
+        // If connection is available in the current state (= without any changes), return true.
         if (isConnectionAvailable())
             return true;
 
@@ -166,6 +175,7 @@ public class UpdateService extends IntentService {
             if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
                 return false;
 
+            // Enable data as a last try and return if the connection is available now.
             boolean set = RootUtils.setMobileDataConnection(true);
             if (set)
                 return pingConnection();
@@ -175,7 +185,7 @@ public class UpdateService extends IntentService {
     }
 
     private PowerManager.WakeLock acquireWakelock(int minutes) {
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
 
         PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,

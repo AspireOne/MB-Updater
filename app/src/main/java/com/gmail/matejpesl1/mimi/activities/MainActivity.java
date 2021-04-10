@@ -93,19 +93,22 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         }
 
-        UpdateService.registerNetworkCallback(this);
         updateView();
-    }
 
-    public void openSettings(View v) {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        //TODO: Test this.
+        //TODO: Remove this.
+        //UpdateService.enqueueUpdateRetryWorker(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         //updateView();
+    }
+
+    public void openSettings(View v) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void updateView() {
@@ -139,17 +142,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Update alarm manager state & description.
         updateAlarm();
+        //scheduleJob();
     }
 
     private void updateCredentialsWarning() {
         boolean credentialsValid =
                 !Utils.isEmptyOrNull(Updater.getUsername(this)) &&
-                !Utils.isEmptyOrNull(Updater.getPassword(this)) &&
-                mimibazarRequester != null;
+                        !Utils.isEmptyOrNull(Updater.getPassword(this)) &&
+                        mimibazarRequester != null;
 
         boolean needsUpdate =
                 (credentialsValid && !updateSwitch.isEnabled()) ||
-                (!credentialsValid && updateSwitch.isEnabled());
+                        (!credentialsValid && updateSwitch.isEnabled());
 
         if (!credentialsValid)
             Log.i(TAG, "Mimibazar credentials are not valid.");
@@ -206,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
             max = mimibazarRequester.tryGetMaxUpdates(pageBody);
         }
 
-        String maxStr = (max == -1 ? "-" : max+"");
-        String remainingStr = (max == -1 || remaining == -1 ? "-" : (max - remaining)+"");
+        String maxStr = (max == -1 ? "-" : max + "");
+        String remainingStr = (max == -1 || remaining == -1 ? "-" : (max - remaining) + "");
 
         runOnUiThread(() -> todayUpdatedValue.setText(String.format("%s/%s", remainingStr, maxStr)));
     }
