@@ -14,6 +14,7 @@ import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 public class UpdateServiceAlarmManager {
+    private static final String TAG = "UpdateServiceAlarmManager";
     private static final String PREF_ACTIVE = "Alarm Scheduled";
     private static final String PREF_UPDATE_MINUTE = "Update Minutes";
     private static final String PREF_UPDATE_HOUR = "Update Hour";
@@ -84,9 +85,11 @@ public class UpdateServiceAlarmManager {
         calendar.set(Calendar.HOUR, Integer.parseInt(hourStr));
         calendar.set(Calendar.AM_PM, Integer.parseInt(dayPartStr));
 
+        // If the time is in the past (e.g. time: 6:00 | curr: 7:00) -> set it for the next day.
         if (calendar.getTimeInMillis() <= System.currentTimeMillis())
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.get(Calendar.DAY_OF_WEEK) + 1);
+            calendar.add(Calendar.DAY_OF_WEEK, 1);
 
+        Log.i(TAG, "Time set to: " + Utils.dateToCzech(calendar.getTime()));
         return calendar;
     }
 }
