@@ -42,9 +42,15 @@ public class MimibazarRequester {
     private final RequestBody reqBody;
     private final String profileUrl;
 
-    public class CouldNotGetAccIdException extends  Exception {}
+    // Other.
+    public final String username;
+    public final String password;
+
+    public class CouldNotGetAccIdException extends Exception {}
 
     public MimibazarRequester(Requester requester, String username, String password) throws CouldNotGetAccIdException {
+        this.username = username;
+        this.password = password;
         this.requester = requester;
         reqBody = buildRequestBody(username, password);
 
