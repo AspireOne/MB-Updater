@@ -10,7 +10,7 @@
         android:id="@+id/updateAvailableTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="20dp"
         android:text="@string/app_update_available"
         android:textSize="17sp"
         android:textStyle="bold"
@@ -19,34 +19,45 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <Button
+        android:id="@+id/updateAppButt"
+        android:layout_width="153dp"
+        android:layout_height="61dp"
+        android:layout_marginBottom="104dp"
+        android:text="@string/update_app"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/todayUpdatedTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="84dp"
+        android:layout_marginTop="56dp"
+        android:text="@string/today_updated"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/updatingStateDescription" />
+
     <TextView
         android:id="@+id/todayUpdatedValue"
         android:layout_width="90dp"
         android:layout_height="21dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="56dp"
         android:text="-/-"
         android:textSize="17sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/todayUpdatedTxt"
         app:layout_constraintTop_toBottomOf="@+id/updatingStateDescription" />
 
-    <TextView
-        android:id="@+id/todayUpdatedTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="88dp"
-        android:layout_marginTop="72dp"
-        android:text="@string/today_updated"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/updatingStateDescription" />
-
     <Switch
         android:id="@+id/updateSwitch"
         android:layout_width="178dp"
         android:layout_height="53dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="48dp"
         android:clickable="true"
         android:contentDescription="@string/update_switch"
         android:contextClickable="true"
@@ -56,19 +67,9 @@
         android:text="@string/update_switch"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/updateAppButt"
-        android:layout_width="153dp"
-        android:layout_height="61dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/update_app"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/updatingStateDescription"
@@ -80,10 +81,10 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.489"
+        app:layout_constraintHorizontal_bias="0.483"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/updateSwitch"
-        app:layout_constraintVertical_bias="0.226" />
+        app:layout_constraintVertical_bias="0.137" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -115,13 +116,12 @@
         android:layout_width="149dp"
         android:layout_height="50dp"
         android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
         android:paddingLeft="8sp"
         android:paddingRight="8sp"
         android:text="Aktualizovat hned"
         android:textSize="13sp"
-        app:layout_constraintBottom_toTopOf="@+id/updateAvailableTxt"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/badCredentialsWarning"
-        app:layout_constraintVertical_bias="0.644" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
