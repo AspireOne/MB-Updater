@@ -39,9 +39,8 @@ import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState
 public class UpdateService extends IntentService {
     private static final String TAG = "UpdateService";
     private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
-    private static final String PREF_RETRY_WHEN_INTERNET_AVAILABLE = "Retry When Internet Available";
-    private static final String PREF_RETRY_NEEDED = "Retry Needed";
     private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
+    private static final String PREF_RETRY_WHEN_INTERNET_AVAILABLE = "Retry When Internet Available";
     private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
 
@@ -73,14 +72,6 @@ public class UpdateService extends IntentService {
         return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, "true"));
     }
 
-    private static boolean getShouldRetry(Context context) {
-        return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_NEEDED, "false"));
-    }
-
-    private static void setShouldRetry(Context context, boolean needed) {
-        Utils.writePref(context, PREF_RETRY_NEEDED, needed + "");
-    }
-
     public static void startUpdateImmediately(Context context) {
         Intent intent = new Intent(context, UpdateService.class);
         intent.setAction(ACTION_UPDATE);
@@ -91,7 +82,8 @@ public class UpdateService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG, "Update Service intent received.");
         PowerManager.WakeLock wakelock = acquireWakelock(5);
-        UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
+        if (UpdateServiceAlarmManager.isRegistered(this))
+            UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
         InternetUtils.DataState prevMobileDataState = getMobileDataState();
         boolean prevWifiEnabled = isWifiEnabled(this);
@@ -122,8 +114,7 @@ public class UpdateService extends IntentService {
         wakelock.release();
     }
 
-    // TODO: Change to PRIVATE after you finish debugging it.
-    public static void enqueueUpdateRetryWorker(Context context) {
+    private static void enqueueUpdateRetryWorker(Context context) {
         final Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresCharging(false)
@@ -134,7 +125,7 @@ public class UpdateService extends IntentService {
                 .setInitialDelay(Duration.ofSeconds(10))
                 .setConstraints(constraints)
                 .addTag(RETRY_UPDATE_WORKER_TAG)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 120/*Min = 10 sec.*/, TimeUnit.SECONDS)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 120/*Min. 10 secs*/, TimeUnit.SECONDS)
                 .build();
 
         WorkManager.getInstance(context).enqueue(updateWorkRequest);
