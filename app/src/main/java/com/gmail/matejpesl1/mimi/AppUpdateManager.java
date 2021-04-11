@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
@@ -18,6 +19,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class AppUpdateManager {
     private static final String TAG = "AppUpdateManager";
@@ -26,66 +29,95 @@ public class AppUpdateManager {
     private static final String APK_DOWNLOAD_LINK = "https://github.com/AspireOne/hub/releases/latest/download/updater.apk";
     private static final String APK_NAME = "updater.apk";
     private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
-    private static final long VERSION_CACHE_TIME = 600000; // 10 minutes.
+    private static final long VERSION_CACHE_TIME_MS = 600000; // 10 minutes.
 
-    private static long lastVersionCheck = 0;
+    public enum DownloadState {ALREADY_DOWNLOADED, ALREADY_DOWNLOADING, SUCCESS, FAILURE}
+
+    private static @Nullable Thread downloadThread = null;
+    private static long lastVersionCheckMs = 0;
     private static int cachedVersion = 0;
-    private static boolean downloading = false;
 
     public static boolean isUpdateAvailable() {
         return getNewestVerNum() > BuildConfig.VERSION_CODE;
     }
 
-    public static void requestInstall(Context context) {
-        prepareForInstall(context);
-        Uri uri = FileProvider.getUriForFile(
+    public static boolean requestInstall(Context context) {
+        if (!tryAssertLatestApkDownloaded(context))
+            return false;
+
+        final Uri apkUri = FileProvider.getUriForFile(
                 context,
                 BuildConfig.APPLICATION_ID + ".provider",
                 getApk(context));
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri)
+        final Intent installIntent = new Intent(Intent.ACTION_VIEW, apkUri)
                 .putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
-                .setDataAndType(uri, APK_MIME_TYPE)
+                .setDataAndType(apkUri, APK_MIME_TYPE)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        context.startActivity(intent);
+        context.startActivity(installIntent);
+        return true;
     }
 
-    private static void prepareForInstall(Context context) {
-        while (downloading) {
-            try {
-                Thread.sleep(500);
-            } catch (Exception e) {
-                Log.e(TAG, "E occured while waiting for download to finish. e: " +
-                        Utils.getExceptionAsString(e));
-            }
+    public static boolean installDirectlyWithRoot(Context context) {
+        if (!tryAssertLatestApkDownloaded(context))
+            return false;
+
+        final File apk = getApk(context);
+
+        String command = String.format("cat %s | pm install -S %s", apk.getAbsolutePath(), apk.length());
+        Log.i(TAG, "Command to directly install apk: " + command);
+
+        Pair<Boolean, Process> result = RootUtils.runCommandAsSu(command);
+        Log.i(TAG, "direct installation success: " + result.first.booleanValue());
+        return true;
+    }
+
+    private static boolean tryAssertLatestApkDownloaded(Context context) {
+        final String tag = TAG + "::prepareForInstall";
+
+        // If already downloading, wait for it to end and return the apk downloaded (bool) status.
+        if (downloadThread != null) {
+            Log.i(tag, "Download is already running, waiting for it to end...");
+            waitForDownloadThreadIfExists(tag);
+
+            boolean downloadedApkLatest = isDownloadedApkLatest(context);
+            Log.i(tag, "Download finished. Downloaded apk latest: " + downloadedApkLatest);
+            return downloadedApkLatest;
         }
 
-        if (!isDownloadedApkLatest(context))
-            downloadApk(context);
+        // If not downloading and the app is not downloaded.
+        if (!isDownloadedApkLatest(context)) {
+            AtomicReference<DownloadState> downloadState = new AtomicReference<>();
+
+            // Start the download and wait for it to end (if it runs), getting it's result.
+            downloadApkAsync(context, (dState) -> downloadState.set(dState));
+            waitForDownloadThreadIfExists(tag);
+
+            if (downloadState.get() == DownloadState.ALREADY_DOWNLOADED || downloadState.get() == DownloadState.ALREADY_DOWNLOADING)
+                Log.e(TAG, "Unexpected download state (" + downloadState.get() + ").");
+
+            return isDownloadedApkLatest(context);
+        }
+
+        return true;
     }
 
-    public static void installDirectlyWithRoot(Context context) {
-        prepareForInstall(context);
-        File file = getApk(context);
-
-        String command = String.format("cat %s | pm install -S %s",
-                file.getAbsolutePath(), file.length());
-
-        Log.e(TAG, "Command to install: " + command);
-        Pair<Boolean, Process> result = RootUtils.runCommandAsSu(command);
-
-        Log.e(TAG, "direct installation success: " + result.first.booleanValue());
+    private static void waitForDownloadThreadIfExists(String tag) {
+        if (downloadThread == null)
+            return;
+        try { downloadThread.join(20000); }
+        catch (InterruptedException e) { Log.e(tag, Utils.getExceptionAsString(e)); }
     }
 
     private static int getNewestVerNum() {
-        if ((System.currentTimeMillis() - lastVersionCheck) < VERSION_CACHE_TIME)
+        if ((System.currentTimeMillis() - lastVersionCheckMs) < VERSION_CACHE_TIME_MS) {
             return cachedVersion;
+        }
 
-        Log.i(TAG, "Checking for an updated version");
-
-        lastVersionCheck = System.currentTimeMillis();
+        Log.i(TAG, "Checking for an updated app version");
+        lastVersionCheckMs = System.currentTimeMillis();
 
         try {
             URL url = new URL(LATEST_RELEASE_JSON_LINK);
@@ -108,45 +140,52 @@ public class AppUpdateManager {
     }
 
     public static boolean isDownloadedApkLatest(Context context) {
-        String pref = Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0");
-        String latest = getNewestVerNum()+"";
+        final String downloadedApkVer = Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0");
+        final String latestApkVer = getNewestVerNum() + "";
 
-        return pref.equals(latest) && getApk(context).exists();
+        return downloadedApkVer.equals(latestApkVer) && getApk(context).exists();
     }
 
-    public static boolean downloadApk(Context context) {
-        if (downloading || isDownloadedApkLatest(context))
-            return true;
-
-        downloading = true;
-
-        FileOutputStream fos = null;
-        FileChannel fch = null;
-        try {
-            ReadableByteChannel readableByteChannel =
-                    Channels.newChannel(new URL(APK_DOWNLOAD_LINK).openStream());
-
-            fos = new FileOutputStream(getApk(context));
-            fch = fos.getChannel();
-
-            fch.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum()+"");
-            return true;
-        } catch (Exception e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
-        } finally {
-            downloading = false;
-            try {
-                if (fos != null)
-                    fos.close();
-
-                if (fch != null)
-                    fch.close();
-            } catch (Exception e) {
-                Log.e(TAG, Utils.getExceptionAsString(e));
-            }
+    public static void downloadApkAsync(Context context, Consumer<DownloadState> onFinish) {
+        if (downloadThread != null) {
+            onFinish.accept(DownloadState.ALREADY_DOWNLOADING);
+            return;
+        }
+        if (isDownloadedApkLatest(context)) {
+            onFinish.accept(DownloadState.ALREADY_DOWNLOADED);
+            return;
         }
 
-        return false;
+        downloadThread = new Thread(() -> {
+            FileOutputStream fos = null;
+            FileChannel fch = null;
+            try {
+                final ReadableByteChannel readableByteChannel
+                        = Channels.newChannel(new URL(APK_DOWNLOAD_LINK).openStream());
+
+                fos = new FileOutputStream(getApk(context));
+                fch = fos.getChannel();
+
+                fch.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+                Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum() + "");
+
+                onFinish.accept(DownloadState.SUCCESS);
+                return;
+            } catch (Exception e) {
+                Log.e(TAG, "Exception while downloading apk. E:\n" + Utils.getExceptionAsString(e));
+            } finally {
+                downloadThread = null;
+                try {
+                    if (fos != null) fos.close();
+                    if (fch != null) fch.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "E closing streams. E:\n" + Utils.getExceptionAsString(e));
+                }
+            }
+
+            onFinish.accept(DownloadState.FAILURE);
+        });
+
+        downloadThread.start();
     }
 }
