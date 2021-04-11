@@ -213,11 +213,13 @@ public class MainActivity extends AppCompatActivity {
         final int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
 
         if (updateAvailable) {
-            updateAppButt.setVisibility(visibility);
-            appUpdateAvailableTxt.setVisibility(visibility);
+            runOnUiThread(() -> {
+                updateAppButt.setVisibility(visibility);
+                appUpdateAvailableTxt.setVisibility(visibility);
+            });
 
             if (!AppUpdateManager.isDownloadedApkLatest(this)) {
-                updateAppButt.setEnabled(false);
+                runOnUiThread(() -> updateAppButt.setEnabled(false));
                 AppUpdateManager.downloadApkAsync(this, (downloadState) -> runOnUiThread(() -> updateAppButt.setEnabled(true)));
                 Log.i("MainActivity", "Downloading update apk.");
             }
