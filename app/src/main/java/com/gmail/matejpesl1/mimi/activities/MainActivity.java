@@ -27,9 +27,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     public static final String GLOBAL_PREFS_NAME = "AppPrefs";
     private static final Requester requester = new Requester(0);
-    private static boolean requestsRequested = false;
+    private static boolean allowancesRequested = false;
 
-    private MimibazarRequester mimibazarRequester = null;
+    private static MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
     private TextView stateDescriptionText;
     private TextView todayUpdatedValue;
@@ -83,27 +83,29 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
-        if (!requestsRequested) {
-            requestsRequested = true;
+        if (!allowancesRequested) {
+            allowancesRequested = true;
             new Thread(() -> {
-                RootUtils.askForRoot();
+                try { Thread.sleep(2000); }
+                catch (InterruptedException e) { Log.i(TAG, Utils.getExceptionAsString(e)); }
 
                 if (!Utils.hasBatteryException(this))
                     Utils.requestBatteryException(this);
+
+                try { Thread.sleep(2000); }
+                catch (InterruptedException e) { Log.i(TAG, Utils.getExceptionAsString(e)); }
+
+                RootUtils.askForRoot();
             }).start();
         }
 
         updateView();
-
-        //TODO: Test this.
-        //TODO: Remove this.
-        //UpdateService.enqueueUpdateRetryWorker(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //updateView();
+        updateView();
     }
 
     public void openSettings(View v) {
@@ -112,60 +114,81 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
-        // Update app update visibility.
+        // Updates that require internet.
         new Thread(() -> {
-            // Update app update section visibility.
-            updateAppUpdateVisibility();
-        }).start();
-
-        new Thread(() -> {
-            // Updates that require mimibazarRequester to be initialized.
             if (!InternetUtils.isConnectionAvailable()) {
                 Log.i(TAG, "Internet connection not available.");
                 return;
             }
 
-            try {
-                mimibazarRequester = new MimibazarRequester(requester,
-                        Updater.getUsername(this),
-                        Updater.getPassword(this));
-            } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-                Log.e(TAG, "Could not create mimibazarRequester. E: " + Utils.getExceptionAsString(e));
+            // Update app update visibility.
+            updateAppUpdateVisibility();
+
+            // Update credentials and initialize mimibazar requester.
+            boolean accValid = updateAccountAndRelated();
+
+            if (UpdateServiceAlarmManager.isRegistered(this) && !accValid) {
+                UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+                runOnUiThread(() -> updateAlarm());
             }
 
-            // Update credentials.
-            updateCredentialsWarning();
-
-            // Update remaining updates. This comes second, because it takes longer to complete.
+            // Update remaining updates. This comes last, because it takes longer to complete.
             updateRemaining();
         }).start();
 
         // Update alarm manager state & description.
         updateAlarm();
-        //scheduleJob();
     }
 
-    private void updateCredentialsWarning() {
-        boolean credentialsValid =
-                !Utils.isEmptyOrNull(Updater.getUsername(this)) &&
-                        !Utils.isEmptyOrNull(Updater.getPassword(this)) &&
-                        mimibazarRequester != null;
+    private boolean updateAccountAndRelated() {
+        final String username = Updater.getUsername(this);
+        final String pass = Updater.getPassword(this);
+        final boolean hasUsername = !Utils.isEmptyOrNull(username);
+        final boolean hasPass = !Utils.isEmptyOrNull(pass);
+
+        final String error;
+
+        if (!hasUsername && !hasPass)
+            error = "Chybí přihlašovací údaje. Je třeba je v nastavení vyplnit.";
+        else if (!hasUsername)
+            error = "Chybí uživatelské jméno. Je třeba jej v nastavení vyplnit.";
+        else if (!hasPass)
+            error = "Chybí uživatelské heslo. Je třeba jej v nastavení vyplnit.";
+        else {
+            boolean err = false;
+            try {
+                mimibazarRequester = new MimibazarRequester(requester, username, pass);
+            } catch (MimibazarRequester.CouldNotGetAccIdException e) {
+                err = true;
+                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + Utils.getExceptionAsString(e));
+            }
+
+            error = err ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";
+        }
+
+        final boolean allValid = error.equals("");
+
+        Log.i(TAG, String.format("Account info valid: %s | error (if any): ", allValid, error));
+
+        if (!allValid)
+            mimibazarRequester = null;
 
         boolean needsUpdate =
-                (credentialsValid && !updateSwitch.isEnabled()) ||
-                        (!credentialsValid && updateSwitch.isEnabled());
+                (allValid && !updateSwitch.isEnabled()) ||
+                        (!allValid && updateSwitch.isEnabled());
 
-        if (!credentialsValid)
-            Log.i(TAG, "Mimibazar credentials are not valid.");
+        if (!allValid)
+            Log.i(TAG, error);
 
         runOnUiThread(() -> {
             if (needsUpdate) {
-                badCredentialsWarning.setVisibility(credentialsValid ? View.INVISIBLE : View.VISIBLE);
-                updateSwitch.setEnabled(credentialsValid);
-                UpdateServiceAlarmManager.changeRepeatingAlarm(this, credentialsValid);
-                updateAlarm();
+                badCredentialsWarning.setText(error);
+                badCredentialsWarning.setVisibility(allValid ? View.INVISIBLE : View.VISIBLE);
+                updateSwitch.setEnabled(allValid);
             }
         });
+
+        return allValid;
     }
 
     private void updateAlarm() {
@@ -187,18 +210,23 @@ public class MainActivity extends AppCompatActivity {
     private void updateAppUpdateVisibility() {
         boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
         Log.i(TAG, "App update available: " + updateAvailable);
-        int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
+        final int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
 
+        if (updateAvailable) {
+            if (!AppUpdateManager.isDownloadedApkLatest(this)) {
+                AppUpdateManager.downloadApkAsync(this, (downloadState) -> updateAppUpdateElementsVisibility(visibility));
+                Log.i("MainActivity", "Downloading update apk.");
+            }
+            else
+                updateAppUpdateElementsVisibility(visibility);
+        }
+    }
+
+    private void updateAppUpdateElementsVisibility(int visibility) {
         runOnUiThread(() -> {
             updateAppButt.setVisibility(visibility);
             appUpdateAvailableTxt.setVisibility(visibility);
         });
-
-        if (updateAvailable && !AppUpdateManager.isDownloadedApkLatest(this)) {
-            Log.i("MainActivity", "Downloading update apk");
-            boolean downloaded = AppUpdateManager.downloadApk(this);
-            Log.i(TAG, "App download succeeded: " + downloaded);
-        }
     }
 
     private void updateRemaining() {
