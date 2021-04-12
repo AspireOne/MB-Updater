@@ -18,8 +18,8 @@ android {
         applicationId "com.gmail.matejpesl1.mimi"
         minSdkVersion 28
         targetSdkVersion 28
-        versionCode 105
-        versionName '1.0.5'
+        versionCode 200
+        versionName '2.0.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.Release
