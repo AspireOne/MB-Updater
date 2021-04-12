@@ -113,7 +113,7 @@ public class AppUpdateManager {
     }
 
     private static int getNewestVerNum(Context context) {
-        final long lastCheckTimeMs = Integer.parseInt(Utils.getPref(context, PREF_LAST_VERSION_CHECK_TIME, "0"));
+        final long lastCheckTimeMs = Long.parseLong(Utils.getPref(context, PREF_LAST_VERSION_CHECK_TIME, "0"));
 
         if ((System.currentTimeMillis() - lastCheckTimeMs) < VERSION_CACHE_TIME_MS)
             return cachedVersion;
