@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         }
 
-        updateView();
+        //updateView();
     }
 
     @Override
@@ -127,9 +127,12 @@ public class MainActivity extends AppCompatActivity {
             // Update credentials and initialize mimibazar requester.
             boolean accValid = updateAccountAndRelated();
 
-            if (UpdateServiceAlarmManager.isRegistered(this) && !accValid) {
-                UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
-                runOnUiThread(() -> updateAlarm());
+            if (!accValid) {
+                if (UpdateServiceAlarmManager.isRegistered(this)) {
+                    UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
+                    runOnUiThread(() -> updateAlarm());
+                }
+                return;
             }
 
             // Update remaining updates. This comes last, because it takes longer to complete.
@@ -155,23 +158,23 @@ public class MainActivity extends AppCompatActivity {
         else if (!hasPass)
             error = "Chybí uživatelské heslo. Je třeba jej v nastavení vyplnit.";
         else {
-            boolean err = false;
+            boolean initErr = false;
             try {
                 mimibazarRequester = new MimibazarRequester(requester, username, pass);
             } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-                err = true;
+                initErr = true;
                 Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + Utils.getExceptionAsString(e));
             }
 
-            error = err ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";
+            error = initErr ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";
         }
 
         final boolean allValid = error.equals("");
 
-        Log.i(TAG, String.format("Account info valid: %s | error (if any): ", allValid, error));
-
         if (!allValid)
             mimibazarRequester = null;
+
+        Log.i(TAG, String.format("Account info valid: %s | error (if any): ", allValid, error));
 
         boolean needsUpdate =
                 (allValid && !updateSwitch.isEnabled()) ||
