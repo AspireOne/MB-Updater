@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateAppUpdateVisibility() {
-        boolean updateAvailable = AppUpdateManager.isUpdateAvailable();
+        boolean updateAvailable = AppUpdateManager.isUpdateAvailable(this);
         Log.i(TAG, "App update available: " + updateAvailable);
         final int visibility = updateAvailable ? View.VISIBLE : View.INVISIBLE;
 

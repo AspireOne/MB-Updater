@@ -19,26 +19,27 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class AppUpdateManager {
     private static final String TAG = "AppUpdateManager";
     private static final String PREF_LAST_DOWNLOADED_APK_VERSION = "Last Downloaded APK version";
-    private static final String LATEST_RELEASE_JSON_LINK = "https://api.github.com/repos/AspireOne/hub/releases/latest";
-    private static final String APK_DOWNLOAD_LINK = "https://github.com/AspireOne/hub/releases/latest/download/updater.apk";
+    private static final String PREF_LAST_VERSION_CHECK_TIME = "Last Version Check Time";
+    private static final String LATEST_RELEASE_JSON_LINK = "https://api.github.com/repos/AspireOne/mimibazar-updater/releases/latest";
+    private static final String APK_DOWNLOAD_LINK = "https://github.com/AspireOne/mimibazar-updater/releases/latest/download/updater.apk";
     private static final String APK_NAME = "updater.apk";
     private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
-    private static final long VERSION_CACHE_TIME_MS = 600000; // 10 minutes.
+    private static final long VERSION_CACHE_TIME_MS = TimeUnit.HOURS.toMillis(1);
 
     public enum DownloadState {ALREADY_DOWNLOADED, ALREADY_DOWNLOADING, SUCCESS, FAILURE}
 
     private static @Nullable Thread downloadThread = null;
-    private static long lastVersionCheckMs = 0;
     private static int cachedVersion = 0;
 
-    public static boolean isUpdateAvailable() {
-        return getNewestVerNum() > BuildConfig.VERSION_CODE;
+    public static boolean isUpdateAvailable(Context context) {
+        return getNewestVerNum(context) > BuildConfig.VERSION_CODE;
     }
 
     public static boolean requestInstall(Context context) {
@@ -111,13 +112,14 @@ public class AppUpdateManager {
         catch (InterruptedException e) { Log.e(tag, Utils.getExceptionAsString(e)); }
     }
 
-    private static int getNewestVerNum() {
-        if ((System.currentTimeMillis() - lastVersionCheckMs) < VERSION_CACHE_TIME_MS) {
+    private static int getNewestVerNum(Context context) {
+        final long lastCheckTimeMs = Integer.parseInt(Utils.getPref(context, PREF_LAST_VERSION_CHECK_TIME, "0"));
+
+        if ((System.currentTimeMillis() - lastCheckTimeMs) < VERSION_CACHE_TIME_MS)
             return cachedVersion;
-        }
 
         Log.i(TAG, "Checking for an updated app version");
-        lastVersionCheckMs = System.currentTimeMillis();
+        Utils.writePref(context, PREF_LAST_VERSION_CHECK_TIME, System.currentTimeMillis()+"");
 
         try {
             URL url = new URL(LATEST_RELEASE_JSON_LINK);
@@ -141,7 +143,7 @@ public class AppUpdateManager {
 
     public static boolean isDownloadedApkLatest(Context context) {
         final String downloadedApkVer = Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0");
-        final String latestApkVer = getNewestVerNum() + "";
+        final String latestApkVer = getNewestVerNum(context) + "";
 
         return downloadedApkVer.equals(latestApkVer) && getApk(context).exists();
     }
@@ -167,7 +169,7 @@ public class AppUpdateManager {
                 fch = fos.getChannel();
 
                 fch.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum() + "");
+                Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum(context)+"");
 
                 onFinish.accept(DownloadState.SUCCESS);
                 return;
