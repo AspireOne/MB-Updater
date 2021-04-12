@@ -98,8 +98,6 @@ public class MainActivity extends AppCompatActivity {
                 RootUtils.askForRoot();
             }).start();
         }
-
-        //updateView();
     }
 
     @Override
