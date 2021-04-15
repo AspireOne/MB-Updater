@@ -16,6 +16,10 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
     private final ITimePickerClickHandler clickHandler;
     private final Calendar defaultTime;
 
+    public interface ITimePickerClickHandler {
+        void handleClick(int hour, int minute);
+    }
+
     public TimePickerFragment(ITimePickerClickHandler clickHandler, Calendar defaultTime) {
         super();
         this.clickHandler = clickHandler;
