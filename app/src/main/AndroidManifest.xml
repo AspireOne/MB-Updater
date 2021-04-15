@@ -20,11 +20,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Mimi">
-
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/activity_settings_title"
-            android:parentActivityName=".activities.MainActivity"></activity>
+            android:label="@string/title_activity_settings"></activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -33,7 +31,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"></meta-data>
+                android:resource="@xml/provider_paths" />
         </provider>
 
         <receiver
@@ -50,7 +48,7 @@
             android:name=".services.UpdateService"
             android:directBootAware="true"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>

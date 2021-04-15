@@ -1,0 +1,71 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:layout_width="match_parent"
+        app:key="internet_manipulation"
+        app:title="Manipulace s internetem">
+
+        <EditTextPreference
+            app:key="description"
+            app:summary="Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu." />
+
+        <SwitchPreferenceCompat
+            app:key="wifi"
+            app:summaryOff="Aplikace se nepokusí zapnout WiFi."
+            app:summaryOn="Aplikace může zapnout wifi."
+            app:title="Povolit zapnutí WiFi" />
+
+        <!--TODO: Fill dependency on root-->
+        <SwitchPreferenceCompat
+            app:dependency="root_allowed"
+            app:key="data"
+            app:summaryOff="Aplikace se nepokusí zapnout data."
+            app:summaryOn="Aplikace může zapnout data."
+            app:title="Povolit zapnutí mobilních dat (vyžaduje root)" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="updates_settings"
+        app:title="Nastavení aktualizací">
+
+        <ListPreference
+            android:defaultValue="4"
+            android:dialogTitle="Počet stránek na aktulizování"
+            android:entries="@array/updated_pages_entries"
+            android:entryValues="@array/updated_pages_values"
+            android:key="pages_amount"
+            android:summary="Počet stránek, které budou aktualizovány"
+            android:title="Počet stránek na aktulizování" />
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/messages_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/reply_entries"
+            app:entryValues="@array/reply_values"
+            app:key="reply"
+            app:title="@string/reply_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
+    </PreferenceCategory>
+</PreferenceScreen>
