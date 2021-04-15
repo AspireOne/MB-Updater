@@ -1,36 +1,47 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory app:title="Nastavení aktualizací">
+        <ListPreference
+            app:title="Počet stránek na aktulizování"
+            app:summary="%s"
+            app:dialogTitle="Vyberte počet stránek"
+            app:persistent="true"
+            app:entries="@array/updated_pages_entries"
+            app:entryValues="@array/updated_pages_values"
+            app:defaultValue="25"
+            app:key="pages_amount" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Manipulace s internetem">
         <Preference
-            android:selectable="false"
-            android:enabled="true"
-            android:summary="Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu." />
+            app:selectable="false"
+            app:enabled="true"
+            app:summary="Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu." />
 
         <SwitchPreferenceCompat
+            app:title="Povolit zapnutí WiFi"
             app:key="allow_wifi_manipulation"
+            app:defaultValue="true"
             app:summaryOff="Aplikace se nepokusí zapnout WiFi."
-            app:summaryOn="Aplikace může zapnout wifi."
-            app:title="Povolit zapnutí WiFi" />
+            app:summaryOn="Aplikace může zapnout wifi." />
 
         <!--TODO: Fill dependency on root-->
         <SwitchPreferenceCompat
-            app:key="allow_data_manipulation"
-            app:summaryOff="Aplikace se nepokusí zapnout data."
-            app:summaryOn="Aplikace může zapnout data."
             app:title="Povolit zapnutí mobilních dat (vyžaduje root)"
-            app:singleLineTitle="false"/>
+            app:singleLineTitle="false"
+            app:key="allow_data_manipulation"
+            app:defaultValue="true"
+            app:summaryOff="Aplikace se nepokusí zapnout data."
+            app:summaryOn="Aplikace může zapnout data." />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Nastavení aktualizací">
-
-        <ListPreference
-            android:title="Počet stránek na aktulizování"
-            android:summary="Počet stránek, které budou aktualizovány"
-            android:dialogTitle="Vyberte počet stránek"
-            android:defaultValue="4"
-            android:entries="@array/updated_pages_entries"
-            android:entryValues="@array/updated_pages_values"
-            android:key="pages_amount" />
+    <PreferenceCategory app:title="Ostatní">
+        <SwitchPreferenceCompat
+            app:title="Oznámit o úspěšné aktualizaci"
+            app:key="notify_about_successful_update"
+            app:defaultValue="true"
+            app:summaryOff="Po úspěšné aktualizaci se žádné oznámení nezobrazí."
+            app:summaryOn="Po úspěšné aktualizaci se zobrazí oznámení."/>
     </PreferenceCategory>
 </PreferenceScreen>
