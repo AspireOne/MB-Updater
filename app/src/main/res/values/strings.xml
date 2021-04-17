@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="default_channel_name">Výchozí</string>
+    <string name="default_channel_description">Výchozí oznámení Mimibazar aktualizací</string>
+    <string name="error_channel_name">Chyby</string>
+    <string name="error_channel_description">Oznámení chyb Mimibazar aktualizací</string>
+
     <string name="update_switch">Aktualizovat</string>
     <string name="updating_on_description">Aktualizování je zapnuto.</string>
     <string name="updating_off_description">Aktualizování je vypnuto.</string>
@@ -19,8 +24,6 @@
     <string name="notify_about_succesful_update">Oznámit o úspěšné aktualizaci:</string>
     <string name="cannot_update_mimibazar">Nelze aktualizovat Mimibazar</string>
     <string name="cannot_get_internet_connection">Nelze získat internetové připojení.</string>
-    <string name="default_channel">Výchozí kanál</string>
-    <string name="default_channel_description">Výchozí kanál pro oznámení Mimibazar aktualizací</string>
     <string name="cannot_update_mimibazar_runtime_error">Nelze aktualizovat Mimibazar kvůli runtime chybě</string>
     <string name="mimibazar_sucesfully_updated">Mimibazar úspěšně aktualizován</string>
     <string name="missing_credentials">Chybí přihlašovací údaje</string>
