@@ -1,6 +1,7 @@
 package com.gmail.matejpesl1.mimi.services;
 
 import android.app.IntentService;
+import android.app.NotificationChannel;
 import android.content.Intent;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -81,6 +82,7 @@ public class UpdateService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG, "Update Service intent received.");
+
         PowerManager.WakeLock wakelock = acquireWakelock(5);
         if (UpdateServiceAlarmManager.isRegistered(this))
             UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
@@ -90,18 +92,22 @@ public class UpdateService extends IntentService {
 
         Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevMobileDataState.toString(), prevWifiEnabled));
 
+        boolean hasInternet = InternetUtils.tryAssertHasInternet(this, prevMobileDataState,
+                prevWifiEnabled, getAllowWifiChange(this), getAllowDataChange(this));
         // Execute only if internet connection could be established.
-        if (tryAssertHasInternet(prevMobileDataState, prevWifiEnabled)) {
-            Log.i(TAG, "Internet connection could be established, executing Update.");
+        if (hasInternet) {
+            Log.i(TAG, "Internet connection could be established, executing Updater.");
             new Updater(this).update();
         } else {
             boolean retry = getRetryWhenInternetAvailable(this);
 
             Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
-            Notifications.PostDefaultNotification(this,
+
+            Notifications.PostNotification(this,
                     getResources().getString(R.string.cannot_update_mimibazar),
-                    "Nelze získat internetové připojení." + (retry ? " Aktualizace proběhne" +
-                            "až bude dostupné." : ""));
+                    "Nelze získat internetové připojení." +
+                            (retry ? " Aktualizace proběhne až bude dostupné." : ""),
+                    Notifications.Channel.ERROR);
 
             if (retry) {
                 Log.i(TAG, "Enqueing worker to retry the update when connection is available.");
@@ -131,55 +137,9 @@ public class UpdateService extends IntentService {
         WorkManager.getInstance(context).enqueue(updateWorkRequest);
     }
 
-    private boolean tryAssertHasInternet(InternetUtils.DataState initialDataState, boolean initialWifiEnabled) {
-        // If connection is available in the current state (= without any changes), return true.
-        if (isConnectionAvailable())
-            return true;
-
-        if (getAllowWifiChange(this)) {
-            // If connection is not available and the WIFI is off, turn it on
-            // and return true if connection is now available.
-            WifiManager wManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
-
-            if (!initialWifiEnabled) {
-                wManager.setWifiEnabled(true);
-
-                if (pingConnection())
-                    return true;
-            }
-
-            // If connection is not available even when the WIFI is on, turn it off
-            // (so that it doesn't interfere with mobile data).
-            wManager.setWifiEnabled(false);
-
-            // If data were already enabled (or unknown) and wifi too, check if the
-            // data will work now without the wifi interfering and return it.
-            // If data were already enabled (or unknown) but wifi not, return false - we can't
-            // do anything else.
-            if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
-                return initialWifiEnabled ? pingConnection() : false;
-        }
-
-        if (getAllowDataChange(this)) {
-            // If the data were already enabled or we don't have permission to read it (and thus
-            // change it), we can't do anything else.
-            if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
-                return false;
-
-            // Enable data as a last try and return if the connection is available now.
-            boolean set = RootUtils.setMobileDataConnection(true);
-            if (set)
-                return pingConnection();
-        }
-
-        return false;
-    }
-
     private PowerManager.WakeLock acquireWakelock(int minutes) {
         PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
-
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "MimibazarUpdater::UpdateServiceWakeLock");
 
         wakeLock.acquire(minutes * 60 * 1000L);
