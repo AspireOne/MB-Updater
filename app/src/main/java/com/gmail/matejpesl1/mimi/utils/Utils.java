@@ -55,13 +55,13 @@ public class Utils {
 
     public static boolean hasBatteryException(Context context) {
         String packageName = context.getPackageName();
-        PowerManager pm = (PowerManager)context.getSystemService(context.POWER_SERVICE);
+        PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         return pm.isIgnoringBatteryOptimizations(packageName);
     }
 
     public static void requestBatteryException(Context context) {
         String packageName = context.getPackageName();
-        PowerManager pm = (PowerManager)context.getSystemService(context.POWER_SERVICE);
+        PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
             Intent intent = new Intent();
             intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
