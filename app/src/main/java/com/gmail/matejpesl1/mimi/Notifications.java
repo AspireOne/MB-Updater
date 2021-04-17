@@ -7,47 +7,70 @@ import android.content.Context;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-public class Notifications {
-    private static int currId = 250165565;
-    private static final String DEFAULT_CHANNEL_ID = "mimibazar_updates_default_channel";
-    private static boolean defaultChannelRegisteredCached = false;
+import java.util.concurrent.ThreadLocalRandom;
 
+import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+import static android.app.NotificationManager.IMPORTANCE_HIGH;
+
+public class Notifications {
     private Notifications() {}
 
-    private static void RegisterDefaultNotificationChannel(Context context) {
-        registerChannel(context, createDefaultNotificationChannel(context));
-        defaultChannelRegisteredCached = true;
+    // I miss C#'s structs and properties... This is all so much boilerplate.
+    public enum Channel {
+        DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel());
+
+        protected final IChannel channel;
+        Channel(IChannel channel) {
+            this.channel = channel;
+        }
     }
 
-    public static void PostDefaultNotification(Context context, String title, String text) {
-        if (!defaultChannelRegisteredCached)
-            Notifications.RegisterDefaultNotificationChannel(context);
+    interface IChannel {
+        String getId();
+        int getNameRes();
+        int getDescRes();
+        int getImportance();
+    }
+
+    private static class DefaultChannel implements IChannel {
+        public String getId() { return "mimibazar_updates_default_channel"; }
+        public int getNameRes() { return R.string.default_channel_name; }
+        public int getDescRes() { return R.string.default_channel_description; }
+        public int getImportance() { return IMPORTANCE_DEFAULT; }
+    }
+
+    private static class ErrorChannel implements IChannel {
+        public String getId() { return "mimibazar_updates_error_channel"; }
+        public int getNameRes() { return R.string.error_channel_name; }
+        public int getDescRes() { return R.string.error_channel_description; }
+        public int getImportance() { return IMPORTANCE_HIGH; }
+    }
+
+    // TODO: You ended here.
+    public static void PostNotification(Context context, String title, String text, Channel channelType) {
+        IChannel channel = channelType.channel;
+        createNotificationChannel(context, channel);
 
         NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(context, Notifications.DEFAULT_CHANNEL_ID)
+                new NotificationCompat.Builder(context, channel.getId())
                         .setSmallIcon(R.drawable.ic_launcher_background)
                         .setContentTitle(title)
                         .setContentText(text)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(currId++, builder.build());
+        notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE), builder.build());
     }
 
-    private static void registerChannel(Context context, NotificationChannel channel) {
+    private static void createNotificationChannel(Context context, IChannel channel) {
+        CharSequence name = context.getResources().getString(channel.getNameRes());
+        String description = context.getResources().getString(channel.getDescRes());
+
+        NotificationChannel newChannel = new NotificationChannel(channel.getId(), name, channel.getImportance());
+        newChannel.setDescription(description);
+
         NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-    }
-
-    private static NotificationChannel createDefaultNotificationChannel(Context context) {
-        CharSequence name = context.getResources().getString(R.string.default_channel);
-        String description = context.getResources().getString(R.string.default_channel_description);
-        int importance = NotificationManager.IMPORTANCE_HIGH;
-
-        NotificationChannel channel = new NotificationChannel(DEFAULT_CHANNEL_ID, name, importance);
-        channel.setDescription(description);
-
-        return channel;
+        notificationManager.createNotificationChannel(newChannel);
     }
 }
