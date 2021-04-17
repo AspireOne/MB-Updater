@@ -1,40 +1,46 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="Nastavení aktualizací">
+    <PreferenceCategory app:title="Nastavení aktualizací" app:iconSpaceReserved="false">
         <SeekBarPreference
             app:title="Počet stránek na aktualizování"
             app:defaultValue="25"
             app:showSeekBarValue="true"
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_pages_amount" />
         <Preference
             app:title="Čas automatických aktualizací"
             app:summary="00:00"
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_update_time" />
         <SwitchPreferenceCompat
             app:title="Dodatečně aktualizovat"
             app:defaultValue="true"
             app:summary="Pokud v čase aktualizace chybí internet, provede se hned, jakmile bude dostupný."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_update_additionally" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Přihlašovací údaje do mimibazaru">
+    <PreferenceCategory app:title="Přihlašovací údaje do mimibazaru" app:iconSpaceReserved="false">
         <EditTextPreference
             app:title="Uživatelské jméno"
             app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_username" />
         <EditTextPreference
             app:title="Uživatelské heslo"
             app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_password" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Manipulace s internetem">
+    <PreferenceCategory app:title="Manipulace s internetem" app:iconSpaceReserved="false">
         <Preference
+            app:iconSpaceReserved="false"
             app:selectable="false"
             app:enabled="true"
             app:summary="Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu." />
@@ -44,6 +50,7 @@
             app:defaultValue="true"
             app:summaryOff="Aplikace se nepokusí zapnout WiFi."
             app:summaryOn="Aplikace může zapnout wifi."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_allow_wifi_change" />
 
@@ -55,27 +62,31 @@
             app:singleLineTitle="false"
             app:summaryOff="Aplikace se nepokusí zapnout data."
             app:summaryOn="Aplikace může zapnout data."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_allow_data_change" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Ostatní">
+    <PreferenceCategory app:title="Ostatní" app:iconSpaceReserved="false">
         <SwitchPreferenceCompat
             app:title="Oznámit o úspěšné aktualizaci"
             app:defaultValue="true"
             app:summaryOff="Po úspěšné aktualizaci se žádné oznámení nezobrazí."
             app:summaryOn="Po úspěšné aktualizaci se zobrazí oznámení."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_successful_update_notification" />
 
         <CheckBoxPreference
             app:title="Root oprávnění"
             app:summary="Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_root_permission" />
         <CheckBoxPreference
             app:title="Povolení chodu na pozadí"
             app:summary="Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat."
+            app:iconSpaceReserved="false"
             app:persistent="true"
             app:key="setting_battery_exception" />
     </PreferenceCategory>
