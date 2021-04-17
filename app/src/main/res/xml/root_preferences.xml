@@ -1,18 +1,24 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="Nastavení aktualizací" app:iconSpaceReserved="false">
-        <SeekBarPreference
+
+        <ListPreference
             app:title="Počet stránek na aktualizování"
+            app:useSimpleSummaryProvider="true"
             app:defaultValue="25"
-            app:showSeekBarValue="true"
+            app:dialogTitle="Vyberte počet stránek"
+            app:entries="@array/updated_pages_entries"
+            app:entryValues="@array/updated_pages_values"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingPageAmount"
             app:key="setting_pages_amount" />
         <Preference
             app:title="Čas automatických aktualizací"
             app:summary="00:00"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingUpdateTime"
             app:key="setting_update_time" />
         <SwitchPreferenceCompat
             app:title="Dodatečně aktualizovat"
@@ -20,6 +26,7 @@
             app:summary="Pokud v čase aktualizace chybí internet, provede se hned, jakmile bude dostupný."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingUpdateAdditionally"
             app:key="setting_update_additionally" />
     </PreferenceCategory>
 
@@ -29,12 +36,14 @@
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingUsername"
             app:key="setting_username" />
         <EditTextPreference
             app:title="Uživatelské heslo"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingPassword"
             app:key="setting_password" />
     </PreferenceCategory>
 
@@ -52,6 +61,7 @@
             app:summaryOn="Aplikace může zapnout wifi."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingAllowWifiChange"
             app:key="setting_allow_wifi_change" />
 
         <!--TODO: Fill dependency on root-->
@@ -64,6 +74,7 @@
             app:summaryOn="Aplikace může zapnout data."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingAllowDataChange"
             app:key="setting_allow_data_change" />
     </PreferenceCategory>
 
@@ -75,6 +86,7 @@
             app:summaryOn="Po úspěšné aktualizaci se zobrazí oznámení."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingSuccesfullUpdateNotification"
             app:key="setting_successful_update_notification" />
 
         <CheckBoxPreference
@@ -82,12 +94,14 @@
             app:summary="Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingRootPermission"
             app:key="setting_root_permission" />
         <CheckBoxPreference
             app:title="Povolení chodu na pozadí"
             app:summary="Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat."
             app:iconSpaceReserved="false"
             app:persistent="true"
+            android:id="@+id/settingBatteryException"
             app:key="setting_battery_exception" />
     </PreferenceCategory>
 </PreferenceScreen>
