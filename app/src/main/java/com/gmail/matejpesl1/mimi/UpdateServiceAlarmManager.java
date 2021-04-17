@@ -62,9 +62,8 @@ public class UpdateServiceAlarmManager {
         Utils.writePref(context, PREF_UPDATE_DAY_PART, finalDayPart+"");
 
         // If the alarm is registered, re-register it to the new time.
-        if (isRegistered(context)) {
+        if (isRegistered(context))
             changeRepeatingAlarm(context, true);
-        }
     }
 
     public static Calendar getCurrUpdateCalendar(Context context) {
