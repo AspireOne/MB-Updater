@@ -46,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private Context context;
         private Preference updateTimePref;
+        private Preference allowDataChangePref;
         private Preference rootPermissionPref;
         private Preference batteryExceptionPref;
 
@@ -55,10 +56,13 @@ public class SettingsActivity extends AppCompatActivity {
             // Initialize.
             updateTimePref = findPreference(getString(R.string.setting_update_time_key));
             rootPermissionPref = findPreference(getString(R.string.setting_root_permission_key));
+            allowDataChangePref = findPreference(getString(R.string.setting_allow_data_change_key));
             batteryExceptionPref = findPreference(getString(R.string.setting_battery_exception_key));
 
             // Update state.
             updateUpdateTimeSummary();
+            checkRootAndUpdateSettingsAsync();
+
             if (Utils.hasBatteryException(context))
                 batteryExceptionPref.setSummary("Povoleno");
 
@@ -76,12 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
             });
 
             rootPermissionPref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
-                /*new Thread(() -> {
-                    // Checking it also requests it at the same time.
-                    if (RootUtils.isRootAvailable())
-                        getActivity().runOnUiThread(() -> rootPermissionPref.setSummary("Povoleno"));
-                }).start();*/
-                RootUtils.askForRoot();
+                checkRootAndUpdateSettingsAsync();
                 return true;
             });
 
@@ -90,6 +89,18 @@ public class SettingsActivity extends AppCompatActivity {
                     Utils.requestBatteryException(context);
                 return true;
             });
+        }
+
+        private void checkRootAndUpdateSettingsAsync() {
+            new Thread(() -> {
+                // Checking it also requests it at the same time.
+                if (RootUtils.isRootAvailable()) {
+                    getActivity().runOnUiThread(() -> {
+                        rootPermissionPref.setSummary("Povoleno");
+                        allowDataChangePref.setEnabled(true);
+                    });
+                }
+            }).start();
         }
 
         @Override
