@@ -1,16 +1,16 @@
 <resources>
-    <string-array name="updated_pages_entries">
-        <item>5 (105 položek)</item>
-        <item>10 (210 položek)</item>
-        <item>15 (315 položek)</item>
-        <item>20 (420 položek)</item>
-        <item>25 (525 položek)</item>
-        <item>30 (630 položek)</item>
-        <item>35 (735 položek)</item>
-        <item>40 (850 položek)</item>
+    <string-array name="updated_items_entries">
+        <item>105 položek (5 stran)</item>
+        <item>210 položek (10 stran)</item>
+        <item>315 položek (15 stran)</item>
+        <item>420 položek (20 stran)</item>
+        <item>525 položek (25 stran)</item>
+        <item>630 položek (30 stran)</item>
+        <item>735 položek (35 stran)</item>
+        <item>850 položek (40 stran)</item>
     </string-array>
 
-    <string-array name="updated_pages_values">
+    <string-array name="updated_items_values">
         <item>5</item>
         <item>10</item>
         <item>15</item>
@@ -19,15 +19,5 @@
         <item>30</item>
         <item>35</item>
         <item>40</item>
-    </string-array>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
-    </string-array>
-
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
     </string-array>
 </resources>
