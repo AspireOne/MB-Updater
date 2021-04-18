@@ -46,8 +46,19 @@ public class Notifications {
         public int getImportance() { return IMPORTANCE_HIGH; }
     }
 
-    // TODO: You ended here.
-    public static void PostNotification(Context context, String title, String text, Channel channelType) {
+    public static void postNotification(Context context, int titleRes, int textRes, Channel channelType) {
+        postNotification(context, context.getString(titleRes), context.getString(textRes), channelType);
+    }
+
+    public static void postNotification(Context context, String titleRes, int textRes, Channel channelType) {
+        postNotification(context, titleRes, context.getString(textRes), channelType);
+    }
+
+    public static void postNotification(Context context, int titleRes, String textRes, Channel channelType) {
+        postNotification(context, context.getString(titleRes), textRes, channelType);
+    }
+
+    public static void postNotification(Context context, String title, String text, Channel channelType) {
         IChannel channel = channelType.channel;
         createNotificationChannel(context, channel);
 
