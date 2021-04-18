@@ -15,7 +15,7 @@
             app:key="@string/setting_pages_amount_key" />
         <Preference
             app:title="@string/activity_settings_auto_update_time_title"
-            app:summary="00:00"
+            app:summary="xx:xx"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUpdateTime"
@@ -36,12 +36,14 @@
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            app:defaultValue=""
             android:id="@+id/settingUsername"
             app:key="@string/setting_username_key" />
         <EditTextPreference
             app:title="@string/activity_settings_password_title"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
+            app:defaultValue=""
             app:persistent="true"
             android:id="@+id/settingPassword"
             app:key="@string/setting_password_key" />
@@ -51,7 +53,6 @@
         <Preference
             app:iconSpaceReserved="false"
             app:selectable="false"
-            app:enabled="true"
             app:summary="@string/activity_settings_internet_manipulation_summary" />
 
         <SwitchPreferenceCompat
@@ -66,7 +67,7 @@
 
         <SwitchPreferenceCompat
             app:title="@string/activity_settings_allow_change_data_title"
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:dependency="setting_root_permission"
             app:singleLineTitle="false"
             app:summaryOff="@string/activity_settings_allow_change_data_summaryOff"
