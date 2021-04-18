@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setting_pages_amount_key">setting_pages_amount</string>
+    <string name="setting_update_time_key">setting_update_time</string>
+    <string name="setting_update_additionally_key">setting_update_additionally</string>
+    <string name="setting_username_key">setting_username</string>
+    <string name="setting_password_key">setting_password</string>
+    <string name="setting_allow_wifi_change_key">setting_allow_wifi_change</string>
+    <string name="setting_allow_data_change_key">setting_allow_data_change</string>
+    <string name="setting_successful_update_notification_key">setting_successful_update_notification</string>
+    <string name="setting_battery_exception_key">setting_battery_exception</string>
+    <string name="setting_root_permission_key">setting_root_permission</string>
+</resources>
