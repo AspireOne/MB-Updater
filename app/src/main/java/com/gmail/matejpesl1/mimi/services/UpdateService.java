@@ -1,6 +1,7 @@
 package com.gmail.matejpesl1.mimi.services;
 
 import android.app.IntentService;
+import android.app.NotificationChannel;
 import android.content.Intent;
 import android.content.Context;
 import android.os.PowerManager;
@@ -13,6 +14,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
+import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.QueuedUpdateWorker;
 import com.gmail.matejpesl1.mimi.R;
@@ -46,9 +48,9 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        PowerManager.WakeLock wakelock = acquireWakelock(5);
         Log.i(TAG, "Update Service intent received.");
 
-        PowerManager.WakeLock wakelock = acquireWakelock(5);
         if (UpdateServiceAlarmManager.isRegistered(this))
             UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
@@ -65,6 +67,8 @@ public class UpdateService extends IntentService {
         if (hasInternet) {
             Log.i(TAG, "Internet connection could be established, executing Updater.");
             new Updater(this).update();
+            if (AppUpdateManager.isUpdateAvailable(this))
+                Notifications.postNotification(this, "Dostupná aktualizace!", "", Notifications.Channel.DEFAULT);
         } else {
             boolean retry = getBooleanPref(this, R.string.setting_update_additionally_key, true);
 
