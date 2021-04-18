@@ -1,14 +1,8 @@
 package com.gmail.matejpesl1.mimi.services;
 
 import android.app.IntentService;
-import android.app.NotificationChannel;
 import android.content.Intent;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
-import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -25,16 +19,13 @@ import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
-import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
-import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isConnectionAvailable;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
-import static com.gmail.matejpesl1.mimi.utils.InternetUtils.pingConnection;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState;
 
 public class UpdateService extends IntentService {
@@ -104,7 +95,7 @@ public class UpdateService extends IntentService {
             Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
 
             Notifications.PostNotification(this,
-                    getResources().getString(R.string.cannot_update_mimibazar),
+                    getResources().getString(R.string.mimibazar_cannot_update),
                     "Nelze získat internetové připojení." +
                             (retry ? " Aktualizace proběhne až bude dostupné." : ""),
                     Notifications.Channel.ERROR);

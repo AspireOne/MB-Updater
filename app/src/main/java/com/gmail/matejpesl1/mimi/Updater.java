@@ -1,6 +1,5 @@
 package com.gmail.matejpesl1.mimi;
 
-import android.app.NotificationChannel;
 import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
@@ -101,7 +100,7 @@ public class Updater {
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.cannot_update_mimibazar_runtime_error),
+            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update_desc_runtime_error),
                     error, Notifications.Channel.ERROR);
         } else if (getNotifyAboutSuccesfullUpdate(context))
             Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_sucesfully_updated), "",
@@ -113,8 +112,8 @@ public class Updater {
         String username = getPref(context, PREF_USERNAME, "");
         String password = getPref(context, PREF_PASSWORD, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.cannot_update_mimibazar),
-                    context.getResources().getString(R.string.missing_credentials), Notifications.Channel.ERROR);
+            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update),
+                    context.getResources().getString(R.string.activity_main_missing_credentials), Notifications.Channel.ERROR);
             Log.w(TAG, "Credentials are missing, cannot update. Returning.");
             return false;
         }
@@ -122,10 +121,10 @@ public class Updater {
         try {
             mimibazarRequester = new MimibazarRequester(requester, username, password);
         } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.cannot_update_mimibazar),
-                    context.getResources().getString(R.string.cannot_update_invalid_credentials_or_external_error),
+            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update),
+                    context.getResources().getString(R.string.mimibazar_cannot_update_desc_invalid_credentials),
                     Notifications.Channel.ERROR);
-            Log.w(TAG, "MimibazarRequester cannot be created - cannot get account id. Returning.");
+            Log.e(TAG, "MimibazarRequester cannot be created - cannot get account id. Returning.");
             return false;
         }
 
@@ -136,7 +135,7 @@ public class Updater {
         String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
-            Notifications.PostNotification(context, context.getResources().getString(R.string.cannot_update_mimibazar_external_error),
+            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update_desc_external_error),
                     externalError, Notifications.Channel.ERROR);
             return false;
         }

@@ -34,15 +34,15 @@ public class Notifications {
 
     private static class DefaultChannel implements IChannel {
         public String getId() { return "mimibazar_updates_default_channel"; }
-        public int getNameRes() { return R.string.default_channel_name; }
-        public int getDescRes() { return R.string.default_channel_description; }
+        public int getNameRes() { return R.string.channel_default_name; }
+        public int getDescRes() { return R.string.channel_default_desc; }
         public int getImportance() { return IMPORTANCE_DEFAULT; }
     }
 
     private static class ErrorChannel implements IChannel {
         public String getId() { return "mimibazar_updates_error_channel"; }
-        public int getNameRes() { return R.string.error_channel_name; }
-        public int getDescRes() { return R.string.error_channel_description; }
+        public int getNameRes() { return R.string.channel_error_name; }
+        public int getDescRes() { return R.string.channel_error_desc; }
         public int getImportance() { return IMPORTANCE_HIGH; }
     }
 
