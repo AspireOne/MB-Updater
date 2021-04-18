@@ -98,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Logic
         PreferenceManager.setDefaultValues(this, PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
-        Notifications.postNotification(this, "sds", "dsds", Notifications.Channel.DEFAULT);
     }
 
     @Override
