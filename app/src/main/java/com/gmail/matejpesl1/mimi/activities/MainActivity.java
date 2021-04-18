@@ -31,8 +31,7 @@ import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
-    public static final String GLOBAL_PREFS_NAME = "global_prefs";
-    public static final String SETTINGS_PREFS_NAME = "settings_prefs";
+    public static final String PREFS_NAME = "com.gmail.matejpesl1.mimi_preferences";
     private static final Requester requester = new Requester(0);
 
     private static MimibazarRequester mimibazarRequester = null;
@@ -97,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
-        PreferenceManager.setDefaultValues(this, SETTINGS_PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
+        PreferenceManager.setDefaultValues(this, PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
 /*        if (!allowancesRequested) {
             allowancesRequested = true;
             new Thread(() -> {

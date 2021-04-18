@@ -90,7 +90,7 @@ public class Utils {
     }
 
     private static SharedPreferences.Editor getPrefsEditor(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
+        SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
         return prefs.edit();
     }
 
@@ -123,6 +123,6 @@ public class Utils {
     }
 
     private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
+        return context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
     }
 }
