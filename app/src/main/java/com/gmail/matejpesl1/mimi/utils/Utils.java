@@ -71,6 +71,10 @@ public class Utils {
         }
     }
 
+    public static String dateToDigitalTime(Date time) {
+        return new SimpleDateFormat("H:mm", new Locale("cs", "CZ")).format(time);
+    }
+
     public static boolean isEmptyOrNull(String str) {
         return str == null || str.equals("");
     }
