@@ -2,10 +2,14 @@ package com.gmail.matejpesl1.mimi;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
+import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -71,6 +75,9 @@ public class Notifications {
                         .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        PendingIntent appIntent =
+                PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0);
+        builder.setContentIntent(appIntent);
         notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE), builder.build());
     }
 
