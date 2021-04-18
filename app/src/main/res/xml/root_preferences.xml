@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="Nastavení aktualizací" app:iconSpaceReserved="false">
 
+        <!-- TODO: Extract the preference keys to strings.xml and use them in code-->
         <ListPreference
             app:title="Počet stránek na aktualizování"
             app:useSimpleSummaryProvider="true"
@@ -12,14 +13,14 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingPageAmount"
-            app:key="setting_pages_amount" />
+            app:key="@string/setting_pages_amount_key" />
         <Preference
             app:title="Čas automatických aktualizací"
             app:summary="00:00"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUpdateTime"
-            app:key="setting_update_time" />
+            app:key="@string/setting_update_time_key" />
         <SwitchPreferenceCompat
             app:title="Dodatečně aktualizovat"
             app:defaultValue="true"
@@ -27,7 +28,7 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUpdateAdditionally"
-            app:key="setting_update_additionally" />
+            app:key="@string/setting_update_additionally_key" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Přihlašovací údaje do mimibazaru" app:iconSpaceReserved="false">
@@ -37,14 +38,14 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUsername"
-            app:key="setting_username" />
+            app:key="@string/setting_username_key" />
         <EditTextPreference
             app:title="Uživatelské heslo"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingPassword"
-            app:key="setting_password" />
+            app:key="@string/setting_password_key" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Manipulace s internetem" app:iconSpaceReserved="false">
@@ -62,9 +63,8 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingAllowWifiChange"
-            app:key="setting_allow_wifi_change" />
+            app:key="@string/setting_allow_wifi_change_key" />
 
-        <!--TODO: Fill dependency on root-->
         <SwitchPreferenceCompat
             app:title="Povolit zapnutí mobilních dat (vyžaduje root)"
             app:defaultValue="true"
@@ -75,7 +75,7 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingAllowDataChange"
-            app:key="setting_allow_data_change" />
+            app:key="@string/setting_allow_data_change_key" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Ostatní" app:iconSpaceReserved="false">
@@ -87,21 +87,20 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingSuccesfullUpdateNotification"
-            app:key="setting_successful_update_notification" />
+            app:key="@string/setting_successful_update_notification_key" />
 
-        <CheckBoxPreference
-            app:title="Root oprávnění"
-            app:summary="Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data."
-            app:iconSpaceReserved="false"
-            app:persistent="true"
-            android:id="@+id/settingRootPermission"
-            app:key="setting_root_permission" />
-        <CheckBoxPreference
+        <Preference
             app:title="Povolení chodu na pozadí"
-            app:summary="Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat."
+            app:summary="Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat. Klikněte pro povolení."
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingBatteryException"
-            app:key="setting_battery_exception" />
+            app:key="@string/setting_battery_exception_key" />
+        <Preference
+            app:title="Root oprávnění"
+            app:summary="Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data. Pro povolení klikněte."
+            app:iconSpaceReserved="false"
+            android:id="@+id/settingRootPermission"
+            app:key="@string/setting_root_permission_key" />
     </PreferenceCategory>
 </PreferenceScreen>
