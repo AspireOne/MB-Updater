@@ -77,8 +77,8 @@ public class Updater {
 
     private boolean initAndNotifyIfError() {
         requester = new Requester(REQUEST_THROTTLE);
-        String username = getPref(context, R.string.setting_username_key, "");
-        String password = getPref(context, R.string.setting_password_key, "");
+        String username = getStringPref(context, R.string.setting_username_key, "");
+        String password = getStringPref(context, R.string.setting_password_key, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
             Notifications.postNotification(context, R.string.mimibazar_cannot_update,
                     R.string.missing_credentials, Notifications.Channel.ERROR);
@@ -156,7 +156,7 @@ public class Updater {
 
     private String execute() {
         // Initialization.
-        int currIdIndex = getNumberPref(context, PREF_CURR_ID_INDEX, 0);
+        int currIdIndex = getIntPref(context, PREF_CURR_ID_INDEX, 0);
         int remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
         String[] ids = getIdsFromPrefs();
 
@@ -224,12 +224,12 @@ public class Updater {
     }
 
     private String[] getIdsFromPrefs() {
-        String prefIds = getPref(context, PREF_IDS, "");
+        String prefIds = getStringPref(context, PREF_IDS, "");
         return prefIds.split(" ");
     }
 
     private boolean tryRecreatePrefIds() {
-        int amountOfPages = getNumberPref(context, R.string.setting_pages_amount_key, 25);
+        int amountOfPages = getIntPref(context, R.string.setting_pages_amount_key, 25);
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
 
         if (newIds.size() < 3)

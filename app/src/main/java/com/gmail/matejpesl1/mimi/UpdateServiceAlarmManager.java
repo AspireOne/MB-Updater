@@ -1,13 +1,10 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.app.AlarmManager;
-import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.icu.util.Calendar;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.renderscript.Sampler;
 import android.util.Log;
 
 import com.gmail.matejpesl1.mimi.services.UpdateService;
@@ -67,9 +64,9 @@ public class UpdateServiceAlarmManager {
     }
 
     public static Calendar getCurrUpdateCalendar(Context context) {
-        int hour = Utils.getNumberPref(context, PREF_UPDATE_HOUR, -1);
-        int minute = Utils.getNumberPref(context, PREF_UPDATE_MINUTE, -1);
-        int dayPart = Utils.getNumberPref(context, PREF_UPDATE_DAY_PART, -1);
+        int hour = Utils.getIntPref(context, PREF_UPDATE_HOUR, -1);
+        int minute = Utils.getIntPref(context, PREF_UPDATE_MINUTE, -1);
+        int dayPart = Utils.getIntPref(context, PREF_UPDATE_DAY_PART, -1);
 
         if (hour == -1)
             Utils.writePref(context, PREF_UPDATE_HOUR, (hour = 7));

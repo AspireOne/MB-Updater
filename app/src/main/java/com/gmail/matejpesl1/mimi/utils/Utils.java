@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -73,35 +74,66 @@ public class Utils {
         return str == null || str.equals("");
     }
 
-    public static void writePref(Context context, String key, boolean value) { writePref(context, key, Boolean.toString(value)); }
-    public static void writePref(Context context, String key, int value) { writePref(context, key, value+""); }
+    public static void writePref(Context context, String key, Set<String> value) {
+        getPrefsEditor(context).putStringSet(key, value).apply();
+    }
+    public static void writePref(Context context, String key, float value) {
+        getPrefsEditor(context).putFloat(key, value).apply();
+    }
+    public static void writePref(Context context, String key, long value) {
+        getPrefsEditor(context).putLong(key, value).apply();
+    }
+    public static void writePref(Context context, String key, boolean value) {
+        getPrefsEditor(context).putBoolean(key, value).apply();
+    }
+    public static void writePref(Context context, String key, int value) {
+        getPrefsEditor(context).putInt(key, value).apply();
+    }
     public static void writePref(Context context, String key, String value) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
-        SharedPreferences.Editor prefsEditor = prefs.edit();
-        prefsEditor.putString(key, value).apply();
+        getPrefsEditor(context).putString(key, value).apply();
     }
 
-    public static boolean getBooleanPref(Context context, int key, boolean defaultValue) {
-        return getBooleanPref(context, context.getString(key), defaultValue);
+    private static SharedPreferences.Editor getPrefsEditor(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
+        return prefs.edit();
+    }
+
+    public static Set<String> getSetPref(Context context, int keyId, Set<String> defaultValue) {
+        return getSetPref(context, context.getString(keyId), defaultValue);
+    }
+    public static Set<String> getSetPref(Context context, String key, Set<String> defaultValue) {
+        return getPrefs(context).getStringSet(key, defaultValue);
+    }
+
+    public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) {
+        return getBooleanPref(context, context.getString(keyId), defaultValue);
     }
     public static boolean getBooleanPref(Context context, String key, boolean defaultValue) {
-        String pref = getPref(context, key, null);
-        return pref == null ? defaultValue : Boolean.parseBoolean(pref);
+        return getPrefs(context).getBoolean(key, defaultValue);
     }
 
-    public static int getNumberPref(Context context, int key, int defaultValue) {
-        return getNumberPref(context, context.getString(key), defaultValue);
+    public static int getIntPref(Context context, int keyId, int defaultValue) {
+        return getIntPref(context, context.getString(keyId), defaultValue);
     }
-    public static int getNumberPref(Context context, String key, int defaultValue) {
-        String pref = getPref(context, key, null);
-        return pref == null ? defaultValue : Integer.parseInt(pref);
+    public static int getIntPref(Context context, String key, int defaultValue) {
+        return getPrefs(context).getInt(key, defaultValue);
     }
 
-    public static String getPref(Context context, int keyId, String defaultValue) {
-        return getPref(context, context.getString(keyId), defaultValue);
+    public static long getLongPref(Context context, int keyId, long defaultValue) {
+        return getLongPref(context, context.getString(keyId), defaultValue);
     }
-    public static String getPref(Context context, String key, String defaultValue) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
-        return prefs.getString(key, defaultValue);
+    public static long getLongPref(Context context, String key, long defaultValue) {
+        return getPrefs(context).getLong(key, defaultValue);
+    }
+
+    public static String getStringPref(Context context, int keyId, String defaultValue) {
+        return getStringPref(context, context.getString(keyId), defaultValue);
+    }
+    public static String getStringPref(Context context, String key, String defaultValue) {
+        return getPrefs(context).getString(key, defaultValue);
+    }
+
+    private static SharedPreferences getPrefs(Context context) {
+        return context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
     }
 }

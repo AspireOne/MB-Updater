@@ -113,13 +113,13 @@ public class AppUpdateManager {
     }
 
     private static int getNewestVerNum(Context context) {
-        final long lastCheckTimeMs = Long.parseLong(Utils.getPref(context, PREF_LAST_VERSION_CHECK_TIME, "0"));
+        final long lastCheckTimeMs = Utils.getLongPref(context, PREF_LAST_VERSION_CHECK_TIME, 0);
 
         if ((System.currentTimeMillis() - lastCheckTimeMs) < VERSION_CACHE_TIME_MS)
             return cachedVersion;
 
         Log.i(TAG, "Checking for an updated app version");
-        Utils.writePref(context, PREF_LAST_VERSION_CHECK_TIME, System.currentTimeMillis()+"");
+        Utils.writePref(context, PREF_LAST_VERSION_CHECK_TIME, System.currentTimeMillis());
 
         try {
             URL url = new URL(LATEST_RELEASE_JSON_LINK);
@@ -142,7 +142,7 @@ public class AppUpdateManager {
     }
 
     public static boolean isDownloadedApkLatest(Context context) {
-        final int downloadedApkVer = Utils.getNumberPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, 0);
+        final int downloadedApkVer = Utils.getIntPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, 0);
         final int latestApkVer = getNewestVerNum(context);
 
         return downloadedApkVer == latestApkVer && getApk(context).exists();

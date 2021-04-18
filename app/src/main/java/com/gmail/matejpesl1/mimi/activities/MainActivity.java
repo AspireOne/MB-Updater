@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -19,21 +20,24 @@ import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
+import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.dateToCzech;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getExceptionAsString;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getStringPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
-    public static final String GLOBAL_PREFS_NAME = "mimi_preferences";
+    public static final String GLOBAL_PREFS_NAME = "global_prefs";
+    public static final String SETTINGS_PREFS_NAME = "settings_prefs";
     private static final Requester requester = new Requester(0);
 
     private static MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
+    private ImageView settingsIcon;
     private TextView stateDescriptionText;
     private TextView todayUpdatedValue;
     private TextView appUpdateAvailableTxt;
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         updateAppButt = findViewById(R.id.button_updateApp);
         badCredentialsWarning = findViewById(R.id.textView_badCredentialsPlaceholder);
         updateNowButt = findViewById(R.id.button_updateNow);
+        settingsIcon = findViewById(R.id.imageView_settings);
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -65,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
         updateNowButt.setOnClickListener((view) -> {
             Log.i(TAG, "Update now button clicked.");
             UpdateService.startUpdateImmediately(this);
+        });
+
+        settingsIcon.setOnClickListener((view) -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         });
 
         updateAppButt.setOnClickListener((view) -> {
@@ -87,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
-        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
+        PreferenceManager.setDefaultValues(this, SETTINGS_PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
 /*        if (!allowancesRequested) {
             allowancesRequested = true;
             new Thread(() -> {
@@ -109,11 +119,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateView();
-    }
-
-    public void openSettings(View v) {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
     }
 
     private void updateView() {
@@ -147,8 +152,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean updateAccountAndRelated() {
-        final String username = getPref(this, R.string.setting_username_key, "");
-        final String pass = getPref(this, R.string.setting_password_key, "");
+        final String username = Utils.getStringPref(this, R.string.setting_username_key, "");
+        final String pass = Utils.getStringPref(this, R.string.setting_password_key, "");
         final boolean hasUsername = !isEmptyOrNull(username);
         final boolean hasPass = !isEmptyOrNull(pass);
 
