@@ -1,189 +1,117 @@
 package com.gmail.matejpesl1.mimi.activities;
 
-import android.icu.text.SimpleDateFormat;
+import android.content.Context;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CompoundButton;
+import android.util.Log;
 import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
+import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SeekBarPreference;
 
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
-import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
-import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
-import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class SettingsActivity extends AppCompatActivity {
-    private static final String TAG = "SettingsActivity";
-    private static final String PREF_UPDATED_PAGES_SPINNER_ITEM_POS = "Updated Pages Spinner Item Pos";
-    private EditText timePicker;
-    private Spinner updatedPagesSpinner;
-    private Switch allowChangeWifiSwitch;
-    private Switch allowChangeDataSwitch;
-    private Switch notifyAboutSuccesfullUpdateSwitch;
-    private Switch updateWhenInternetAvailableSwitch;
-    private TextView rootAllowedValue;
-    private TextView backgroundRunAllowedValue;
-    private EditText passwordBox;
-    private EditText usernameBox;
-    private Button allowRootButt;
-    private Button allowBackgroundRunButt;
-
-    private static boolean rootAllowedCached = false;
-    private static boolean backgroundRunAllowedCached = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Scene initialization
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
 
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.settings, new SettingsFragment())
+                    .commit();
+        }
+
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null)
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-
-        // Element initialization
-        notifyAboutSuccesfullUpdateSwitch = findViewById(R.id.notifyAboutSuccesfullUpdateSwitch);
-        updateWhenInternetAvailableSwitch = findViewById(R.id.updateWhenInternetAvailableSwitch);
-        backgroundRunAllowedValue = findViewById(R.id.backgroundRunAllowedValue);
-        allowBackgroundRunButt = findViewById(R.id.allowBackgroundRunButt);
-        allowChangeWifiSwitch = findViewById(R.id.allowChangeWifiSwitch);
-        allowChangeDataSwitch = findViewById(R.id.allowChangeDataSwitch);
-        updatedPagesSpinner = findViewById(R.id.updatedPagesSpinner);
-        rootAllowedValue = findViewById(R.id.rootAllowedValue);
-        allowRootButt = findViewById(R.id.allowRootButt);
-        passwordBox = findViewById(R.id.passwordTextbox);
-        usernameBox = findViewById(R.id.usernameTextbox);
-        timePicker = findViewById(R.id.updateTimeBox);
-
-        // Data initialization (of data that are not updated in UpdateView method but only once, here).
-        int posFromPrefs = Integer.parseInt(Utils.getPref(this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, "4"));
-        updatedPagesSpinner.setSelection(posFromPrefs, true);
-        updateWhenInternetAvailableSwitch.setChecked(UpdateService.getRetryWhenInternetAvailable(this));
-        updateCredentials();
-
-        // Listeners - Root & Battery allowance buttons.
-        allowBackgroundRunButt.setOnClickListener((View v) -> Utils.requestBatteryException(this));
-        allowRootButt.setOnClickListener((View v) -> RootUtils.askForRoot());
-
-        // Listeners - Switches.
-        allowChangeDataSwitch.setOnCheckedChangeListener(
-                (CompoundButton buttonView, boolean isChecked)
-                        -> UpdateService.setAllowDataChange(this, isChecked));
-
-        allowChangeWifiSwitch.setOnCheckedChangeListener(
-                (CompoundButton buttonView, boolean isChecked)
-                        -> UpdateService.setAllowWifiChange(this, isChecked));
-
-        notifyAboutSuccesfullUpdateSwitch.setOnCheckedChangeListener(
-                (CompoundButton buttonView, boolean isChecked)
-                        -> Updater.setNotifyAboutSuccesfullUpdate(this, isChecked));
-
-        updateWhenInternetAvailableSwitch.setOnCheckedChangeListener(
-                (CompoundButton buttonView, boolean isChecked)
-                        -> UpdateService.setRetryWhenInternetAvailable(this, isChecked));
-
-        // Listeners - other.
-        timePicker.setOnClickListener(this::onTimePickerClick);
-
-        updatedPagesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View v, int pos, long id) {
-                String[] pageValues = getResources().getStringArray(R.array.updated_pages_values);
-                int pagesAmount = Integer.parseInt(pageValues[pos]);
-
-                Updater.setAmountOfUpdatedPages(SettingsActivity.this, pagesAmount);
-                Utils.writePref(SettingsActivity.this, PREF_UPDATED_PAGES_SPINNER_ITEM_POS, pos+"");
-            }
-            public void onNothingSelected(AdapterView<?> parent){}
-        });
-
-        // Logic.
-        updateView();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Updater.setCredentials(this,
-                usernameBox.getText().toString(),
-                passwordBox.getText().toString());
-    }
-
-    private void onTimePickerClick(View v) {
-        TimePickerFragment picker = new TimePickerFragment(
-                this::handleTimePicked,
-                UpdateServiceAlarmManager.getCurrUpdateCalendar(this));
-        picker.show(getSupportFragmentManager(), "timePicker");
-    }
-
-    private void handleTimePicked(int hour, int minute) {
-        UpdateServiceAlarmManager.changeUpdateTime(this, minute, hour);
-        updateTimePicker();
-    }
-
-    private void updateView() {
-        // First update root, then internet switches.
-        updateRootStatus();
-        updateInternetChangeSwitches();
-        updateTimePicker();
-        updateBackgroundRunStatus();
-    }
-
-    private void updateCredentials() {
-        passwordBox.setText(Updater.getPassword(this));
-        usernameBox.setText(Updater.getUsername(this));
-    }
-
-    private void updateTimePicker() {
-        Date currUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime();
-        timePicker.setText(dateToDigitalTime(currUpdateDate));
-    }
-
-    private void updateInternetChangeSwitches() {
-        allowChangeDataSwitch.setChecked(UpdateService.getAllowDataChange(this) && rootAllowedCached);
-        allowChangeDataSwitch.setEnabled(rootAllowedCached);
-        allowChangeWifiSwitch.setChecked(UpdateService.getAllowWifiChange(this));
-        notifyAboutSuccesfullUpdateSwitch.setChecked(Updater.getNotifyAboutSuccesfullUpdate(this));
-    }
-
-    private void updateBackgroundRunStatus() {
-        if (backgroundRunAllowedCached || Utils.hasBatteryException(this)) {
-            backgroundRunAllowedValue.setText("ano");
-            allowBackgroundRunButt.setVisibility(View.INVISIBLE);
-            backgroundRunAllowedCached = true;
-        } else {
-            backgroundRunAllowedValue.setText("ne");
-            allowBackgroundRunButt.setVisibility(View.VISIBLE);
-            backgroundRunAllowedCached = false;
+            actionBar.setTitle("Nastavení");
         }
     }
 
-    private void updateRootStatus() {
-        if (rootAllowedCached || RootUtils.isRootAvailable()) {
-            rootAllowedValue.setText("ano");
-            allowRootButt.setVisibility(View.INVISIBLE);
-            rootAllowedCached = true;
-        } else {
-            rootAllowedValue.setText("ne");
-            allowRootButt.setVisibility(View.VISIBLE);
-            rootAllowedCached = false;
-        }
+    // Otherwise the "back" button in actionBar does nothing.
+    @Override public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
-    public static String dateToDigitalTime(Date time) {
-        return new SimpleDateFormat("H:mm", new Locale("cs", "CZ")).format(time);
+    public static class SettingsFragment extends PreferenceFragmentCompat {
+        private Context context;
+        private Preference updateTimePref;
+        private Preference rootPermissionPref;
+        private Preference batteryExceptionPref;
+
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.root_preferences, rootKey);
+            // Initialize.
+            updateTimePref = findPreference(getString(R.string.setting_update_time_key));
+            rootPermissionPref = findPreference(getString(R.string.setting_root_permission_key));
+            batteryExceptionPref = findPreference(getString(R.string.setting_battery_exception_key));
+
+            // Update state.
+            updateUpdateTimeSummary();
+            if (Utils.hasBatteryException(context))
+                batteryExceptionPref.setSummary("Povoleno");
+
+            // Set listeners.
+            setOnClickListeners();
+        }
+
+        private void setOnClickListeners() {
+            updateTimePref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
+                TimePickerFragment picker = new TimePickerFragment(this::handleTimePicked,
+                        UpdateServiceAlarmManager.getCurrUpdateCalendar(context));
+
+                picker.show(getParentFragmentManager(), "timePicker");
+                return true;
+            });
+
+            rootPermissionPref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
+                /*new Thread(() -> {
+                    // Checking it also requests it at the same time.
+                    if (RootUtils.isRootAvailable())
+                        getActivity().runOnUiThread(() -> rootPermissionPref.setSummary("Povoleno"));
+                }).start();*/
+                RootUtils.askForRoot();
+                return true;
+            });
+
+            batteryExceptionPref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
+                if (!Utils.hasBatteryException(context))
+                    Utils.requestBatteryException(context);
+                return true;
+            });
+        }
+
+        @Override
+        public void onAttach(@NonNull Context context) {
+            super.onAttach(context);
+            this.context = context;
+        }
+
+        private void handleTimePicked(int hour, int minute) {
+            UpdateServiceAlarmManager.changeUpdateTime(context, minute, hour);
+            updateUpdateTimeSummary();
+        }
+
+        private void updateUpdateTimeSummary() {
+            Date currUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(context).getTime();
+            updateTimePref.setSummary(Utils.dateToDigitalTime(currUpdateDate));
+        }
     }
 }

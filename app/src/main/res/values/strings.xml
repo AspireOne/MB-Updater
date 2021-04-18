@@ -31,4 +31,5 @@
     <string name="cannot_update_mimibazar_external_error">Nelze aktualizovat Mimibazar kvůli externí chybě</string>
     <string name="cannot_update_mimibazar_internal_error">Nelze aktualizovat Mimibazar kvůli interní chybě</string>
     <string name="app_name">Mimibazar aktualizace</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 </resources>
