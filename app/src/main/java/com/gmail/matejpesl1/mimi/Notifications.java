@@ -64,7 +64,7 @@ public class Notifications {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, channel.getId())
-                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setSmallIcon(R.drawable.app_icon)
                         .setContentTitle(title)
                         .setContentText(text)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)

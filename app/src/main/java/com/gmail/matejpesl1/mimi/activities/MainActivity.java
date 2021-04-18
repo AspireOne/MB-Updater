@@ -14,6 +14,7 @@ import androidx.preference.PreferenceManager;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.MimibazarRequester;
+import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
@@ -97,21 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Logic
         PreferenceManager.setDefaultValues(this, PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
-/*        if (!allowancesRequested) {
-            allowancesRequested = true;
-            new Thread(() -> {
-                try { Thread.sleep(2000); }
-                catch (InterruptedException e) { Log.i(TAG, Utils.getExceptionAsString(e)); }
-
-                if (!Utils.hasBatteryException(this))
-                    Utils.requestBatteryException(this);
-
-                try { Thread.sleep(2000); }
-                catch (InterruptedException e) { Log.i(TAG, Utils.getExceptionAsString(e)); }
-
-                RootUtils.askForRoot();
-            }).start();
-        }*/
+        Notifications.postNotification(this, "sds", "dsds", Notifications.Channel.DEFAULT);
     }
 
     @Override
