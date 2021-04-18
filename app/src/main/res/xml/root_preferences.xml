@@ -74,6 +74,7 @@
             app:summaryOn="@string/activity_settings_allow_change_data_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            app:enabled="false"
             android:id="@+id/settingAllowDataChange"
             app:key="@string/setting_allow_data_change_key" />
     </PreferenceCategory>
