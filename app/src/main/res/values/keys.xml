@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="setting_pages_amount_key">setting_pages_amount</string>
     <string name="setting_update_time_key">setting_update_time</string>
     <string name="setting_update_additionally_key">setting_update_additionally</string>
