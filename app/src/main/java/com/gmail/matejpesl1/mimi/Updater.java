@@ -5,8 +5,7 @@ import android.util.Log;
 import android.util.Pair;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 import okhttp3.Response;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.*;
@@ -230,7 +229,7 @@ public class Updater {
 
     private boolean tryRecreatePrefIds() {
         int amountOfPages = getIntPref(context, R.string.setting_pages_amount_key, 25);
-        Set<String> newIds = createIdListOrEmpty(amountOfPages);
+        ArrayList<String> newIds = createIdListOrEmpty(amountOfPages);
 
         if (newIds.size() < 3)
             return false;
@@ -240,8 +239,8 @@ public class Updater {
         return true;
     }
 
-    private Set<String> createIdListOrEmpty(int amountOfPages) {
-        Set<String> ids = new HashSet<>();
+    private ArrayList<String> createIdListOrEmpty(int amountOfPages) {
+        ArrayList<String> ids = new ArrayList<>();
         // Iterate backwards because mimibazar puts already updated items at the
         // beginning so we won't update it twice.
         for (int i = amountOfPages; i > 0; --i)

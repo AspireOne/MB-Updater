@@ -7,8 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,21 +145,21 @@ public class MimibazarRequester {
     }
 
     // The body cannot be logged because it's too long.
-    public Set<String> getIdsFromPageOrEmpty(int page, @Nullable Set<String> set, @Nullable String body) {
-        if (set == null)
-            set = new HashSet<>();
+    public ArrayList<String> getIdsFromPageOrEmpty(int page, @Nullable ArrayList<String> list, @Nullable String body) {
+        if (list == null)
+            list = new ArrayList<>();
 
         if (Utils.isEmptyOrNull(body))
             body = getPageBodyOrNull(page, false);
 
         if (isEmptyOrNull(body))
-            return set;
+            return list;
 
         Matcher m = ITEM_ID_PATTERN.matcher(body);
         while (m.find())
-            set.add(m.group());
+            list.add(m.group());
 
-        return set;
+        return list;
     }
 
     public @Nullable String getPageBodyOrNull(int page, boolean loggedIn) {
