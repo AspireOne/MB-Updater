@@ -25,7 +25,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
-    public static final String GLOBAL_PREFS_NAME = "AppPrefs";
+    public static final String GLOBAL_PREFS_NAME = "mimi_preferences";
     private static final Requester requester = new Requester(0);
     private static boolean allowancesRequested = false;
 
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateAppButt.setOnClickListener((view) -> {
+            // TODO: Solve this without root.
             Log.i(TAG, "Update app button clicked.");
             boolean rootAvailable = RootUtils.isRootAvailable();
             new Thread(() -> {
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
-        if (!allowancesRequested) {
+/*        if (!allowancesRequested) {
             allowancesRequested = true;
             new Thread(() -> {
                 try { Thread.sleep(2000); }
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
                 RootUtils.askForRoot();
             }).start();
-        }
+        }*/
     }
 
     @Override
