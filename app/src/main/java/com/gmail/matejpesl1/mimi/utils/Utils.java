@@ -16,12 +16,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Set;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Utils {
-
+    
     private Utils() {}
 
     public static String dateToCzech(Date time) {
@@ -74,9 +73,6 @@ public class Utils {
         return str == null || str.equals("");
     }
 
-    public static void writePref(Context context, String key, Set<String> value) {
-        getPrefsEditor(context).putStringSet(key, value).apply();
-    }
     public static void writePref(Context context, String key, float value) {
         getPrefsEditor(context).putFloat(key, value).apply();
     }
@@ -96,13 +92,6 @@ public class Utils {
     private static SharedPreferences.Editor getPrefsEditor(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(MainActivity.GLOBAL_PREFS_NAME, 0);
         return prefs.edit();
-    }
-
-    public static Set<String> getSetPref(Context context, int keyId, Set<String> defaultValue) {
-        return getSetPref(context, context.getString(keyId), defaultValue);
-    }
-    public static Set<String> getSetPref(Context context, String key, Set<String> defaultValue) {
-        return getPrefs(context).getStringSet(key, defaultValue);
     }
 
     public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) {
