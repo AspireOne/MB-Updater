@@ -22,7 +22,7 @@
         android:theme="@style/Theme.Mimi">
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/activity_settings_title" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -53,7 +53,6 @@
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

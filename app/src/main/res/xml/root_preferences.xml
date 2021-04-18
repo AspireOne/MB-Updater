@@ -1,46 +1,45 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="Nastavení aktualizací" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/activity_settings_update_settings_category_title" app:iconSpaceReserved="false">
 
-        <!-- TODO: Extract the preference keys to strings.xml and use them in code-->
         <ListPreference
-            app:title="Počet stránek na aktualizování"
+            app:title="@string/activity_settings_items_amount_title"
             app:useSimpleSummaryProvider="true"
             app:defaultValue="25"
-            app:dialogTitle="Vyberte počet stránek"
-            app:entries="@array/updated_pages_entries"
-            app:entryValues="@array/updated_pages_values"
+            app:dialogTitle="@string/activity_settings_select_items_amount_dialog_title"
+            app:entries="@array/updated_items_entries"
+            app:entryValues="@array/updated_items_values"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingPageAmount"
             app:key="@string/setting_pages_amount_key" />
         <Preference
-            app:title="Čas automatických aktualizací"
+            app:title="@string/activity_settings_auto_update_time_title"
             app:summary="00:00"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUpdateTime"
             app:key="@string/setting_update_time_key" />
         <SwitchPreferenceCompat
-            app:title="Dodatečně aktualizovat"
+            app:title="@string/activity_settings_additionally_update_title"
             app:defaultValue="true"
-            app:summary="Pokud v čase aktualizace chybí internet, provede se hned, jakmile bude dostupný."
+            app:summary="@string/activity_settings_additionally_update_summary"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUpdateAdditionally"
             app:key="@string/setting_update_additionally_key" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Přihlašovací údaje do mimibazaru" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/activity_settings_login_data_category_title" app:iconSpaceReserved="false">
         <EditTextPreference
-            app:title="Uživatelské jméno"
+            app:title="@string/activity_settings_username_title"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingUsername"
             app:key="@string/setting_username_key" />
         <EditTextPreference
-            app:title="Uživatelské heslo"
+            app:title="@string/activity_settings_password_title"
             app:useSimpleSummaryProvider="true"
             app:iconSpaceReserved="false"
             app:persistent="true"
@@ -48,57 +47,57 @@
             app:key="@string/setting_password_key" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Manipulace s internetem" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/activity_settings_internet_manipulation_category_title" app:iconSpaceReserved="false">
         <Preference
             app:iconSpaceReserved="false"
             app:selectable="false"
             app:enabled="true"
-            app:summary="Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu." />
+            app:summary="@string/activity_settings_internet_manipulation_summary" />
 
         <SwitchPreferenceCompat
-            app:title="Povolit zapnutí WiFi"
+            app:title="@string/activity_settings_allow_change_wifi_title"
             app:defaultValue="true"
-            app:summaryOff="Aplikace se nepokusí zapnout WiFi."
-            app:summaryOn="Aplikace může zapnout wifi."
+            app:summaryOff="@string/activity_settings_allow_change_wifi_summaryOff"
+            app:summaryOn="@string/activity_settings_allow_change_wifi_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingAllowWifiChange"
             app:key="@string/setting_allow_wifi_change_key" />
 
         <SwitchPreferenceCompat
-            app:title="Povolit zapnutí mobilních dat (vyžaduje root)"
+            app:title="@string/activity_settings_allow_change_data_title"
             app:defaultValue="true"
             app:dependency="setting_root_permission"
             app:singleLineTitle="false"
-            app:summaryOff="Aplikace se nepokusí zapnout data."
-            app:summaryOn="Aplikace může zapnout data."
+            app:summaryOff="@string/activity_settings_allow_change_data_summaryOff"
+            app:summaryOn="@string/activity_settings_allow_change_data_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingAllowDataChange"
             app:key="@string/setting_allow_data_change_key" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Ostatní" app:iconSpaceReserved="false">
+    <PreferenceCategory app:title="@string/activity_settings_others_category_title" app:iconSpaceReserved="false">
         <SwitchPreferenceCompat
-            app:title="Oznámit o úspěšné aktualizaci"
+            app:title="@string/activity_settings_successful_update_notification_title"
             app:defaultValue="true"
-            app:summaryOff="Po úspěšné aktualizaci se žádné oznámení nezobrazí."
-            app:summaryOn="Po úspěšné aktualizaci se zobrazí oznámení."
+            app:summaryOff="@string/activity_settings_successful_update_notification_summaryOff"
+            app:summaryOn="@string/activity_settings_successful_update_notification_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingSuccesfullUpdateNotification"
             app:key="@string/setting_successful_update_notification_key" />
 
         <Preference
-            app:title="Povolení chodu na pozadí"
-            app:summary="Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat. Klikněte pro povolení."
+            app:title="@string/activity_settings_battery_exception_title"
+            app:summary="@string/activity_settings_battery_exception_summary"
             app:iconSpaceReserved="false"
             app:persistent="true"
             android:id="@+id/settingBatteryException"
             app:key="@string/setting_battery_exception_key" />
         <Preference
-            app:title="Root oprávnění"
-            app:summary="Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data. Pro povolení klikněte."
+            app:title="@string/activity_settings_root_permission_title"
+            app:summary="@string/activity_settings_root_permission_summary"
             app:iconSpaceReserved="false"
             android:id="@+id/settingRootPermission"
             app:key="@string/setting_root_permission_key" />

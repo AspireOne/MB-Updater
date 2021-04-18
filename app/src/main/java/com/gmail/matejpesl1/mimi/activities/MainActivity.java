@@ -44,13 +44,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Elements initialization
-        updateSwitch = findViewById(R.id.updateSwitch);
-        stateDescriptionText = findViewById(R.id.updatingStateDescription);
-        todayUpdatedValue = findViewById(R.id.todayUpdatedValue);
-        appUpdateAvailableTxt = findViewById(R.id.updateAvailableTxt);
-        updateAppButt = findViewById(R.id.updateAppButt);
-        badCredentialsWarning = findViewById(R.id.badCredentialsWarning);
-        updateNowButt = findViewById(R.id.updateNowButt);
+        updateSwitch = findViewById(R.id.switch_autoUpdate);
+        stateDescriptionText = findViewById(R.id.textView_updatingStateDescription);
+        todayUpdatedValue = findViewById(R.id.textView_todayUpdatedPlaceholder);
+        appUpdateAvailableTxt = findViewById(R.id.textView_appUpdateAvailable);
+        updateAppButt = findViewById(R.id.button_updateApp);
+        badCredentialsWarning = findViewById(R.id.textView_badCredentialsPlaceholder);
+        updateNowButt = findViewById(R.id.button_updateNow);
 
         // Listeners
         updateSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -199,12 +199,12 @@ public class MainActivity extends AppCompatActivity {
 
             updateSwitch.setChecked(true);
             stateDescriptionText.setText(String.format("%s %s %s",
-                    getResources().getString(R.string.updating_on_description),
-                    getResources().getString(R.string.next_update_in),
+                    getResources().getString(R.string.activity_main_updating_on_desc),
+                    getResources().getString(R.string.activity_main_next_update_in),
                     nextUpdateDateStr));
         } else {
             updateSwitch.setChecked(false);
-            stateDescriptionText.setText(R.string.updating_off_description);
+            stateDescriptionText.setText(R.string.activity_main_updating_off_desc);
         }
     }
 
