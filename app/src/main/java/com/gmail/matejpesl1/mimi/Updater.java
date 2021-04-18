@@ -13,12 +13,8 @@ import static com.gmail.matejpesl1.mimi.utils.Utils.*;
 
 public class Updater {
     // Prefs
-    private static final String PREF_IDS = "IDs Of Items";
-    private static final String PREF_AMOUNT_OF_PAGES = "Amount Of Pages To Update";
-    private static final String PREF_CURR_ID_INDEX = "Index Of Current ID";
-    private static final String PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE = "Notify About Sucesfull update";
-    private static final String PREF_USERNAME = "Username";
-    private static final String PREF_PASSWORD = "Password";
+    private static final String PREF_IDS = "ids_of_items";
+    private static final String PREF_CURR_ID_INDEX = "index_of_current_id";
 
     // Other
     private static final String TAG = "Updater";
@@ -30,35 +26,6 @@ public class Updater {
 
     public Updater(Context context) {
         this.context = context;
-    }
-
-    // Notify about succesfull update
-    public static void setNotifyAboutSuccesfullUpdate(Context context, boolean notify) {
-        Utils.writePref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, notify+"");
-    }
-    public static boolean getNotifyAboutSuccesfullUpdate(Context context) {
-        return Boolean.parseBoolean(
-                Utils.getPref(context, PREF_NOTIFY_ABOUT_SUCCESFULL_UPDATE, "true"));
-    }
-
-    // Amount of Updated pages
-    public static void setAmountOfUpdatedPages(Context context, int amount) {
-        writePref(context, PREF_AMOUNT_OF_PAGES, amount+"");
-    }
-    public static int getAmountOfUpdatedPages(Context context) {
-        return Integer.parseInt(getPref(context, PREF_AMOUNT_OF_PAGES, "25"));
-    }
-
-    // Credentials
-    public static void setCredentials(Context context, String username, String password) {
-        writePref(context, PREF_USERNAME, username);
-        writePref(context, PREF_PASSWORD, password);
-    }
-    public static String getPassword(Context context) {
-        return getPref(context, PREF_PASSWORD, "");
-    }
-    public static String getUsername(Context context) {
-        return getPref(context, PREF_USERNAME, "");
     }
 
     /*public static boolean tryForceRecreateIdList(Context context) {
@@ -100,20 +67,21 @@ public class Updater {
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update_desc_runtime_error),
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_runtime_error,
                     error, Notifications.Channel.ERROR);
-        } else if (getNotifyAboutSuccesfullUpdate(context))
-            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_sucesfully_updated), "",
+        } else if (getBooleanPref(context, R.string.setting_successful_update_notification_key, true)) {
+            Notifications.postNotification(context, R.string.mimibazar_sucesfully_updated, "",
                     Notifications.Channel.DEFAULT);
+        }
     }
 
     private boolean initAndNotifyIfError() {
         requester = new Requester(REQUEST_THROTTLE);
-        String username = getPref(context, PREF_USERNAME, "");
-        String password = getPref(context, PREF_PASSWORD, "");
+        String username = getPref(context, R.string.setting_username_key, "");
+        String password = getPref(context, R.string.setting_password_key, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update),
-                    context.getResources().getString(R.string.activity_main_missing_credentials), Notifications.Channel.ERROR);
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update,
+                    R.string.missing_credentials, Notifications.Channel.ERROR);
             Log.w(TAG, "Credentials are missing, cannot update. Returning.");
             return false;
         }
@@ -121,9 +89,8 @@ public class Updater {
         try {
             mimibazarRequester = new MimibazarRequester(requester, username, password);
         } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update),
-                    context.getResources().getString(R.string.mimibazar_cannot_update_desc_invalid_credentials),
-                    Notifications.Channel.ERROR);
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update,
+                    R.string.mimibazar_cannot_update_desc_invalid_credentials, Notifications.Channel.ERROR);
             Log.e(TAG, "MimibazarRequester cannot be created - cannot get account id. Returning.");
             return false;
         }
@@ -135,7 +102,7 @@ public class Updater {
         String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
-            Notifications.PostNotification(context, context.getResources().getString(R.string.mimibazar_cannot_update_desc_external_error),
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_external_error,
                     externalError, Notifications.Channel.ERROR);
             return false;
         }
@@ -189,7 +156,7 @@ public class Updater {
 
     private String execute() {
         // Initialization.
-        int currIdIndex = Integer.parseInt(getPref(context, PREF_CURR_ID_INDEX, "0"));
+        int currIdIndex = getNumberPref(context, PREF_CURR_ID_INDEX, 0);
         int remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
         String[] ids = getIdsFromPrefs();
 
@@ -248,11 +215,11 @@ public class Updater {
 
             if (++lineSaveCount >= lineSaveFreq) {
                 lineSaveCount = 0;
-                writePref(context, PREF_CURR_ID_INDEX, currIdIndex+"");
+                writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
             }
         }
 
-        writePref(context, PREF_CURR_ID_INDEX, currIdIndex+"");
+        writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
         return error;
     }
 
@@ -262,7 +229,7 @@ public class Updater {
     }
 
     private boolean tryRecreatePrefIds() {
-        int amountOfPages = getAmountOfUpdatedPages(context);
+        int amountOfPages = getNumberPref(context, R.string.setting_pages_amount_key, 25);
         Set<String> newIds = createIdListOrEmpty(amountOfPages);
 
         if (newIds.size() < 3)

@@ -15,10 +15,10 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 
 public class UpdateServiceAlarmManager {
     private static final String TAG = "UpdateServiceAlarmManager";
-    private static final String PREF_ACTIVE = "Alarm Scheduled";
-    private static final String PREF_UPDATE_MINUTE = "Update Minutes";
-    private static final String PREF_UPDATE_HOUR = "Update Hour";
-    private static final String PREF_UPDATE_DAY_PART = "Update Day Part";
+    private static final String PREF_ACTIVE = "alarm_scheduled";
+    private static final String PREF_UPDATE_MINUTE = "update_minute";
+    private static final String PREF_UPDATE_HOUR = "update_hour";
+    private static final String PREF_UPDATE_DAY_PART = "update_day_part";
 
     public static void changeRepeatingAlarm(Context context, boolean register) {
         AlarmManager manager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -34,11 +34,11 @@ public class UpdateServiceAlarmManager {
                     getCurrUpdateCalendar(context).getTimeInMillis(),
                     pendingIntent);
 
-        Utils.writePref(context, PREF_ACTIVE, Boolean.toString(register));
+        Utils.writePref(context, PREF_ACTIVE, register);
     }
 
     public static boolean isRegistered(Context context) {
-        return Utils.getPref(context, PREF_ACTIVE, "false").equals("true");
+        return Utils.getBooleanPref(context, PREF_ACTIVE, false);
     }
 
     public static void changeUpdateTime(Context context, int minute, int hour) {
@@ -57,9 +57,9 @@ public class UpdateServiceAlarmManager {
             finalDayPart = Calendar.AM;
         }
 
-        Utils.writePref(context, PREF_UPDATE_MINUTE, minute+"");
-        Utils.writePref(context, PREF_UPDATE_HOUR, finalHour+"");
-        Utils.writePref(context, PREF_UPDATE_DAY_PART, finalDayPart+"");
+        Utils.writePref(context, PREF_UPDATE_MINUTE, minute);
+        Utils.writePref(context, PREF_UPDATE_HOUR, finalHour);
+        Utils.writePref(context, PREF_UPDATE_DAY_PART, finalDayPart);
 
         // If the alarm is registered, re-register it to the new time.
         if (isRegistered(context))
@@ -67,22 +67,22 @@ public class UpdateServiceAlarmManager {
     }
 
     public static Calendar getCurrUpdateCalendar(Context context) {
-        String hourStr = Utils.getPref(context, PREF_UPDATE_HOUR, "");
-        String minuteStr = Utils.getPref(context, PREF_UPDATE_MINUTE, "");
-        String dayPartStr = Utils.getPref(context, PREF_UPDATE_DAY_PART, "");
+        int hour = Utils.getNumberPref(context, PREF_UPDATE_HOUR, -1);
+        int minute = Utils.getNumberPref(context, PREF_UPDATE_MINUTE, -1);
+        int dayPart = Utils.getNumberPref(context, PREF_UPDATE_DAY_PART, -1);
 
-        if (hourStr.equals(""))
-            Utils.writePref(context, PREF_UPDATE_HOUR, (hourStr = "7"));
-        if (minuteStr.equals(""))
-            Utils.writePref(context, PREF_UPDATE_MINUTE, (minuteStr = "45"));
-        if (dayPartStr.equals(""))
-            Utils.writePref(context, PREF_UPDATE_DAY_PART, (dayPartStr = Calendar.AM+""));
+        if (hour == -1)
+            Utils.writePref(context, PREF_UPDATE_HOUR, (hour = 7));
+        if (minute == -1)
+            Utils.writePref(context, PREF_UPDATE_MINUTE, (minute = 45));
+        if (dayPart == -1)
+            Utils.writePref(context, PREF_UPDATE_DAY_PART, (dayPart = Calendar.AM));
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MINUTE, Integer.parseInt(minuteStr));
-        calendar.set(Calendar.HOUR, Integer.parseInt(hourStr));
-        calendar.set(Calendar.AM_PM, Integer.parseInt(dayPartStr));
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.HOUR, hour);
+        calendar.set(Calendar.AM_PM, dayPart);
 
         // If the time is in the past (e.g. time: 6:00 | curr: 7:00) -> set it for the next day.
         if (calendar.getTimeInMillis() <= System.currentTimeMillis())

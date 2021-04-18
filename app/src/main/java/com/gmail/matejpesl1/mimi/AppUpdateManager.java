@@ -25,8 +25,8 @@ import java.util.function.Consumer;
 
 public class AppUpdateManager {
     private static final String TAG = "AppUpdateManager";
-    private static final String PREF_LAST_DOWNLOADED_APK_VERSION = "Last Downloaded APK version";
-    private static final String PREF_LAST_VERSION_CHECK_TIME = "Last Version Check Time";
+    private static final String PREF_LAST_DOWNLOADED_APK_VERSION = "last_downloaded_apk_version";
+    private static final String PREF_LAST_VERSION_CHECK_TIME = "last_version_check_time";
     private static final String LATEST_RELEASE_JSON_LINK = "https://api.github.com/repos/AspireOne/mimibazar-updater/releases/latest";
     private static final String APK_DOWNLOAD_LINK = "https://github.com/AspireOne/mimibazar-updater/releases/latest/download/updater.apk";
     private static final String APK_NAME = "updater.apk";
@@ -142,10 +142,10 @@ public class AppUpdateManager {
     }
 
     public static boolean isDownloadedApkLatest(Context context) {
-        final String downloadedApkVer = Utils.getPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, "0");
-        final String latestApkVer = getNewestVerNum(context) + "";
+        final int downloadedApkVer = Utils.getNumberPref(context, PREF_LAST_DOWNLOADED_APK_VERSION, 0);
+        final int latestApkVer = getNewestVerNum(context);
 
-        return downloadedApkVer.equals(latestApkVer) && getApk(context).exists();
+        return downloadedApkVer == latestApkVer && getApk(context).exists();
     }
 
     public static void downloadApkAsync(Context context, Consumer<DownloadState> onFinish) {
@@ -169,7 +169,7 @@ public class AppUpdateManager {
                 fch = fos.getChannel();
 
                 fch.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-                Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum(context)+"");
+                Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum(context));
 
                 onFinish.accept(DownloadState.SUCCESS);
                 return;

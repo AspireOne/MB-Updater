@@ -27,41 +27,15 @@ import java.util.concurrent.TimeUnit;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState;
+import static com.gmail.matejpesl1.mimi.utils.Utils.*;
 
 public class UpdateService extends IntentService {
     private static final String TAG = "UpdateService";
-    private static final String PREF_ALLOW_DATA_CHANGE = "Allow Mobile Data Change";
-    private static final String PREF_ALLOW_WIFI_CHANGE = "Allow Wifi Change";
-    private static final String PREF_RETRY_WHEN_INTERNET_AVAILABLE = "Retry When Internet Available";
     private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
 
     public UpdateService() {
         super(TAG);
-    }
-
-    public static void setAllowDataChange(Context context, boolean allow) {
-        Utils.writePref(context, PREF_ALLOW_DATA_CHANGE, allow + "");
-    }
-
-    public static boolean getAllowDataChange(Context context) {
-        return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_DATA_CHANGE, "true"));
-    }
-
-    public static void setAllowWifiChange(Context context, boolean allow) {
-        Utils.writePref(context, PREF_ALLOW_WIFI_CHANGE, allow + "");
-    }
-
-    public static boolean getAllowWifiChange(Context context) {
-        return Boolean.parseBoolean(Utils.getPref(context, PREF_ALLOW_WIFI_CHANGE, "true"));
-    }
-
-    public static void setRetryWhenInternetAvailable(Context context, boolean allow) {
-        Utils.writePref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, allow + "");
-    }
-
-    public static boolean getRetryWhenInternetAvailable(Context context) {
-        return Boolean.parseBoolean(Utils.getPref(context, PREF_RETRY_WHEN_INTERNET_AVAILABLE, "true"));
     }
 
     public static void startUpdateImmediately(Context context) {
@@ -83,19 +57,20 @@ public class UpdateService extends IntentService {
 
         Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevMobileDataState.toString(), prevWifiEnabled));
 
-        boolean hasInternet = InternetUtils.tryAssertHasInternet(this, prevMobileDataState,
-                prevWifiEnabled, getAllowWifiChange(this), getAllowDataChange(this));
+        boolean hasInternet = InternetUtils.tryAssertHasInternet(this,
+                prevMobileDataState, prevWifiEnabled,
+                getBooleanPref(this, R.string.setting_allow_wifi_change_key, true),
+                getBooleanPref(this, R.string.setting_allow_data_change_key, true));
         // Execute only if internet connection could be established.
         if (hasInternet) {
             Log.i(TAG, "Internet connection could be established, executing Updater.");
             new Updater(this).update();
         } else {
-            boolean retry = getRetryWhenInternetAvailable(this);
+            boolean retry = getBooleanPref(this, R.string.setting_update_additionally_key, true);
 
             Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
 
-            Notifications.PostNotification(this,
-                    getResources().getString(R.string.mimibazar_cannot_update),
+            Notifications.postNotification(this, R.string.mimibazar_cannot_update,
                     "Nelze získat internetové připojení." +
                             (retry ? " Aktualizace proběhne až bude dostupné." : ""),
                     Notifications.Channel.ERROR);
@@ -106,7 +81,7 @@ public class UpdateService extends IntentService {
             }
         }
 
-        // TODO: Maybe add auto-update?
+        // TODO: Maybe add auto-update or update notification
         revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
         wakelock.release();
     }

@@ -9,25 +9,28 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.MimibazarRequester;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
-import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
-import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.Date;
+
+import static com.gmail.matejpesl1.mimi.utils.Utils.dateToCzech;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExceptionAsString;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     public static final String GLOBAL_PREFS_NAME = "mimi_preferences";
     private static final Requester requester = new Requester(0);
-    private static boolean allowancesRequested = false;
 
     private static MimibazarRequester mimibazarRequester = null;
     private Switch updateSwitch;
@@ -84,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Logic
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 /*        if (!allowancesRequested) {
             allowancesRequested = true;
             new Thread(() -> {
@@ -129,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             if (!accValid) {
                 if (UpdateServiceAlarmManager.isRegistered(this)) {
                     UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
-                    runOnUiThread(() -> updateAlarm());
+                    runOnUiThread(this::updateAlarm);
                 }
                 return;
             }
@@ -143,10 +147,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean updateAccountAndRelated() {
-        final String username = Updater.getUsername(this);
-        final String pass = Updater.getPassword(this);
-        final boolean hasUsername = !Utils.isEmptyOrNull(username);
-        final boolean hasPass = !Utils.isEmptyOrNull(pass);
+        final String username = getPref(this, R.string.setting_username_key, "");
+        final String pass = getPref(this, R.string.setting_password_key, "");
+        final boolean hasUsername = !isEmptyOrNull(username);
+        final boolean hasPass = !isEmptyOrNull(pass);
 
         final String error;
 
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 mimibazarRequester = new MimibazarRequester(requester, username, pass);
             } catch (MimibazarRequester.CouldNotGetAccIdException e) {
                 initErr = true;
-                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + Utils.getExceptionAsString(e));
+                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + getExceptionAsString(e));
             }
 
             error = initErr ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";
@@ -173,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         if (!allValid)
             mimibazarRequester = null;
 
-        Log.i(TAG, String.format("Account info valid: %s | error (if any): ", allValid, error));
+        Log.i(TAG, String.format("Account info valid: %s | error (if any): %s", allValid, error));
 
         boolean needsUpdate =
                 (allValid && !updateSwitch.isEnabled()) ||
@@ -196,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateAlarm() {
         if (UpdateServiceAlarmManager.isRegistered(this)) {
             Date nextUpdateDate = UpdateServiceAlarmManager.getCurrUpdateCalendar(this).getTime();
-            String nextUpdateDateStr = Utils.dateToCzech(nextUpdateDate);
+            String nextUpdateDateStr = dateToCzech(nextUpdateDate);
 
             updateSwitch.setChecked(true);
             stateDescriptionText.setText(String.format("%s %s %s",
