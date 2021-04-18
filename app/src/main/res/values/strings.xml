@@ -10,9 +10,9 @@
     <string name="app_name">Mimibazar aktualizace</string>
     <string name="app_update_available">Dostupná aktualizace aplikace!</string>
     <string name="cannot_get_internet_connection">Nelze získat internetové připojení.</string>
+    <string name="missing_credentials">Chybí přihlašovací údaje</string>
 
     <!-- Activity Main -->
-    <string name="activity_main_missing_credentials">Chybí přihlašovací údaje</string>
     <string name="activity_main_update_switch">Aktualizovat</string>
     <string name="activity_main_next_update_in">Další aktualizace proběhne</string>
     <string name="activity_main_today_updated">Dnes aktualizováno:</string>
