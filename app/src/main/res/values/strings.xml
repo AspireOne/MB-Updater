@@ -5,6 +5,8 @@
     <string name="channel_default_desc">Výchozí oznámení Mimibazar aktualizací</string>
     <string name="channel_error_name">Chyby</string>
     <string name="channel_error_desc">Oznámení chyb Mimibazar aktualizací</string>
+    <string name="channel_app_update_name">Aktualizace aplikace</string>
+    <string name="channel_app_update_desc">Oznámení o nových aktualizacích aplikace</string>
 
     <!-- Global -->
     <string name="app_name">Mimibazar aktualizace</string>

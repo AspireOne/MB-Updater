@@ -68,7 +68,7 @@ public class UpdateService extends IntentService {
 
             if (AppUpdateManager.isUpdateAvailable(this)) {
                 Notifications.postNotification(this, "Dostupná aktualizace!",
-                        "Dostupná nová verze Mimibazar Aktualizací", Notifications.Channel.DEFAULT);
+                        "Dostupná nová verze Mimibazar Aktualizací", Notifications.Channel.APP_UPDATE);
                 AppUpdateManager.downloadApkAsync(this, null);
             }
         } else {

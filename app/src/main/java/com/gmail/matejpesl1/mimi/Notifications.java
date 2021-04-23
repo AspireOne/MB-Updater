@@ -23,12 +23,10 @@ public class Notifications {
 
     // I miss C#'s structs and properties... This is all so much boilerplate.
     public enum Channel {
-        DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel());
+        DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel()), APP_UPDATE(new AppUpdateChannel());
 
         protected final IChannel channel;
-        Channel(IChannel channel) {
-            this.channel = channel;
-        }
+        Channel(IChannel channel) { this.channel = channel; }
     }
 
     interface IChannel {
@@ -52,18 +50,22 @@ public class Notifications {
         public int getImportance() { return IMPORTANCE_HIGH; }
     }
 
+    private static class AppUpdateChannel implements IChannel {
+        public String getId() { return "mimibazar_updates_app_update_channel"; }
+        public int getNameRes() { return R.string.channel_app_update_name; }
+        public int getDescRes() { return R.string.channel_app_update_desc; }
+        public int getImportance() { return IMPORTANCE_HIGH; }
+    }
+
     public static void postNotification(Context context, int titleRes, int textRes, Channel channelType) {
         postNotification(context, context.getString(titleRes), context.getString(textRes), channelType);
     }
-
     public static void postNotification(Context context, String titleRes, int textRes, Channel channelType) {
         postNotification(context, titleRes, context.getString(textRes), channelType);
     }
-
     public static void postNotification(Context context, int titleRes, String textRes, Channel channelType) {
         postNotification(context, context.getString(titleRes), textRes, channelType);
     }
-
     public static void postNotification(Context context, String title, String text, Channel channelType) {
         IChannel channel = channelType.channel;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
