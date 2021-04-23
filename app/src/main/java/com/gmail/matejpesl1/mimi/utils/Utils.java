@@ -2,16 +2,12 @@ package com.gmail.matejpesl1.mimi.utils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.PowerManager;
 
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -27,20 +23,9 @@ public class Utils {
         return new SimpleDateFormat("dd. MM. yyyy H:mm (EEEE)", new Locale("cs", "CZ")).format(time);
     }
 
-    public static void saveFile(Context context, String filename, byte[] data) throws IOException {
-        File file = new File(context.getFilesDir(), filename);
+    public static String dateToDigitalTime(Date time) { return new SimpleDateFormat("H:mm", new Locale("cs", "CZ")).format(time); }
 
-        if (file.exists())
-            file.delete();
-
-        file.createNewFile();
-
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(data);
-        fos.close();
-    }
-
-    public static String getExceptionAsString(Exception e) {
+    public static String getExAsStr(Exception e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
@@ -65,64 +50,27 @@ public class Utils {
         }
     }
 
-    public static String dateToDigitalTime(Date time) {
-        return new SimpleDateFormat("H:mm", new Locale("cs", "CZ")).format(time);
-    }
+    public static boolean isEmptyOrNull(String str) { return str == null || str.equals(""); }
 
-    public static boolean isEmptyOrNull(String str) {
-        return str == null || str.equals("");
-    }
-
-    public static void writePref(Context context, String key, float value) {
-        getPrefsEditor(context).putFloat(key, value).apply();
-    }
-    public static void writePref(Context context, String key, long value) {
-        getPrefsEditor(context).putLong(key, value).apply();
-    }
-    public static void writePref(Context context, String key, boolean value) {
-        getPrefsEditor(context).putBoolean(key, value).apply();
-    }
-    public static void writePref(Context context, String key, int value) {
-        getPrefsEditor(context).putInt(key, value).apply();
-    }
+    public static void writePref(Context context, String key, float value) { writePref(context, key, value+""); }
+    public static void writePref(Context context, String key, long value) { writePref(context, key, value+""); }
+    public static void writePref(Context context, String key, boolean value) { writePref(context, key, value+""); }
+    public static void writePref(Context context, String key, int value) { writePref(context, key, value+""); }
     public static void writePref(Context context, String key, String value) {
-        getPrefsEditor(context).putString(key, value).apply();
+        context.getSharedPreferences(MainActivity.PREFS_NAME, 0).edit().putString(key, value).apply();
     }
 
-    private static SharedPreferences.Editor getPrefsEditor(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
-        return prefs.edit();
-    }
+    public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) { return Boolean.parseBoolean(getPref(context, keyId, defaultValue+"")); }
+    public static boolean getBooleanPref(Context context, String key, boolean defaultValue){ return Boolean.parseBoolean(getPref(context, key, defaultValue+"")); }
 
-    public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) {
-        return getBooleanPref(context, context.getString(keyId), defaultValue);
-    }
-    public static boolean getBooleanPref(Context context, String key, boolean defaultValue) {
-        return getPrefs(context).getBoolean(key, defaultValue);
-    }
+    public static long getLongPref(Context context, int keyId, long defaultValue) { return Long.parseLong(getPref(context, keyId, defaultValue+"")); }
+    public static long getLongPref(Context context, String key, long defaultValue){ return Long.parseLong(getPref(context, key, defaultValue+"")); }
 
-    public static int getIntPref(Context context, int keyId, int defaultValue) {
-        return getIntPref(context, context.getString(keyId), defaultValue);
-    }
-    public static int getIntPref(Context context, String key, int defaultValue) {
-        return getPrefs(context).getInt(key, defaultValue);
-    }
+    public static int getIntPref(Context context, int keyId, int defaultValue) { return Integer.parseInt(getPref(context, keyId, defaultValue+"")); }
+    public static int getIntPref(Context context, String key, int defaultValue){ return Integer.parseInt(getPref(context, key, defaultValue+"")); }
 
-    public static long getLongPref(Context context, int keyId, long defaultValue) {
-        return getLongPref(context, context.getString(keyId), defaultValue);
-    }
-    public static long getLongPref(Context context, String key, long defaultValue) {
-        return getPrefs(context).getLong(key, defaultValue);
-    }
-
-    public static String getStringPref(Context context, int keyId, String defaultValue) {
-        return getStringPref(context, context.getString(keyId), defaultValue);
-    }
-    public static String getStringPref(Context context, String key, String defaultValue) {
-        return getPrefs(context).getString(key, defaultValue);
-    }
-
-    private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(MainActivity.PREFS_NAME, 0);
+    public static String getPref(Context context, int keyId, String defaultValue) { return getPref(context, context.getString(keyId), defaultValue); }
+    public static String getPref(Context context, String key, String defaultValue){
+        return context.getSharedPreferences(MainActivity.PREFS_NAME, 0).getString(key, defaultValue);
     }
 }
