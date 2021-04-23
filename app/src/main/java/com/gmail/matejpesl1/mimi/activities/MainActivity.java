@@ -17,7 +17,6 @@ import com.gmail.matejpesl1.mimi.MimibazarRequester;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
-import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
@@ -46,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        new Thread(() -> new Updater(this).execute()).start();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
