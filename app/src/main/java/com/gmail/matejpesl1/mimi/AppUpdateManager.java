@@ -109,7 +109,7 @@ public class AppUpdateManager {
         if (downloadThread == null)
             return;
         try { downloadThread.join(20000); }
-        catch (InterruptedException e) { Log.e(tag, Utils.getExceptionAsString(e)); }
+        catch (InterruptedException e) { Log.e(tag, Utils.getExAsStr(e)); }
     }
 
     private static int getNewestVerNum(Context context) {
@@ -131,7 +131,7 @@ public class AppUpdateManager {
             String tag = releaseInfo.substring(numBeginChar, numEndChar).replace(".", "");
             return (cachedVersion = Integer.parseInt(tag));
         } catch (Exception e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExAsStr(e));
             return -1;
         }
     }
@@ -158,36 +158,33 @@ public class AppUpdateManager {
             return;
         }
 
-        downloadThread = new Thread(() -> {
-            FileOutputStream fos = null;
-            FileChannel fch = null;
+        (downloadThread = new Thread(() -> {
+            FileOutputStream outStream = null;
+            FileChannel outChannel = null;
+            ReadableByteChannel inChannel = null;
+
             try {
-                final ReadableByteChannel readableByteChannel
-                        = Channels.newChannel(new URL(APK_DOWNLOAD_LINK).openStream());
+                inChannel = Channels.newChannel(new URL(APK_DOWNLOAD_LINK).openStream());
+                outStream = new FileOutputStream(getApk(context));
+                outChannel = outStream.getChannel();
 
-                fos = new FileOutputStream(getApk(context));
-                fch = fos.getChannel();
+                outChannel.transferFrom(inChannel, 0, Long.MAX_VALUE);
 
-                fch.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
                 Utils.writePref(context, PREF_LAST_DOWNLOADED_APK_VERSION, getNewestVerNum(context));
-
                 onFinish.accept(DownloadState.SUCCESS);
-                return;
             } catch (Exception e) {
-                Log.e(TAG, "Exception while downloading apk. E:\n" + Utils.getExceptionAsString(e));
+                Log.e(TAG, "Exception while downloading apk. E:\n" + Utils.getExAsStr(e));
+                onFinish.accept(DownloadState.FAILURE);
             } finally {
                 downloadThread = null;
                 try {
-                    if (fos != null) fos.close();
-                    if (fch != null) fch.close();
+                    if (outStream != null) outStream.close();
+                    if (outChannel != null) outChannel.close();
+                    if (inChannel != null) inChannel.close();
                 } catch (Exception e) {
-                    Log.e(TAG, "E closing streams. E:\n" + Utils.getExceptionAsString(e));
+                    Log.e(TAG, "E closing streams. E:\n" + Utils.getExAsStr(e));
                 }
             }
-
-            onFinish.accept(DownloadState.FAILURE);
-        });
-
-        downloadThread.start();
+        })).start();
     }
 }
