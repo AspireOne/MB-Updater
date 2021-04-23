@@ -174,16 +174,18 @@ public class Updater {
         Log.i(TAG, "ID list has " + ids.length + " items.");
 
         // Loop variables initialization.
-        int iterationCount = 0;
+        int iterations = 0;
         int photoUpdateErrorCount = 0;
         int lineSaveCount = 0;
         final int maxPhotoUpdateErrors = 10;
         final int maxIterations = 300;
         // Save the current line to preferences every x seconds to prevent loss in case of force close.
-        final int lineSaveFreq = 9;
+        final int lineSaveFreq = 5;
 
         String error = null;
-        while (remainingUpdates > 0 && ++iterationCount < maxIterations) {
+        // TODO: Get remaining updates from the request that updates the photo to avoid
+        // unnecesarry double-request.
+        while (remainingUpdates > 0 && ++iterations < maxIterations) {
             if (currIdIndex >= ids.length - 1) {
                 currIdIndex = 0;
                 if (!tryRecreatePrefIds()) {
@@ -219,6 +221,8 @@ public class Updater {
         }
 
         writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
+        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" +
+                "Errors: %s."));
         return error;
     }
 
