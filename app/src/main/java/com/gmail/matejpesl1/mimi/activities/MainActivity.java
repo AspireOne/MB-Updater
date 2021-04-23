@@ -19,7 +19,6 @@ import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
-import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
@@ -79,22 +78,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateAppButt.setOnClickListener((view) -> {
-            // TODO: Solve this without root.
             Log.i(TAG, "Update app button clicked.");
-            boolean rootAvailable = RootUtils.isRootAvailable();
-            new Thread(() -> {
-                if (rootAvailable)
-                    AppUpdateManager.installDirectlyWithRoot(this);
-                else
-                    AppUpdateManager.requestInstall(this);
-            }).start();
-
-            if (rootAvailable) {
-                Intent startMain = new Intent(Intent.ACTION_MAIN);
-                startMain.addCategory(Intent.CATEGORY_HOME);
-                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(startMain);
-            }
+            new Thread(() -> AppUpdateManager.requestInstall(this)).start();
         });
 
         // Logic
@@ -102,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES)
             settingsIcon.setColorFilter(Color.rgb(210, 200, 200));
+
+        AppUpdateManager.requestInstall(this);
     }
 
     @Override
@@ -115,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             if (!InternetUtils.isConnectionAvailable()) {
                 Log.i(TAG, "Internet connection not available.");
+                runOnUiThread(() -> updateNowButt.setEnabled(false));
                 return;
             }
 
@@ -129,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
                     runOnUiThread(this::updateAlarm);
                 }
+                runOnUiThread(() -> updateNowButt.setEnabled(false));
                 return;
             }
 
