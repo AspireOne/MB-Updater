@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
     tools:context=".activities.MainActivity">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView_appUpdateAvailable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:layout_marginBottom="20dp"
         android:text="@string/app_update_available"
         android:textSize="17sp"
@@ -17,43 +19,52 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/button_updateApp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_badCredentialsPlaceholder"
+        app:layout_constraintVertical_chainStyle="packed" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_updateApp"
         android:layout_width="153dp"
         android:layout_height="61dp"
         android:layout_marginBottom="104dp"
         android:text="@string/activity_main_update_app"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/button_updateNow"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView_appUpdateAvailable" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView_todayUpdated"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="84dp"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="24dp"
         android:text="@string/activity_main_today_updated"
         android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/textView_todayUpdatedPlaceholder"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_updatingStateDescription" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView_todayUpdatedPlaceholder"
-        android:layout_width="90dp"
+        android:layout_width="47dp"
         android:layout_height="21dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="56dp"
-        android:text="-/-"
-        android:textSize="17sp"
+        android:layout_marginStart="8dp"
+        android:autoSizeTextType="uniform"
+        android:text="75/75"
         android:textStyle="bold"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/textView_todayUpdated"
-        app:layout_constraintTop_toBottomOf="@+id/textView_updatingStateDescription" />
+        app:layout_constraintTop_toTopOf="@+id/textView_todayUpdated" />
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/switch_autoUpdate"
         android:layout_width="178dp"
         android:layout_height="53dp"
@@ -66,27 +77,27 @@
         android:splitTrack="false"
         android:text="@string/activity_main_update_switch"
         android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/textView_updatingStateDescription"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView_updatingStateDescription"
         android:layout_width="258dp"
         android:layout_height="69dp"
-        android:layout_marginBottom="400dp"
+        android:layout_marginTop="8dp"
         android:text="@string/activity_main_updating_off_desc"
         android:textAlignment="center"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/textView_todayUpdated"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switch_autoUpdate"
-        app:layout_constraintVertical_bias="0.137" />
+        app:layout_constraintTop_toBottomOf="@+id/switch_autoUpdate" />
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imageView_settings"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -97,20 +108,21 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/baseline_settings_blue_grey_900_24dp" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView_badCredentialsPlaceholder"
         android:layout_width="355dp"
         android:layout_height="66dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="24dp"
         android:text=""
         android:textColor="@android:color/holo_red_light"
         android:textSize="15sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_todayUpdated" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_updateNow"
         android:layout_width="149dp"
         android:layout_height="50dp"
