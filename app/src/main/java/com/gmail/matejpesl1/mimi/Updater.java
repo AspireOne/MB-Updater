@@ -76,8 +76,8 @@ public class Updater {
 
     private boolean initAndNotifyIfError() {
         requester = new Requester(REQUEST_THROTTLE);
-        String username = getStringPref(context, R.string.setting_username_key, "");
-        String password = getStringPref(context, R.string.setting_password_key, "");
+        String username = getPref(context, R.string.setting_username_key, "");
+        String password = getPref(context, R.string.setting_password_key, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
             Notifications.postNotification(context, R.string.mimibazar_cannot_update,
                     R.string.missing_credentials, Notifications.Channel.ERROR);
@@ -146,7 +146,7 @@ public class Updater {
                 return "Nelze získat zbývající aktualizace na mimibazaru.";
 
         } catch (Exception e) {
-            Log.e(TAG, getExceptionAsString(e));
+            Log.e(TAG, getExAsStr(e));
             return "Při testu externích chyb nastala neočekávaná chyba.";
         }
 
@@ -227,7 +227,7 @@ public class Updater {
     }
 
     private String[] getIdsFromPrefs() {
-        String prefIds = getStringPref(context, PREF_IDS, "");
+        String prefIds = getPref(context, PREF_IDS, "");
         return prefIds.split(" ");
     }
 

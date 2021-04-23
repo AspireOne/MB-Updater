@@ -14,10 +14,10 @@ import androidx.preference.PreferenceManager;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.MimibazarRequester;
-import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.Requester;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
+import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
@@ -26,8 +26,7 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 import java.util.Date;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.dateToCzech;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExceptionAsString;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getStringPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        new Thread(() -> new Updater(this).execute()).start();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -137,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean updateAccountAndRelated() {
-        final String username = Utils.getStringPref(this, R.string.setting_username_key, "");
-        final String pass = Utils.getStringPref(this, R.string.setting_password_key, "");
+        final String username = Utils.getPref(this, R.string.setting_username_key, "");
+        final String pass = Utils.getPref(this, R.string.setting_password_key, "");
         final boolean hasUsername = !isEmptyOrNull(username);
         final boolean hasPass = !isEmptyOrNull(pass);
 
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                 mimibazarRequester = new MimibazarRequester(requester, username, pass);
             } catch (MimibazarRequester.CouldNotGetAccIdException e) {
                 initErr = true;
-                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + getExceptionAsString(e));
+                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + getExAsStr(e));
             }
 
             error = initErr ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";

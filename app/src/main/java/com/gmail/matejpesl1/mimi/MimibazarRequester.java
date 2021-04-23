@@ -5,8 +5,6 @@ import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
-import com.gmail.matejpesl1.mimi.utils.Utils;
-
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +13,7 @@ import okhttp3.FormBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExceptionAsString;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MimibazarRequester {
@@ -74,7 +72,7 @@ public class MimibazarRequester {
             try {
                 return Integer.parseInt(matcher.group());
             } catch (NumberFormatException e) {
-                Log.e(TAG, getExceptionAsString(e));
+                Log.e(TAG, getExAsStr(e));
             }
         }
 
@@ -89,7 +87,6 @@ public class MimibazarRequester {
                 .build();
     }
 
-    // Returns -1 if can't get.
     public int tryGetRemainingUpdates(@Nullable String body) {
         if (isEmptyOrNull(body))
             body = requester.getWebsiteBodyOrNull(profileUrl, Requester.RequestMethod.POST, reqBody);
@@ -102,7 +99,7 @@ public class MimibazarRequester {
             try {
                 return Integer.parseInt(amountMatcher.group());
             } catch (NumberFormatException e) {
-                Log.e(TAG, getExceptionAsString(e));
+                Log.e(TAG, getExAsStr(e));
             }
         }
 
@@ -127,7 +124,7 @@ public class MimibazarRequester {
             try {
                 return Integer.parseInt(matcher.group());
             } catch (NumberFormatException e) {
-                Log.e(TAG, getExceptionAsString(e));
+                Log.e(TAG, getExAsStr(e));
             }
         }
 
@@ -149,7 +146,7 @@ public class MimibazarRequester {
         if (list == null)
             list = new ArrayList<>();
 
-        if (Utils.isEmptyOrNull(body))
+        if (isEmptyOrNull(body))
             body = getPageBodyOrNull(page, false);
 
         if (isEmptyOrNull(body))

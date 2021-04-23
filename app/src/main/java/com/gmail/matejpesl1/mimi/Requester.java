@@ -13,7 +13,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExceptionAsString;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 
 public class Requester {
     private static final String TAG = "REQUESTER";
@@ -40,7 +40,7 @@ public class Requester {
             result.second.close();
             return body;
         } catch (Exception e) {
-            Log.e(TAG, getExceptionAsString(e));
+            Log.e(TAG, getExAsStr(e));
             return null;
         }
     }
@@ -67,7 +67,7 @@ public class Requester {
         try {
             response = call.execute();
         } catch (Exception e) {
-            Log.e(TAG, getExceptionAsString(e));
+            Log.e(TAG, getExAsStr(e));
         }
 
         return new Pair(response != null && response.isSuccessful(), response);
@@ -78,7 +78,7 @@ public class Requester {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                Log.e(TAG, getExceptionAsString(e));
+                Log.e(TAG, getExAsStr(e));
             }
         }
 
