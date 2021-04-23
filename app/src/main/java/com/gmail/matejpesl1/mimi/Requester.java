@@ -1,7 +1,7 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.util.Log;
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import androidx.annotation.Nullable;
 

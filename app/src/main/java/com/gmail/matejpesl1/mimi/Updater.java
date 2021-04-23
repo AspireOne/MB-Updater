@@ -3,7 +3,7 @@ package com.gmail.matejpesl1.mimi;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import com.gmail.matejpesl1.mimi.utils.Utils;
 

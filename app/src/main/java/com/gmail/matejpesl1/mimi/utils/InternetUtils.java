@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.util.Log;
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
