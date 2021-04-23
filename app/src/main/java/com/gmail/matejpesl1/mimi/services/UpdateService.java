@@ -3,6 +3,7 @@ package com.gmail.matejpesl1.mimi.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -11,7 +12,6 @@ import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.Notifications;
@@ -98,14 +98,15 @@ public class UpdateService extends IntentService {
                 .setRequiresDeviceIdle(false)
                 .build();
 
-        final WorkRequest updateWorkRequest = new OneTimeWorkRequest.Builder(QueuedUpdateWorker.class)
-                .setInitialDelay(Duration.ofSeconds(10))
+        final androidx.work.WorkRequest.Builder builder = new OneTimeWorkRequest.Builder(QueuedUpdateWorker.class)
                 .setConstraints(constraints)
                 .addTag(RETRY_UPDATE_WORKER_TAG)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 120/*Min. 10 secs*/, TimeUnit.SECONDS)
-                .build();
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 120/*Min. 10 secs*/, TimeUnit.SECONDS);
 
-        WorkManager.getInstance(context).enqueue(updateWorkRequest);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            builder.setInitialDelay(Duration.ofSeconds(10));
+
+        WorkManager.getInstance(context).enqueue(builder.build());
     }
 
     private PowerManager.WakeLock acquireWakelock(int minutes) {

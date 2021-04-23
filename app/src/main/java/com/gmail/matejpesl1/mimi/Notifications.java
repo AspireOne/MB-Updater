@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -64,7 +66,8 @@ public class Notifications {
 
     public static void postNotification(Context context, String title, String text, Channel channelType) {
         IChannel channel = channelType.channel;
-        createNotificationChannel(context, channel);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            createNotificationChannel(context, channel);
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, channel.getId())
@@ -81,6 +84,7 @@ public class Notifications {
         notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE), builder.build());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private static void createNotificationChannel(Context context, IChannel channel) {
         CharSequence name = context.getResources().getString(channel.getNameRes());
         String description = context.getResources().getString(channel.getDescRes());
