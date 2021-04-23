@@ -1,15 +1,14 @@
 package com.gmail.matejpesl1.mimi.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.preference.PreferenceManager;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
@@ -21,6 +20,9 @@ import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.textview.MaterialTextView;
 
 import java.util.Date;
 
@@ -34,14 +36,14 @@ public class MainActivity extends AppCompatActivity {
     private static final Requester requester = new Requester(0);
 
     private static MimibazarRequester mimibazarRequester = null;
-    private Switch updateSwitch;
-    private ImageView settingsIcon;
-    private TextView stateDescriptionText;
-    private TextView todayUpdatedValue;
-    private TextView appUpdateAvailableTxt;
-    private TextView badCredentialsWarning;
-    private Button updateAppButt;
-    private Button updateNowButt;
+    private SwitchCompat updateSwitch;
+    private ShapeableImageView settingsIcon;
+    private MaterialTextView stateDescriptionText;
+    private MaterialTextView todayUpdatedValue;
+    private MaterialTextView appUpdateAvailableTxt;
+    private MaterialTextView badCredentialsWarning;
+    private MaterialButton updateAppButt;
+    private MaterialButton updateNowButt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Logic
         PreferenceManager.setDefaultValues(this, PREFS_NAME, MODE_PRIVATE, R.xml.root_preferences, false);
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES)
+            settingsIcon.setColorFilter(Color.rgb(210, 200, 200));
     }
 
     @Override
