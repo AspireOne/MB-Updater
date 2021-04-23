@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.util.Pair;
 import androidx.preference.PreferenceManager;
 
 import com.gmail.matejpesl1.mimi.AppUpdateManager;
@@ -132,7 +133,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Update remaining updates. This comes last, because it takes longer to complete.
-            updateRemaining();
+            Pair<Integer, Integer> state = mimibazarRequester.getUpdatesState();
+            runOnUiThread(() -> updateNowButt.setEnabled(state.first.intValue() > 0));
+            updateRemaining(state.first, state.second);
         }).start();
 
         // Update alarm manager state & description.
@@ -225,15 +228,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateRemaining() {
-        int remaining = -1;
-        int max = -1;
-        if (mimibazarRequester != null) {
-            String pageBody = mimibazarRequester.getPageBodyOrNull(1, true);
-            remaining = mimibazarRequester.tryGetRemainingUpdates(pageBody);
-            max = mimibazarRequester.tryGetMaxUpdates(pageBody);
-        }
-
+    /* Returns true if all updates were already used. */
+    private void updateRemaining(int remaining, int max) {
         String maxStr = (max == -1 ? "-" : max + "");
         String remainingStr = (max == -1 || remaining == -1 ? "-" : (max - remaining) + "");
 
