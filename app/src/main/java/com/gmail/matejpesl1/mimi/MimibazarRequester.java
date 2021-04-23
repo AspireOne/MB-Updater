@@ -1,9 +1,9 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -77,6 +77,13 @@ public class MimibazarRequester {
         }
 
         return -1;
+    }
+
+    /** Returns a pair of <remaining, max> updates. */
+    public Pair<Integer, Integer> getUpdatesState() {
+        String pageBody = getPageBodyOrNull(1, true);
+
+        return new Pair<>(tryGetRemainingUpdates(pageBody), tryGetMaxUpdates(pageBody));
     }
 
     private static RequestBody buildRequestBody(String username, String password) {
