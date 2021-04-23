@@ -1,9 +1,8 @@
 package com.gmail.matejpesl1.mimi.services;
 
 import android.app.IntentService;
-import android.app.NotificationChannel;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -21,7 +20,6 @@ import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.Updater;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
-import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState;
-import static com.gmail.matejpesl1.mimi.utils.Utils.*;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 
 public class UpdateService extends IntentService {
     private static final String TAG = "UpdateService";
@@ -67,8 +65,12 @@ public class UpdateService extends IntentService {
         if (hasInternet) {
             Log.i(TAG, "Internet connection could be established, executing Updater.");
             new Updater(this).update();
-            if (AppUpdateManager.isUpdateAvailable(this))
-                Notifications.postNotification(this, "Dostupná aktualizace!", "", Notifications.Channel.DEFAULT);
+
+            if (AppUpdateManager.isUpdateAvailable(this)) {
+                Notifications.postNotification(this, "Dostupná aktualizace!",
+                        "Dostupná nová verze Mimibazar Aktualizací", Notifications.Channel.DEFAULT);
+                AppUpdateManager.downloadApkAsync(this, null);
+            }
         } else {
             boolean retry = getBooleanPref(this, R.string.setting_update_additionally_key, true);
 
@@ -85,7 +87,6 @@ public class UpdateService extends IntentService {
             }
         }
 
-        // TODO: Maybe add auto-update or update notification
         revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
         wakelock.release();
     }
