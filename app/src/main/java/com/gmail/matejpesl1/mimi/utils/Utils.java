@@ -60,8 +60,18 @@ public class Utils {
         context.getSharedPreferences(MainActivity.PREFS_NAME, 0).edit().putString(key, value).apply();
     }
 
-    public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) { return Boolean.parseBoolean(getPref(context, keyId, defaultValue+"")); }
-    public static boolean getBooleanPref(Context context, String key, boolean defaultValue){ return Boolean.parseBoolean(getPref(context, key, defaultValue+"")); }
+    public static boolean getBooleanPref(Context context, int keyId, boolean defaultValue) { return getBooleanPref(context, context.getString(keyId), defaultValue); }
+    // A workaround for settingsPreferences saving boolean as boolean instead of string.
+    public static boolean getBooleanPref(Context context, String key, boolean defaultValue){
+        String pref;
+        try {
+            pref = getPref(context, key, defaultValue+"");
+        } catch (ClassCastException e) {
+            return context.getSharedPreferences(MainActivity.PREFS_NAME, 0).getBoolean(key, defaultValue);
+        }
+
+        return Boolean.parseBoolean(pref);
+    }
 
     public static long getLongPref(Context context, int keyId, long defaultValue) { return Long.parseLong(getPref(context, keyId, defaultValue+"")); }
     public static long getLongPref(Context context, String key, long defaultValue){ return Long.parseLong(getPref(context, key, defaultValue+"")); }
