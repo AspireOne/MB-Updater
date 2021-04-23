@@ -1,6 +1,7 @@
 package com.gmail.matejpesl1.mimi.activities;
 
 import android.content.Context;
+import android.icu.util.Calendar;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,9 +12,9 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
-import com.gmail.matejpesl1.mimi.fragments.TimePickerFragment;
 import com.gmail.matejpesl1.mimi.utils.RootUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
+import com.google.android.material.timepicker.MaterialTimePicker;
 
 import java.util.Date;
 
@@ -71,20 +72,28 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setOnClickListeners() {
-            updateTimePref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
-                TimePickerFragment picker = new TimePickerFragment(this::handleTimePicked,
-                        UpdateServiceAlarmManager.getCurrUpdateCalendar(context));
+            updateTimePref.setOnPreferenceClickListener(preference -> {
+                MaterialTimePicker picker = new MaterialTimePicker.Builder()
+                        .setHour(UpdateServiceAlarmManager.getCurrUpdateCalendar(context).get(Calendar.HOUR))
+                        .setMinute(UpdateServiceAlarmManager.getCurrUpdateCalendar(context).get(Calendar.MINUTE))
+                        .setTitleText("Vyberte čas aktualizací")
+                        .build();
+
+                picker.addOnPositiveButtonClickListener((v) -> {
+                    handleTimePicked(picker.getHour(), picker.getMinute());
+                    picker.dismiss();
+                });
 
                 picker.show(getParentFragmentManager(), "timePicker");
                 return true;
             });
 
-            rootPermissionPref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
+            rootPermissionPref.setOnPreferenceClickListener(preference -> {
                 checkRootAndUpdateSettingsAsync();
                 return true;
             });
 
-            batteryExceptionPref.setOnPreferenceClickListener((Preference.OnPreferenceClickListener) preference -> {
+            batteryExceptionPref.setOnPreferenceClickListener(preference -> {
                 if (!Utils.hasBatteryException(context))
                     Utils.requestBatteryException(context);
                 return true;
