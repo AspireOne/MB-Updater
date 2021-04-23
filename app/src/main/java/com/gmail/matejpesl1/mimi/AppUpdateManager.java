@@ -43,27 +43,34 @@ public class AppUpdateManager {
     }
 
     public static boolean requestInstall(Context context) {
-        if (!tryAssertLatestApkDownloaded(context))
+        Log.i(TAG, "Request install called");
+        if (!tryAssertLatestApkDownloaded(context)) {
+            Log.i(TAG, "Latest apk not downloaded, aborting install.");
             return false;
+        }
 
         final Uri apkUri = FileProvider.getUriForFile(
                 context,
                 BuildConfig.APPLICATION_ID + ".provider",
                 getApk(context));
 
-        final Intent installIntent = new Intent(Intent.ACTION_VIEW, apkUri)
+        final Intent installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE, apkUri)
                 .putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
                 .setDataAndType(apkUri, APK_MIME_TYPE)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         context.startActivity(installIntent);
+        Log.i(TAG, "Requested install");
         return true;
     }
 
     public static boolean installDirectlyWithRoot(Context context) {
-        if (!tryAssertLatestApkDownloaded(context))
+        Log.i(TAG, "Install directly with root called");
+        if (!tryAssertLatestApkDownloaded(context)) {
+            Log.i(TAG, "Latest apk not downloaded, aborting install.");
             return false;
+        }
 
         final File apk = getApk(context);
 
