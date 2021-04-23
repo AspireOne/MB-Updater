@@ -9,7 +9,6 @@
     <!-- Global -->
     <string name="app_name">Mimibazar aktualizace</string>
     <string name="app_update_available">Dostupná aktualizace aplikace!</string>
-    <string name="cannot_get_internet_connection">Nelze získat internetové připojení.</string>
     <string name="missing_credentials">Chybí přihlašovací údaje</string>
 
     <!-- Activity Main -->
@@ -58,6 +57,5 @@
     <string name="mimibazar_cannot_update">Nelze aktualizovat Mimibazar</string>
     <string name="mimibazar_cannot_update_desc_runtime_error">Nastala runtime chyba</string>
     <string name="mimibazar_cannot_update_desc_external_error">Nastala externí chyba</string>
-    <string name="mimibazar_cannot_update_desc_internal_error">Nastala interní chyba</string>
     <string name="mimibazar_cannot_update_desc_invalid_credentials">Přihlašovací údaje nejsou správné</string>
 </resources>

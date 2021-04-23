@@ -64,10 +64,10 @@ public class RootUtils {
             success = false;
         }
 
-        return new Pair(new Boolean(success), p);
+        return new Pair<>(success, p);
     }
 
     public static boolean setMobileDataConnection(boolean enabled) {
-        return runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first.booleanValue();
+        return runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first;
     }
 }

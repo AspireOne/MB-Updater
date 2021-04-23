@@ -19,7 +19,7 @@ public class Requester {
     private static final String TAG = "REQUESTER";
     // HTTP
     public enum RequestMethod {POST, GET}
-    public int requestThrottleMs;
+    public final int requestThrottleMs;
     private long lastRequest = 0;
     private static final OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
@@ -32,7 +32,7 @@ public class Requester {
     }
 
     public static @Nullable String getBodyOrNull(Pair<Boolean, Response> result) {
-        if (!result.first.booleanValue())
+        if (!result.first)
             return null;
 
         try {
@@ -70,7 +70,7 @@ public class Requester {
             Log.e(TAG, getExAsStr(e));
         }
 
-        return new Pair(response != null && response.isSuccessful(), response);
+        return new Pair<>(response != null && response.isSuccessful(), response);
     }
 
     private void throttle() {

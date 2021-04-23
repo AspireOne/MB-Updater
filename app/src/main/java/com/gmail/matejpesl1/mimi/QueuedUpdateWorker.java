@@ -11,6 +11,7 @@ import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 
 public class QueuedUpdateWorker extends Worker {
+    private static final String TAG = "QueuedUpdateWorker";
     private final Context context;
 
     public QueuedUpdateWorker(Context context, WorkerParameters params) {
@@ -18,18 +19,18 @@ public class QueuedUpdateWorker extends Worker {
         this.context = context;
     }
 
+    @NonNull
     @Override
     public Result doWork() {
-        Log.i("QueuedUpdateWorker", "Update Worker started.");
-        //TODO: Reschedule the work
+        Log.i(TAG, "Update Worker started.");
         if (!InternetUtils.isConnectionAvailable()) {
-            Log.i("QueuedUpdateWorker", "Could not get internet, returning.");
+            Log.i(TAG, "Could not get internet, returning.");
             return Result.retry();
         }
 
-        Log.i("QueuedUpdateWorker", "Update Worker requirements/constraints passed, starting update.");
+        Log.i(TAG, "Update Worker requirements/constraints passed, starting update.");
         UpdateService.startUpdateImmediately(context);
-        Log.i("QueuedUpdateWorker", "Update Worker finished, returning.");
+        Log.i(TAG, "Update Worker finished, returning.");
         return Result.success();
     }
 }

@@ -1,6 +1,5 @@
 package com.gmail.matejpesl1.mimi;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;

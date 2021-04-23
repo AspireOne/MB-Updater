@@ -1,14 +1,22 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.ArrayList;
+
 import okhttp3.Response;
 
-import static com.gmail.matejpesl1.mimi.utils.Utils.*;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getIntPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
+import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
 
 public class Updater {
     // Prefs
@@ -21,7 +29,7 @@ public class Updater {
     private static boolean running = false;
     private Requester requester;
     private MimibazarRequester mimibazarRequester;
-    private Context context;
+    private final Context context;
 
     public Updater(Context context) {
         this.context = context;
@@ -127,10 +135,10 @@ public class Updater {
                         Requester.RequestMethod.GET,
                         null);
 
-                if (!result.first.booleanValue())
+                if (!result.first)
                     return "Nelze navázat spojení se stránkami.";
 
-                if (Utils.isEmptyOrNull(requester.getBodyOrNull(result)))
+                if (Utils.isEmptyOrNull(Requester.getBodyOrNull(result)))
                     return "Nelze získat HTML stránek.";
             }
 
@@ -184,7 +192,7 @@ public class Updater {
 
         String error = null;
         // TODO: Get remaining updates from the request that updates the photo to avoid
-        // unnecesarry double-request.
+        // unnecessary double-request.
         while (remainingUpdates > 0 && ++iterations < maxIterations) {
             if (currIdIndex >= ids.length - 1) {
                 currIdIndex = 0;
@@ -222,7 +230,7 @@ public class Updater {
 
         writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
         Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" +
-                "Errors: %s."));
+                "Errors: %s.", iterations, currIdIndex, photoUpdateErrorCount));
         return error;
     }
 
@@ -238,7 +246,7 @@ public class Updater {
         if (newIds.size() < 3)
             return false;
 
-        String newPrefIds = String.join(" ", newIds);
+        String newPrefIds = TextUtils.join(" ", newIds);
         writePref(context, PREF_IDS, newPrefIds);
         return true;
     }

@@ -11,14 +11,12 @@
             app:entryValues="@array/updated_items_values"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingPageAmount"
             app:key="@string/setting_pages_amount_key" />
         <Preference
             app:title="@string/activity_settings_auto_update_time_title"
             app:summary="xx:xx"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingUpdateTime"
             app:key="@string/setting_update_time_key" />
         <SwitchPreferenceCompat
             app:title="@string/activity_settings_additionally_update_title"
@@ -26,7 +24,6 @@
             app:summary="@string/activity_settings_additionally_update_summary"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingUpdateAdditionally"
             app:key="@string/setting_update_additionally_key" />
     </PreferenceCategory>
 
@@ -37,7 +34,6 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             app:defaultValue=""
-            android:id="@+id/settingUsername"
             app:key="@string/setting_username_key" />
         <EditTextPreference
             app:title="@string/activity_settings_password_title"
@@ -45,7 +41,6 @@
             app:iconSpaceReserved="false"
             app:defaultValue=""
             app:persistent="true"
-            android:id="@+id/settingPassword"
             app:key="@string/setting_password_key" />
     </PreferenceCategory>
 
@@ -62,7 +57,6 @@
             app:summaryOn="@string/activity_settings_allow_change_wifi_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingAllowWifiChange"
             app:key="@string/setting_allow_wifi_change_key" />
 
         <SwitchPreferenceCompat
@@ -75,7 +69,6 @@
             app:iconSpaceReserved="false"
             app:persistent="true"
             app:enabled="false"
-            android:id="@+id/settingAllowDataChange"
             app:key="@string/setting_allow_data_change_key" />
     </PreferenceCategory>
 
@@ -87,7 +80,6 @@
             app:summaryOn="@string/activity_settings_successful_update_notification_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingSuccesfullUpdateNotification"
             app:key="@string/setting_successful_update_notification_key" />
 
         <Preference
@@ -95,13 +87,11 @@
             app:summary="@string/activity_settings_battery_exception_summary"
             app:iconSpaceReserved="false"
             app:persistent="true"
-            android:id="@+id/settingBatteryException"
             app:key="@string/setting_battery_exception_key" />
         <Preference
             app:title="@string/activity_settings_root_permission_title"
             app:summary="@string/activity_settings_root_permission_summary"
             app:iconSpaceReserved="false"
-            android:id="@+id/settingRootPermission"
             app:key="@string/setting_root_permission_key" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -71,7 +71,7 @@ public class AppUpdateManager {
         Log.i(TAG, "Command to directly install apk: " + command);
 
         Pair<Boolean, Process> result = RootUtils.runCommandAsSu(command);
-        Log.i(TAG, "direct installation success: " + result.first.booleanValue());
+        Log.i(TAG, "direct installation success: " + result.first);
         return true;
     }
 
@@ -81,7 +81,7 @@ public class AppUpdateManager {
         // If already downloading, wait for it to end and return the apk downloaded (bool) status.
         if (downloadThread != null) {
             Log.i(tag, "Download is already running, waiting for it to end...");
-            waitForDownloadThreadIfExists(tag);
+            waitForDownloadThreadIfExists();
 
             boolean downloadedApkLatest = isDownloadedApkLatest(context);
             Log.i(tag, "Download finished. Downloaded apk latest: " + downloadedApkLatest);
@@ -93,8 +93,8 @@ public class AppUpdateManager {
             AtomicReference<DownloadState> downloadState = new AtomicReference<>();
 
             // Start the download and wait for it to end (if it runs), getting it's result.
-            downloadApkAsync(context, (dState) -> downloadState.set(dState));
-            waitForDownloadThreadIfExists(tag);
+            downloadApkAsync(context, downloadState::set);
+            waitForDownloadThreadIfExists();
 
             if (downloadState.get() == DownloadState.ALREADY_DOWNLOADED || downloadState.get() == DownloadState.ALREADY_DOWNLOADING)
                 Log.e(TAG, "Unexpected download state (" + downloadState.get() + ").");
@@ -105,11 +105,11 @@ public class AppUpdateManager {
         return true;
     }
 
-    private static void waitForDownloadThreadIfExists(String tag) {
+    private static void waitForDownloadThreadIfExists() {
         if (downloadThread == null)
             return;
         try { downloadThread.join(20000); }
-        catch (InterruptedException e) { Log.e(tag, Utils.getExAsStr(e)); }
+        catch (InterruptedException e) { Log.e("AppUpdateManager::waitForDownloadThreadIfExists", Utils.getExAsStr(e)); }
     }
 
     private static int getNewestVerNum(Context context) {

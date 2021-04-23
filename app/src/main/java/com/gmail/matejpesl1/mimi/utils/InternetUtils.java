@@ -19,13 +19,14 @@ public class InternetUtils {
             Pair<Boolean, Process> pair = RootUtils.runCommandAsSu("dumpsys telephony.registry | grep mDataConnectionState");
             Process p = pair.second;
 
-            if (!pair.first.booleanValue() || p == null)
+            if (!pair.first || p == null)
                 return DataState.UNKNOWN;
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
             String output = "";
             String s;
+            // It will have about 2 lines, so no need to use StringBuilder.
             while ((s = stdInput.readLine()) != null)
                 output += (s);
 
@@ -51,7 +52,7 @@ public class InternetUtils {
     public static boolean isConnectionAvailable() {
         try {
             InetAddress ipAddress = InetAddress.getByName("google.com");
-            boolean resolved = !ipAddress.equals("");
+            boolean resolved = !ipAddress.toString().equals("");
             Log.i(TAG, "Connection check succeeded: " + resolved);
             return resolved;
         } catch (Exception e) {
@@ -65,7 +66,7 @@ public class InternetUtils {
             ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(prevWifiEnabled);
 
         if (prevDataState != getMobileDataState())
-            RootUtils.setMobileDataConnection(prevDataState == DataState.ENABLED ? true : false);
+            RootUtils.setMobileDataConnection(prevDataState == DataState.ENABLED);
     }
 
     public static boolean isWifiEnabled(Context context) {
@@ -102,7 +103,7 @@ public class InternetUtils {
             // If data were already enabled (or unknown) but wifi not, return false - we can't
             // do anything else.
             if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
-                return initialWifiEnabled && disableSucceeded ? pingConnection() : false;
+                return (initialWifiEnabled && disableSucceeded) && pingConnection();
         }
 
         if (allowDataChange) {

@@ -20,7 +20,7 @@ public class MimibazarRequester {
     private static final String TAG = "MimibazarRequester";
 
     // Patterns.
-    private static final Pattern ITEM_ID_PATTERN = Pattern.compile("(?<=href=\"https:\\/\\/www\\.mimibazar\\.cz\\/inzerat\\/)\\d+(?=\\/.*\")");
+    private static final Pattern ITEM_ID_PATTERN = Pattern.compile("(?<=href=\"https://www\\.mimibazar\\.cz/inzerat/)\\d+(?=/.*\")");
         // Matches the amount of remaining updates IF it's > 1 (because <= 1 needs a different pattern).
     private static final Pattern UPDATES_AMOUNT_PATTERN = Pattern.compile("(?<=Stále lze využít )\\d+(?= aktualiza)");
         // Matches if we can still use one update.
@@ -30,7 +30,7 @@ public class MimibazarRequester {
         // Matches the amount of maximal possible updates (no matter how many are remaining).
     private static final Pattern UPDATES_MAX_PATTERN = Pattern.compile("(?<=Denně můžete aktualizovat )\\d+(?= inzertních)");
         // Matches the user's ID.
-    private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=<\\/div>)");
+    private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=</div>)");
 
     // Internet.
     private final static String MAIN_PAGE_URL = "https://www.mimibazar.cz/";
@@ -43,7 +43,7 @@ public class MimibazarRequester {
     public final String username;
     public final String password;
 
-    public class CouldNotGetAccIdException extends Exception {}
+    public static class CouldNotGetAccIdException extends Exception {}
 
     public MimibazarRequester(Requester requester, String username, String password) throws CouldNotGetAccIdException {
         this.username = username;
@@ -138,7 +138,7 @@ public class MimibazarRequester {
                 Requester.RequestMethod.POST,
                 reqBody);
 
-        return result.first.booleanValue();
+        return result.first;
     }
 
     // The body cannot be logged because it's too long.
