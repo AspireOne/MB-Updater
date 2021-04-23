@@ -87,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
         int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES)
             settingsIcon.setColorFilter(Color.rgb(210, 200, 200));
-
-        AppUpdateManager.requestInstall(this);
     }
 
     @Override
