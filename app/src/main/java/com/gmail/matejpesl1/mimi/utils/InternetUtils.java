@@ -6,8 +6,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 
-import com.gmail.matejpesl1.mimi.services.UpdateService;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -33,16 +31,16 @@ public class InternetUtils {
 
             return output.contains("2") ? DataState.ENABLED : DataState.DISABLED;
         } catch (Exception e) {
-            Log.e(TAG, Utils.getExceptionAsString(e));
+            Log.e(TAG, Utils.getExAsStr(e));
         }
 
         return DataState.UNKNOWN;
     }
 
-    // Will try to connect for 30 seconds in 3 second intervals.
+    // Will try to connect for 60 seconds in 6 second intervals.
     public static boolean pingConnection() {
         for (byte i = 0; i < 10; ++i) {
-            SystemClock.sleep(2950);
+            SystemClock.sleep(5900);
             if (isConnectionAvailable())
                 return true;
         }
@@ -53,7 +51,7 @@ public class InternetUtils {
     public static boolean isConnectionAvailable() {
         try {
             InetAddress ipAddress = InetAddress.getByName("google.com");
-            boolean resolved = !"".equals(ipAddress);
+            boolean resolved = !ipAddress.equals("");
             Log.i(TAG, "Connection check succeeded: " + resolved);
             return resolved;
         } catch (Exception e) {
