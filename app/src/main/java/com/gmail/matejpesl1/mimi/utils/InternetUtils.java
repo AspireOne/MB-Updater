@@ -12,6 +12,8 @@ import java.net.InetAddress;
 
 public class InternetUtils {
     private static final String TAG = "InternetUtils";
+    private static final int internetAssertionPingingFreqSecs = 5;
+    private static final int internetAssertionPingingDurationSecs = 90;
     public enum DataState { UNKNOWN, ENABLED, DISABLED }
 
     public static DataState getMobileDataState() {
@@ -38,10 +40,11 @@ public class InternetUtils {
         return DataState.UNKNOWN;
     }
 
-    // Will try to connect for 60 seconds in 6 second intervals.
-    public static boolean pingConnection() {
-        for (byte i = 0; i < 10; ++i) {
-            SystemClock.sleep(5900);
+    public static boolean waitForConnection(int durationSecs, int frequencySecs) {
+        int iterations = durationSecs/frequencySecs;
+        int delayMs = (frequencySecs * 1000) - 100; //The check itself takes some time too, so subtract it.
+        for (byte i = 0; i < iterations; ++i) {
+            SystemClock.sleep(delayMs);
             if (isConnectionAvailable())
                 return true;
         }
@@ -61,12 +64,19 @@ public class InternetUtils {
         }
     }
 
+    public static void setWifiEnabled(Context context, boolean enabled) {
+        ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled);
+    }
+    public static void setDataEnabled(boolean enabled) {
+        RootUtils.setMobileDataConnection(enabled);
+    }
+
     public static void revertToInitialState(Context context, DataState prevDataState, boolean prevWifiEnabled) {
         if (prevWifiEnabled != isWifiEnabled(context))
-            ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(prevWifiEnabled);
+            setWifiEnabled(context, prevWifiEnabled);
 
         if (prevDataState != getMobileDataState())
-            RootUtils.setMobileDataConnection(prevDataState == DataState.ENABLED);
+            setDataEnabled(prevDataState == DataState.ENABLED);
     }
 
     public static boolean isWifiEnabled(Context context) {
@@ -89,7 +99,7 @@ public class InternetUtils {
                 boolean enableSucceeded = wManager.setWifiEnabled(true);
                 Log.i(TAG, "Wifi enable succeeded: " + enableSucceeded);
 
-                if (enableSucceeded && pingConnection())
+                if (enableSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
                     return true;
             }
 
@@ -103,7 +113,7 @@ public class InternetUtils {
             // If data were already enabled (or unknown) but wifi not, return false - we can't
             // do anything else.
             if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
-                return (initialWifiEnabled && disableSucceeded) && pingConnection();
+                return (initialWifiEnabled && disableSucceeded) && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs);
         }
 
         if (allowDataChange) {
@@ -116,7 +126,7 @@ public class InternetUtils {
             boolean setSucceeded = RootUtils.setMobileDataConnection(true);
             Log.i(TAG, "Data change allowed. Change succeeded: " + setSucceeded);
             if (setSucceeded)
-                return pingConnection();
+                return waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs);
         }
 
         Log.i(TAG, "Could not establish internet connection.");
