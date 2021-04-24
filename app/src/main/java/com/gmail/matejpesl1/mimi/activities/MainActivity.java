@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             if (!InternetUtils.isConnectionAvailable()) {
                 Log.i(TAG, "Internet connection not available.");
-                runOnUiThread(() -> updateNowButt.setEnabled(false));
                 return;
             }
 
@@ -115,12 +114,12 @@ public class MainActivity extends AppCompatActivity {
                     UpdateServiceAlarmManager.changeRepeatingAlarm(this, false);
                     runOnUiThread(this::updateAlarm);
                 }
-                runOnUiThread(() -> updateNowButt.setEnabled(false));
                 return;
             }
 
             // Update remaining updates. This comes last, because it takes longer to complete.
             Pair<Integer, Integer> state = mimibazarRequester.getUpdatesState();
+
             runOnUiThread(() -> updateNowButt.setEnabled(state.first.intValue() > 0));
             updateRemaining(state.first, state.second);
         }).start();
