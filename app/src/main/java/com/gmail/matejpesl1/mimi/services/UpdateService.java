@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
-import static com.gmail.matejpesl1.mimi.utils.InternetUtils.revertToInitialState;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 
 public class UpdateService extends IntentService {
@@ -57,8 +56,8 @@ public class UpdateService extends IntentService {
 
         Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevMobileDataState.toString(), prevWifiEnabled));
 
-        boolean hasInternet = InternetUtils.tryAssertHasInternet(this,
-                prevMobileDataState, prevWifiEnabled,
+        boolean hasInternet = InternetUtils.tryAssertHasInternet(
+                this, prevMobileDataState, prevWifiEnabled,
                 getBooleanPref(this, R.string.setting_allow_wifi_change_key, true),
                 getBooleanPref(this, R.string.setting_allow_data_change_key, true));
         // Execute only if internet connection could be established.
@@ -73,7 +72,6 @@ public class UpdateService extends IntentService {
             }
         } else {
             boolean retry = getBooleanPref(this, R.string.setting_update_additionally_key, true);
-
             Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
 
             Notifications.postNotification(this, R.string.mimibazar_cannot_update,
@@ -87,7 +85,8 @@ public class UpdateService extends IntentService {
             }
         }
 
-        revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
+        InternetUtils.revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
+        AppUpdateManager.waitForDownloadThreadIfExists();
         wakelock.release();
     }
 

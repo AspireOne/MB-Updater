@@ -112,7 +112,7 @@ public class AppUpdateManager {
         return true;
     }
 
-    private static void waitForDownloadThreadIfExists() {
+    public static void waitForDownloadThreadIfExists() {
         if (downloadThread == null)
             return;
         try { downloadThread.join(20000); }
