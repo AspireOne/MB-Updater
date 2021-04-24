@@ -129,6 +129,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="16dp"
+        android:enabled="false"
         android:paddingLeft="8sp"
         android:paddingRight="8sp"
         android:text="@string/activity_main_update_now"
