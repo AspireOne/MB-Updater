@@ -1,5 +1,6 @@
 package com.gmail.matejpesl1.mimi;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -67,23 +68,24 @@ public class Notifications {
         postNotification(context, context.getString(titleRes), textRes, channelType);
     }
     public static void postNotification(Context context, String title, String text, Channel channelType) {
-        IChannel channel = channelType.channel;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            createNotificationChannel(context, channel);
+            createNotificationChannel(context, channelType.channel);
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(context, channel.getId())
+        PendingIntent appIntent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0);
+
+        Notification notification =
+                new NotificationCompat.Builder(context, channelType.channel.getId())
                         .setSmallIcon(R.drawable.app_icon)
                         .setContentTitle(title)
                         .setContentText(text)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setAutoCancel(true);
+                        .setAutoCancel(true)
+                        .setContentIntent(appIntent)
+                        .build();
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        PendingIntent appIntent =
-                PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0);
-        builder.setContentIntent(appIntent);
-        notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE), builder.build());
+        notificationManager.notify(ThreadLocalRandom.current().nextInt(0, 5_000_000), notification);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
