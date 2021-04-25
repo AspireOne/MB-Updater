@@ -1,32 +1,24 @@
 package com.gmail.matejpesl1.mimi;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
+
 import androidx.core.util.Pair;
 
 import com.gmail.matejpesl1.mimi.utils.Utils;
-
-import java.util.ArrayList;
 
 import okhttp3.Response;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getIntPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
 
 public class Updater {
-    // Prefs
-    private static final String PREF_IDS = "ids_of_items";
-    private static final String PREF_CURR_ID_INDEX = "index_of_current_id";
-
-    // Other
     private static final String TAG = "Updater";
+    private static final String PREF_RUNNING = "updater_running";
     private static final int REQUEST_THROTTLE = 300;
-    private static boolean running = false;
     private Requester requester;
     private MimibazarRequester mimibazarRequester;
     private final Context context;
@@ -45,32 +37,19 @@ public class Updater {
     }*/
 
     public void update() {
-        if (running) {
+        if (getBooleanPref(context, PREF_RUNNING, false)) {
             Log.w(TAG, "Updater is already running, returning.");
             return;
         }
 
-        running = true;
-        prepareAndExecute();
-        running = false;
-    }
+        writePref(context, PREF_RUNNING, true);
 
-    private void prepareAndExecute() {
-        // This method first, because it initializes the requester.
-        if (!initAndNotifyIfError())
-            return;
-
-        if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
-            Log.w(TAG, "Mimibazar was attempted to be updated but it has already " +
-                    "0 remaining updates. Returning.");
+        if (!prepareAndNotifyIfError()) {
+            writePref(context, PREF_RUNNING, false);
             return;
         }
 
-        if (!makeChecksAndNotifyAboutErrors())
-            return;
-
-        Log.i(TAG, "All pre-update checks passed.");
-        String error = execute();
+        String error = new CoreUpdateModule(context, mimibazarRequester).execute();
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
@@ -80,6 +59,26 @@ public class Updater {
             Notifications.postNotification(context, R.string.mimibazar_sucesfully_updated, "",
                     Notifications.Channel.DEFAULT);
         }
+
+        writePref(context, PREF_RUNNING, false);
+    }
+
+    private boolean prepareAndNotifyIfError() {
+        // This method first, because it initializes the requester.
+        if (!initAndNotifyIfError())
+            return false;
+
+        if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
+            Log.w(TAG, "Mimibazar was attempted to be updated but it has already " +
+                    "0 remaining updates. Returning.");
+            return false;
+        }
+
+        if (!makeChecksAndNotifyAboutErrors())
+            return false;
+
+        Log.i(TAG, "All pre-update checks passed.");
+        return true;
     }
 
     private boolean initAndNotifyIfError() {
@@ -109,155 +108,45 @@ public class Updater {
         String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
-            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_external_error,
-                    externalError, Notifications.Channel.ERROR);
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_external_error, externalError,
+                    Notifications.Channel.ERROR);
             return false;
         }
-
-        /*String internalError = checkInternalErrors(context);
-        if (internalError != null) {
-            Log.e(TAG, "Internal error encountered. Error: " + internalError);
-            Notifications.PostDefaultNotification(
-                    context,
-                    context.getResources().getString(R.string.cannot_update_mimibazar_internal_error),
-                    internalError);
-            return false;
-        }*/
 
         return true;
     }
 
     private String checkExternalErrors() {
         try {
+            // General test.
             {
-                Pair<Boolean, Response> result = requester.tryMakeRequest(
-                        "https://www.google.com",
-                        Requester.RequestMethod.GET,
-                        null);
+                Pair<Boolean, Response> result = requester.tryMakeRequest("https://www.google.com",
+                        Requester.RequestMethod.GET, null);
 
                 if (!result.first)
                     return "Nelze navázat spojení se stránkami.";
 
                 if (Utils.isEmptyOrNull(Requester.getBodyOrNull(result)))
-                    return "Nelze získat HTML stránek.";
+                    return "Nelze získat obsah stránek.";
             }
+            // Mimibazar test.
+            {
+                String mimibazarPageBody = mimibazarRequester.getPageBodyOrNull(1, true);
 
-            String mimibazarPageBody = mimibazarRequester.getPageBodyOrNull(1, true);
+                if (Utils.isEmptyOrNull(mimibazarPageBody))
+                    return "Nelze získat obsah mimibazar stránek.";
 
-            if (Utils.isEmptyOrNull(mimibazarPageBody))
-                return "Nelze získat HTML mimibazar stránek.";
+                if (mimibazarRequester.getIdsFromPageOrEmpty(1, null, mimibazarPageBody).isEmpty())
+                    return "Nelze získat ID položek na mimibazaru.";
 
-            if (mimibazarRequester.getIdsFromPageOrEmpty(1, null, mimibazarPageBody).isEmpty())
-                return "Nelze získat ID položek na mimibazaru.";
-
-            if (mimibazarRequester.tryGetRemainingUpdates(mimibazarPageBody) == -1)
-                return "Nelze získat zbývající aktualizace na mimibazaru.";
-
+                if (mimibazarRequester.tryGetRemainingUpdates(mimibazarPageBody) == -1)
+                    return "Nelze získat zbývající aktualizace na mimibazaru.";
+            }
         } catch (Exception e) {
             Log.e(TAG, getExAsStr(e));
             return "Při testu externích chyb nastala neočekávaná chyba.";
         }
 
         return null;
-    }
-
-    private String execute() {
-        // Initialization.
-        int currIdIndex = getIntPref(context, PREF_CURR_ID_INDEX, 0);
-        int remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
-        String[] ids = getIdsFromPrefs();
-
-        // Checks.
-        if (remainingUpdates == -1)
-            return "Nelze získat zbývající aktualizace.";
-
-        if (ids.length == 0 || ids.length == 1) {
-            boolean created = tryRecreatePrefIds();
-
-            ids = getIdsFromPrefs();
-            if (!created || ids.length == 0 || ids.length == 1)
-                return "Nelze vytvořit seznam ID položek z mimibazaru.";
-        }
-
-        Log.i(TAG, "ID list has " + ids.length + " items.");
-
-        // Loop variables initialization.
-        int iterations = 0;
-        int photoUpdateErrorCount = 0;
-        int lineSaveCount = 0;
-        final int maxPhotoUpdateErrors = 10;
-        final int maxIterations = 300;
-        // Save the current line to preferences every x seconds to prevent loss in case of force close.
-        final int lineSaveFreq = 5;
-
-        String error = null;
-        // TODO: Get remaining updates from the request that updates the photo to avoid
-        // unnecessary double-request.
-        while (remainingUpdates > 0 && ++iterations < maxIterations) {
-            if (currIdIndex >= ids.length - 1) {
-                currIdIndex = 0;
-                if (!tryRecreatePrefIds()) {
-                    error = "Nelze znovu-vytvořit seznam ID položek z mimibazaru.";
-                    break;
-                }
-
-                ids = getIdsFromPrefs();
-            }
-
-            if (!mimibazarRequester.tryUpdatePhoto(ids[currIdIndex])) {
-                Log.e(TAG, "Při aktualizaci fotky nastala chyba.");
-                if (++photoUpdateErrorCount >= maxPhotoUpdateErrors) {
-                    error = String.format("Při aktualizaci fotek nastala chyba více jak %s-krát.", maxPhotoUpdateErrors);
-                    break;
-                }
-            } else {
-                int remainingFromServer = mimibazarRequester.tryGetRemainingUpdates(null);
-                if (remainingFromServer == -1) {
-                    Log.e(TAG, "Could not get remaining updates from server.");
-                    --remainingUpdates;
-                }
-                else
-                    remainingUpdates = remainingFromServer;
-            }
-
-            ++currIdIndex;
-
-            if (++lineSaveCount >= lineSaveFreq) {
-                lineSaveCount = 0;
-                writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
-            }
-        }
-
-        writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
-        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" +
-                "Errors: %s.", iterations, currIdIndex, photoUpdateErrorCount));
-        return error;
-    }
-
-    private String[] getIdsFromPrefs() {
-        String prefIds = getPref(context, PREF_IDS, "");
-        return prefIds.split(" ");
-    }
-
-    private boolean tryRecreatePrefIds() {
-        int amountOfPages = getIntPref(context, R.string.setting_pages_amount_key, 25);
-        ArrayList<String> newIds = createIdListOrEmpty(amountOfPages);
-
-        if (newIds.size() < 3)
-            return false;
-
-        String newPrefIds = TextUtils.join(" ", newIds);
-        writePref(context, PREF_IDS, newPrefIds);
-        return true;
-    }
-
-    private ArrayList<String> createIdListOrEmpty(int amountOfPages) {
-        ArrayList<String> ids = new ArrayList<>();
-        // Iterate backwards because mimibazar puts already updated items at the
-        // beginning so we won't update it twice.
-        for (int i = amountOfPages; i > 0; --i)
-            mimibazarRequester.getIdsFromPageOrEmpty(i, ids, null);
-
-        return ids;
     }
 }
