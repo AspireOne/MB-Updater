@@ -13,7 +13,7 @@ import java.net.InetAddress;
 public class InternetUtils {
     private static final String TAG = "InternetUtils";
     private static final int internetAssertionPingingFreqSecs = 5;
-    private static final int internetAssertionPingingDurationSecs = 90;
+    private static final int internetAssertionPingingDurationSecs = 60;
     public enum DataState { UNKNOWN, ENABLED, DISABLED }
 
     public static DataState getMobileDataState() {
