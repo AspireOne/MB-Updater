@@ -57,7 +57,7 @@
     <!-- Mimibazar-update related texts -->
     <string name="mimibazar_sucesfully_updated">Mimibazar úspěšně aktualizován</string>
     <string name="mimibazar_cannot_update">Nelze aktualizovat Mimibazar</string>
-    <string name="mimibazar_cannot_update_desc_runtime_error">Nastala runtime chyba</string>
+    <string name="mimibazar_cannot_update_desc_runtime_error">Nastala chyba při aktualizaci</string>
     <string name="mimibazar_cannot_update_desc_external_error">Nastala externí chyba</string>
     <string name="mimibazar_cannot_update_desc_invalid_credentials">Přihlašovací údaje nejsou správné</string>
 </resources>
