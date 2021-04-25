@@ -5,7 +5,7 @@ plugins {
 android {
     signingConfigs {
         Release {
-            storeFile file('C:\\Users\\matej\\key.jks')
+            storeFile file('C:\\Users\\matej\\AndroidStudioProjects\\key.jks')
             storePassword '1786117714159265'
             keyAlias 'mimiKey'
             keyPassword '1786117714159265'
