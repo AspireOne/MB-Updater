@@ -5,7 +5,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,8 +33,9 @@ public class MimibazarRequester {
     private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=</div>)");
 
     // Internet.
-    private final static String MAIN_PAGE_URL = "https://www.mimibazar.cz/";
-    private final static String BAZAR_BASE_URL = MAIN_PAGE_URL + "bazar.php?";
+    private static final String MAIN_PAGE_URL = "https://www.mimibazar.cz/";
+    private static final String BAZAR_BASE_URL = MAIN_PAGE_URL + "bazar.php?";
+    private final String[] idScrapeBuffer = new String[21];
     private final Requester requester;
     private final RequestBody reqBody;
     private final String profileUrl;
@@ -149,9 +150,9 @@ public class MimibazarRequester {
     }
 
     // The body cannot be logged because it's too long.
-    public ArrayList<String> getIdsFromPageOrEmpty(int page, @Nullable ArrayList<String> list, @Nullable String body) {
+    public LinkedHashSet<String> getIdsFromPageOrEmpty(int page, @Nullable LinkedHashSet<String> list, @Nullable String body) {
         if (list == null)
-            list = new ArrayList<>();
+            list = new LinkedHashSet<>();
 
         if (isEmptyOrNull(body))
             body = getPageBodyOrNull(page, false);
@@ -159,9 +160,15 @@ public class MimibazarRequester {
         if (isEmptyOrNull(body))
             return list;
 
+        // Write all ids from the page into a buffer.
+        int i = -1;
         Matcher m = ITEM_ID_PATTERN.matcher(body);
         while (m.find())
-            list.add(m.group());
+            idScrapeBuffer[++i] = m.group();
+
+        // Write ids from the buffer into a list, but in reverse (starting at index n-1).
+        while (i >= 0)
+            list.add(idScrapeBuffer[i--]);
 
         return list;
     }
