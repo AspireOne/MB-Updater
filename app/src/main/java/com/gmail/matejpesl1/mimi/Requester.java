@@ -5,6 +5,8 @@ import androidx.core.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import com.gmail.matejpesl1.mimi.utils.Utils;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -74,13 +76,8 @@ public class Requester {
     }
 
     private void throttle() {
-        while ((System.currentTimeMillis() - lastRequest) < requestThrottleMs) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Log.e(TAG, getExAsStr(e));
-            }
-        }
+        while ((System.currentTimeMillis() - lastRequest) < requestThrottleMs)
+            Utils.sleep(TAG, 100);
 
         lastRequest = System.currentTimeMillis();
     }
