@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.PowerManager;
+import android.util.Log;
 
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
@@ -21,6 +22,14 @@ public class Utils {
 
     public static String dateToCzech(Date time) {
         return new SimpleDateFormat("dd. MM. yyyy H:mm (EEEE)", new Locale("cs", "CZ")).format(time);
+    }
+
+    public static void sleep(String tag, long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Log.e(tag, "Sleep was interrupted. E: " + getExAsStr(e));
+        }
     }
 
     public static String dateToDigitalTime(Date time) { return new SimpleDateFormat("H:mm", new Locale("cs", "CZ")).format(time); }
