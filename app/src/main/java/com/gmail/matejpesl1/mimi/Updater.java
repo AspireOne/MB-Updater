@@ -19,6 +19,7 @@ public class Updater {
     private static final int RECONNECT_CHECK_DELAY = 15000;
     private static final int MAX_ITERATIONS = 300;
 
+    private final ProgressNotification progressNotification;
     private final MimibazarRequester mimibazarRequester;
     private final Context context;
 
@@ -35,6 +36,7 @@ public class Updater {
         this.mimibazarRequester = mimibazarRequester;
 
         remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
+        progressNotification = new ProgressNotification("Probíhá aktualizace...", getFormattedRemainingText(), remainingUpdates, context);
         currIdIndex = getIntPref(context, PREF_CURR_ID_INDEX, 0);
         ids = getIdListFromPrefs();
 
@@ -47,14 +49,7 @@ public class Updater {
             return "Nelze vytvořit seznam ID položek z mimibazaru.";
 
         Log.i(TAG, "Beginning main update loop. ID list length: " + ids.length + " | remaining updates: " + remainingUpdates + " | current ID index: " + currIdIndex);
-        String error = executeUpdateLoop();
-        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" + "Errors: %s.", iterations, currIdIndex, photoUpdateErrors));
 
-        Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
-        return error;
-    }
-
-    private String executeUpdateLoop() {
         while (remainingUpdates > 0 && iterations++ < MAX_ITERATIONS) {
             if (currIdIndex >= ids.length - 1 && !tryRecreateIds())
                 return "Nelze znovu-vytvořit seznam ID položek z mimibazaru.";
@@ -67,13 +62,26 @@ public class Updater {
                 remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
 
             ++currIdIndex;
+            progressNotification.updateProgress(progressNotification.max - remainingUpdates, getFormattedRemainingText());
 
             // Autosave in case it's force closed.
             if (remainingUpdates % 5 == 0)
                 Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
         }
 
+        progressNotification.cancel();
+        Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
+        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" + "Errors: %s.", iterations, currIdIndex, photoUpdateErrors));
+
         return null;
+    }
+
+    private String getFormattedRemainingText() {
+         final String text = remainingUpdates >= 5 || remainingUpdates == 0
+                ? "Zbývá %s položek": remainingUpdates >= 2
+                ? "Zbývají %s položky" : "Zbývá %s položka";
+
+         return String.format(text, remainingUpdates);
     }
 
     private String handleUnsuccessfulPhotoUpdate() {
