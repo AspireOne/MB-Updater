@@ -16,7 +16,7 @@ import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
 
 public class Updater {
-    private static final String TAG = "Updater";
+    private static final String TAG = Updater.class.getSimpleName();
     private static final String PREF_RUNNING = "updater_running";
     private static final int REQUEST_THROTTLE = 300;
     private Requester requester;
@@ -36,7 +36,7 @@ public class Updater {
         return true;
     }*/
 
-    public void update() {
+    public void arrangeAndUpdate() {
         if (getBooleanPref(context, PREF_RUNNING, false)) {
             Log.w(TAG, "Updater is already running, returning.");
             return;
@@ -44,7 +44,7 @@ public class Updater {
 
         writePref(context, PREF_RUNNING, true);
 
-        if (!prepareAndNotifyIfError()) {
+        if (!initAndCheck()) {
             writePref(context, PREF_RUNNING, false);
             return;
         }
@@ -63,18 +63,17 @@ public class Updater {
         writePref(context, PREF_RUNNING, false);
     }
 
-    private boolean prepareAndNotifyIfError() {
+    private boolean initAndCheck() {
         // This method first, because it initializes the requester.
         if (!initAndNotifyIfError())
             return false;
 
         if (mimibazarRequester.tryGetRemainingUpdates(null) == 0) {
-            Log.w(TAG, "Mimibazar was attempted to be updated but it has already " +
-                    "0 remaining updates. Returning.");
+            Log.w(TAG, "Mimibazar was attempted to be updated but it has no remaining updates.");
             return false;
         }
 
-        if (!makeChecksAndNotifyAboutErrors())
+        if (!makeChecksAndNotifyIfError())
             return false;
 
         Log.i(TAG, "All pre-update checks passed.");
@@ -104,7 +103,7 @@ public class Updater {
         return true;
     }
 
-    private boolean makeChecksAndNotifyAboutErrors() {
+    private boolean makeChecksAndNotifyIfError() {
         String externalError = checkExternalErrors();
         if (externalError != null) {
             Log.e(TAG, "External error encountered. Error: " + externalError);
