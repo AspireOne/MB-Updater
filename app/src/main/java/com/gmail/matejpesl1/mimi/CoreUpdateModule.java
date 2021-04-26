@@ -12,13 +12,11 @@ import java.util.LinkedHashSet;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getIntPref;
 
 public class CoreUpdateModule {
-    // Prefs
+    private static final String TAG = CoreUpdateModule.class.getSimpleName();
     private static final String PREF_CURR_ID_INDEX = "index_of_current_id";
     private static final String PREF_IDS = "ids_of_items";
-    // Other
-    private static final String TAG = "CoreUpdateModule";
-
     private static final int MAX_PHOTO_UPDATE_ERRORS = 10;
+    private static final int RECONNECT_CHECK_DELAY = 15000;
     private static final int MAX_ITERATIONS = 300;
 
     private final MimibazarRequester mimibazarRequester;
@@ -26,12 +24,11 @@ public class CoreUpdateModule {
 
     // All variables below are initialized to their initial value, and are changed during the
     // update process.
+    private int photoUpdateErrors = 0;
     private int remainingUpdates;
+    private int iterations = 0;
     private int currIdIndex;
     private String[] ids;
-
-    private int photoUpdateErrors = 0;
-    private int iterations = 0;
 
     public CoreUpdateModule(Context context, MimibazarRequester mimibazarRequester) {
         this.context = context;
@@ -39,21 +36,19 @@ public class CoreUpdateModule {
 
         remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
         currIdIndex = getIntPref(context, PREF_CURR_ID_INDEX, 0);
-        ids = getIdsFromPrefsAndTryAssertCorrectOrNull();
+        ids = getIdListFromPrefs();
+
+        if (ids.length < 3)
+            ids = tryRecreateAndSavePrefIdList() ? getIdListFromPrefs() : null;
     }
 
     public String execute() {
         if (ids == null)
             return "Nelze vytvořit seznam ID položek z mimibazaru.";
 
-        Log.i(TAG, "Beginning main update loop. ID list length: " + ids.length
-                + " | remaining updates: " + remainingUpdates
-                + " | current ID index: " + currIdIndex);
-
+        Log.i(TAG, "Beginning main update loop. ID list length: " + ids.length + " | remaining updates: " + remainingUpdates + " | current ID index: " + currIdIndex);
         String error = executeUpdateLoop();
-
-        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" +
-                "Errors: %s.", iterations, currIdIndex, photoUpdateErrors));
+        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" + "Errors: %s.", iterations, currIdIndex, photoUpdateErrors));
 
         Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
         return error;
@@ -66,14 +61,14 @@ public class CoreUpdateModule {
 
             if (!mimibazarRequester.tryUpdatePhoto(ids[currIdIndex])) {
                 String error = handleUnsuccessfulPhotoUpdate();
-                if (error != null)
-                    return error;
+                if (error != null) return error;
             }
             else if (--remainingUpdates <= 2)
                 remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
 
             ++currIdIndex;
 
+            // Autosave in case it's force closed.
             if (remainingUpdates % 5 == 0)
                 Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
         }
@@ -90,7 +85,7 @@ public class CoreUpdateModule {
         if (InternetUtils.isConnectionAvailable())
             return null;
 
-        Utils.sleep(TAG, 15000);
+        Utils.sleep(TAG, RECONNECT_CHECK_DELAY);
         if (InternetUtils.isConnectionAvailable())
             return null;
 
@@ -101,44 +96,30 @@ public class CoreUpdateModule {
         Log.i(TAG, "Reached the end of ID list. Recreating.");
 
         currIdIndex = 0;
-        if (!tryRecreatePrefIds()) {
+        if (!tryRecreateAndSavePrefIdList()) {
             Log.e(TAG, "Could not recreate ID list. Ending.");
             return false;
         }
 
         Log.i(TAG, "Recreated ID list. Size: " + ids.length + ". Continuing.");
-        ids = getIdsFromPrefs();
+        ids = getIdListFromPrefs();
         return true;
     }
 
-    private String[] getIdsFromPrefsAndTryAssertCorrectOrNull() {
-        String[] ids = getIdsFromPrefs();
+    private boolean tryRecreateAndSavePrefIdList() {
+        int amountOfPages = getIntPref(context, R.string.setting_pages_amount_key, 25);
+        LinkedHashSet<String> newIdList = fetchIdListOrEmpty(amountOfPages);
 
-        if (ids.length < 3) {
-            if (tryRecreatePrefIds())
-                return getIdsFromPrefs();
-
-            return null;
-        }
-
-        return ids;
+        Utils.writePref(context, PREF_IDS, TextUtils.join(" ", newIdList));
+        return newIdList.size() > 2;
     }
 
-    private String[] getIdsFromPrefs() {
+    private String[] getIdListFromPrefs() {
         String prefIds = Utils.getPref(context, PREF_IDS, "");
         return prefIds.split(" ");
     }
 
-    private boolean tryRecreatePrefIds() {
-        int amountOfPages = getIntPref(context, R.string.setting_pages_amount_key, 25);
-        LinkedHashSet<String> newIds = createIdListOrEmpty(amountOfPages);
-
-        Utils.writePref(context, PREF_IDS, TextUtils.join(" ", newIds));
-
-        return newIds.size() > 2;
-    }
-
-    private LinkedHashSet<String> createIdListOrEmpty(int amountOfPages) {
+    private LinkedHashSet<String> fetchIdListOrEmpty(int amountOfPages) {
         LinkedHashSet<String> ids = new LinkedHashSet<>();
         // Iterate backwards because mimibazar puts already updated items at the
         // beginning so we won't update it twice.
