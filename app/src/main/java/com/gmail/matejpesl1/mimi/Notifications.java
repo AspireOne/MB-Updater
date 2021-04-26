@@ -88,6 +88,15 @@ public class Notifications {
         notificationManager.notify(ThreadLocalRandom.current().nextInt(0, 5_000_000), notification);
     }
 
+    public static NotificationCompat.Builder getProgressNotificationBuilder(Context context, String title, String text, Channel channelType) {
+        return new NotificationCompat.Builder(context, channelType.channel.getId())
+                .setSmallIcon(R.drawable.app_icon)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(true);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static void createNotificationChannel(Context context, IChannel channel) {
         CharSequence name = context.getResources().getString(channel.getNameRes());
