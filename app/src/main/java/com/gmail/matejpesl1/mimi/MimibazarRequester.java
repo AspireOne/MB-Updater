@@ -17,7 +17,7 @@ import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MimibazarRequester {
-    private static final String TAG = "MimibazarRequester";
+    private static final String TAG = MimibazarRequester.class.getSimpleName();
 
     // Patterns.
     private static final Pattern ITEM_ID_PATTERN = Pattern.compile("(?<=href=\"https://www\\.mimibazar\\.cz/inzerat/)\\d+(?=/.*\")");
@@ -35,7 +35,6 @@ public class MimibazarRequester {
     // Internet.
     private static final String MAIN_PAGE_URL = "https://www.mimibazar.cz/";
     private static final String BAZAR_BASE_URL = MAIN_PAGE_URL + "bazar.php?";
-    private final String[] idScrapeBuffer = new String[21];
     private final Requester requester;
     private final RequestBody reqBody;
     private final String profileUrl;
@@ -149,8 +148,7 @@ public class MimibazarRequester {
         return result.first;
     }
 
-    // The body cannot be logged because it's too long.
-    public LinkedHashSet<String> getIdsFromPageOrEmpty(int page, @Nullable LinkedHashSet<String> list, @Nullable String body) {
+    public LinkedHashSet<String> getIdsFromPageOrEmpty(int page, @Nullable LinkedHashSet<String> list, @Nullable String body){
         if (list == null)
             list = new LinkedHashSet<>();
 
@@ -160,15 +158,11 @@ public class MimibazarRequester {
         if (isEmptyOrNull(body))
             return list;
 
-        // Write all ids from the page into a buffer.
-        int i = -1;
+        // One ID is found on a site like 4 times, so we need a collection that only allows unique values,
+        // so that every id is not duplicated 4x.
         Matcher m = ITEM_ID_PATTERN.matcher(body);
         while (m.find())
-            idScrapeBuffer[++i] = m.group();
-
-        // Write ids from the buffer into a list, but in reverse (starting at index n-1).
-        while (i >= 0)
-            list.add(idScrapeBuffer[i--]);
+            list.add(m.group());
 
         return list;
     }
