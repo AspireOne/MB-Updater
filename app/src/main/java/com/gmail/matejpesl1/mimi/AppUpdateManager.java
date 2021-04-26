@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class AppUpdateManager {
-    private static final String TAG = "AppUpdateManager";
+    private static final String TAG = AppUpdateManager.class.getSimpleName();
     private static final String PREF_LAST_DOWNLOADED_APK_VERSION = "last_downloaded_apk_version";
     private static final String PREF_LAST_VERSION_CHECK_TIME = "last_version_check_time";
     private static final String LATEST_RELEASE_JSON_LINK = "https://api.github.com/repos/AspireOne/mimibazar-updater/releases/latest";
@@ -83,15 +83,13 @@ public class AppUpdateManager {
     }
 
     private static boolean tryAssertLatestApkDownloaded(Context context) {
-        final String tag = TAG + "::prepareForInstall";
-
         // If already downloading, wait for it to end and return the apk downloaded (bool) status.
         if (downloadThread != null) {
-            Log.i(tag, "Download is already running, waiting for it to end...");
+            Log.i(TAG, "Download is already running, waiting for it to end...");
             waitForDownloadThreadIfExists();
 
             boolean downloadedApkLatest = isDownloadedApkLatest(context);
-            Log.i(tag, "Download finished. Downloaded apk latest: " + downloadedApkLatest);
+            Log.i(TAG, "Download finished. Downloaded apk latest: " + downloadedApkLatest);
             return downloadedApkLatest;
         }
 

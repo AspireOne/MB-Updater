@@ -11,7 +11,7 @@ import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 
 public class QueuedUpdateWorker extends Worker {
-    private static final String TAG = "QueuedUpdateWorker";
+    private static final String TAG = QueuedUpdateWorker.class.getSimpleName();
     private final Context context;
 
     public QueuedUpdateWorker(Context context, WorkerParameters params) {

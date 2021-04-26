@@ -18,7 +18,7 @@ import okhttp3.Response;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 
 public class Requester {
-    private static final String TAG = "REQUESTER";
+    private static final String TAG = Requester.class.getSimpleName();
     // HTTP
     public enum RequestMethod {POST, GET}
     public final int requestThrottleMs;

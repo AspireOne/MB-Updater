@@ -7,7 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class RootUtils {
-    private static final String TAG = "RootUtils";
+    private static final String TAG = RootUtils.class.getSimpleName();
 	private RootUtils() {}
 
     public static boolean isRootAvailable() {

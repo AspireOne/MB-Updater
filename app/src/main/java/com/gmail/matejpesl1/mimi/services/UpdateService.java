@@ -18,7 +18,7 @@ import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.QueuedUpdateWorker;
 import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
-import com.gmail.matejpesl1.mimi.Updater;
+import com.gmail.matejpesl1.mimi.UpdateArranger;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 
 import java.time.Duration;
@@ -29,7 +29,7 @@ import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 
 public class UpdateService extends IntentService {
-    private static final String TAG = "UpdateService";
+    private static final String TAG = UpdateService.class.getSimpleName();
     private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
 
@@ -63,7 +63,7 @@ public class UpdateService extends IntentService {
         // Execute only if internet connection could be established.
         if (hasInternet) {
             Log.i(TAG, "Internet connection could be established, executing Updater.");
-            new Updater(this).update();
+            new UpdateArranger(this).arrangeAndUpdate();
 
             if (AppUpdateManager.isUpdateAvailable(this)) {
                 Notifications.postNotification(this, "Dostupná aktualizace!",

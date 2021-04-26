@@ -11,7 +11,7 @@ import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 public class UpdateServiceAlarmManager {
-    private static final String TAG = "UpdateServiceAlarmManager";
+    private static final String TAG = UpdateServiceAlarmManager.class.getSimpleName();
     private static final String PREF_ACTIVE = "alarm_scheduled";
     private static final String PREF_UPDATE_MINUTE = "update_minute";
     private static final String PREF_UPDATE_HOUR = "update_hour";

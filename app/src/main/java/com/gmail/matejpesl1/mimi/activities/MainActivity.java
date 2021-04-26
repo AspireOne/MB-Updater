@@ -31,7 +31,7 @@ import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "MainActivity";
+    public static final String TAG = MainActivity.class.getSimpleName();
     public static final String PREFS_NAME = "com.gmail.matejpesl1.mimi_preferences";
     private static final Requester requester = new Requester(0);
 
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             if (!AppUpdateManager.isDownloadedApkLatest(this)) {
                 runOnUiThread(() -> updateAppButt.setEnabled(false));
                 AppUpdateManager.downloadApkAsync(this, (downloadState) -> runOnUiThread(() -> updateAppButt.setEnabled(true)));
-                Log.i("MainActivity", "Downloading update apk.");
+                Log.i(TAG, "Downloading update apk.");
             }
         }
     }
