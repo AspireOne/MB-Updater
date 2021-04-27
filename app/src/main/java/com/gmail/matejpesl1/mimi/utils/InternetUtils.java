@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.util.Log;
+
 import androidx.core.util.Pair;
 
 import java.io.BufferedReader;
@@ -64,6 +65,12 @@ public class InternetUtils {
         }
     }
 
+    public static WifiManager.WifiLock acquireWifiLock(Context context, String tag) {
+        WifiManager.WifiLock lock =
+                ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).createWifiLock(tag);
+        lock.acquire();
+        return lock;
+    }
     public static void setWifiEnabled(Context context, boolean enabled) {
         ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled);
     }
@@ -94,6 +101,9 @@ public class InternetUtils {
             // If connection is not available and the WIFI is off, turn it on
             // and return true if connection is now available.
             WifiManager wManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+
+            // A workaround for wifi not connecting on some systems unless the screen is turned on.
+            RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
 
             if (!initialWifiEnabled) {
                 boolean enableSucceeded = wManager.setWifiEnabled(true);
