@@ -3,6 +3,7 @@ package com.gmail.matejpesl1.mimi.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
@@ -17,8 +18,8 @@ import com.gmail.matejpesl1.mimi.AppUpdateManager;
 import com.gmail.matejpesl1.mimi.Notifications;
 import com.gmail.matejpesl1.mimi.QueuedUpdateWorker;
 import com.gmail.matejpesl1.mimi.R;
-import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.UpdateArranger;
+import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 
 import java.time.Duration;
@@ -46,6 +47,7 @@ public class UpdateService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         PowerManager.WakeLock wakelock = acquireWakelock(5);
+        WifiManager.WifiLock wifilock = InternetUtils.acquireWifiLock(this, TAG);
         Log.i(TAG, "Update Service intent received.");
 
         if (UpdateServiceAlarmManager.isRegistered(this))
@@ -60,16 +62,18 @@ public class UpdateService extends IntentService {
                 this, prevMobileDataState, prevWifiEnabled,
                 getBooleanPref(this, R.string.setting_allow_wifi_change_key, true),
                 getBooleanPref(this, R.string.setting_allow_data_change_key, true));
+
         // Execute only if internet connection could be established.
         if (hasInternet) {
             Log.i(TAG, "Internet connection could be established, executing Updater.");
+            if (AppUpdateManager.isUpdateAvailable(this))
+                AppUpdateManager.downloadApkAsync(this, null);
+
             new UpdateArranger(this).arrangeAndUpdate();
 
-            if (AppUpdateManager.isUpdateAvailable(this)) {
+            if (AppUpdateManager.isUpdateAvailable(this))
                 Notifications.postNotification(this, "Dostupná aktualizace!",
                         "Dostupná nová verze Mimibazar Aktualizací", Notifications.Channel.APP_UPDATE);
-                AppUpdateManager.downloadApkAsync(this, null);
-            }
         } else {
             boolean retry = getBooleanPref(this, R.string.setting_update_additionally_key, true);
             Log.i(TAG, "Internet connection could not be established. Retry allowed: " + retry);
@@ -87,6 +91,7 @@ public class UpdateService extends IntentService {
 
         InternetUtils.revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
         AppUpdateManager.waitForDownloadThreadIfExists();
+        wifilock.release();
         wakelock.release();
     }
 
