@@ -16,7 +16,7 @@ public class ProgressNotification {
 
     public ProgressNotification(String title, String text, int max, Context context) {
         this.max = max;
-        builder = Notifications.getProgressNotificationBuilder(context, title, text, Notifications.Channel.DEFAULT);
+        builder = Notifications.getProgressNotificationBuilder(context, title, text, Notifications.Channel.UPDATE_PROGRESS);
         manager = NotificationManagerCompat.from(context);
 
         builder.setProgress(max, 0, false);
