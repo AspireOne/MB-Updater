@@ -24,7 +24,8 @@ public class Notifications {
 
     // I miss C#'s structs and properties... This is all so much boilerplate.
     public enum Channel {
-        DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel()), APP_UPDATE(new AppUpdateChannel());
+        DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel()), APP_UPDATE(new AppUpdateChannel()),
+        UPDATE_PROGRESS(new DefaultChannel());
 
         protected final IChannel channel;
         Channel(IChannel channel) { this.channel = channel; }
@@ -41,6 +42,13 @@ public class Notifications {
         public String getId() { return "mimibazar_updates_default_channel"; }
         public int getNameRes() { return R.string.channel_default_name; }
         public int getDescRes() { return R.string.channel_default_desc; }
+        public int getImportance() { return IMPORTANCE_DEFAULT; }
+    }
+
+    private static class UpdateProgressChannel implements IChannel {
+        public String getId() { return "mimibazar_updates_progress_channel"; }
+        public int getNameRes() { return R.string.channel_update_progress_name; }
+        public int getDescRes() { return R.string.channel_update_progress_desc; }
         public int getImportance() { return IMPORTANCE_DEFAULT; }
     }
 
@@ -89,11 +97,14 @@ public class Notifications {
     }
 
     public static NotificationCompat.Builder getProgressNotificationBuilder(Context context, String title, String text, Channel channelType) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            createNotificationChannel(context, channelType.channel);
+
         return new NotificationCompat.Builder(context, channelType.channel.getId())
                 .setSmallIcon(R.drawable.app_icon)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOngoing(true);
     }
 
