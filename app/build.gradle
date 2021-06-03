@@ -18,8 +18,8 @@ android {
         applicationId "com.gmail.matejpesl1.mimi"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 302
-        versionName '3.0.2'
+        versionCode 303
+        versionName '3.0.3'
 
         signingConfig signingConfigs.Release
         proguardFiles
