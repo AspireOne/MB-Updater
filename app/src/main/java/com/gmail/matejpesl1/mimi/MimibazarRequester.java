@@ -21,14 +21,10 @@ public class MimibazarRequester {
 
     // Patterns.
     private static final Pattern ITEM_ID_PATTERN = Pattern.compile("(?<=href=\"https://www\\.mimibazar\\.cz/inzerat/)\\d+(?=/.*\")");
-        // Matches the amount of remaining updates IF it's > 1 (because <= 1 needs a different pattern).
-    private static final Pattern UPDATES_AMOUNT_PATTERN = Pattern.compile("(?<=Stále lze využít )\\d+(?= aktualiza)");
-        // Matches if we can still use one update.
-    private static final Pattern UPDATES_ONE_PATTERN = Pattern.compile("Stále lze využít jednu aktualiza");
-        // Matches if we can't use any updates.
-    private static final Pattern UPDATES_NONE_PATTERN = Pattern.compile("Dnes jste využili všechny aktualizace");
+        // Matches the amount of remaining updates.
+    private static final Pattern UPDATES_AMOUNT_PATTERN = Pattern.compile("(?<=Dostupné aktualizace\\s{0,400}<span class=\"text-orange\">\\s{0,400}\\()\\d+");
         // Matches the amount of maximal possible updates (no matter how many are remaining).
-    private static final Pattern UPDATES_MAX_PATTERN = Pattern.compile("(?<=Denně můžete aktualizovat )\\d+(?= inzertních)");
+    private static final Pattern UPDATES_MAX_PATTERN = Pattern.compile("(?<=Dostupné aktualizace\\s{0,400}<span class=\"text-orange\">\\s{0,400}\\(\\d{0,400}/)\\d+");
         // Matches the user's ID.
     private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=</div>)");
 
@@ -109,12 +105,6 @@ public class MimibazarRequester {
                 Log.e(TAG, getExAsStr(e));
             }
         }
-
-        if (UPDATES_ONE_PATTERN.matcher(body).find())
-            return 1;
-
-        if (UPDATES_NONE_PATTERN.matcher(body).find())
-            return 0;
 
         return -1;
     }
