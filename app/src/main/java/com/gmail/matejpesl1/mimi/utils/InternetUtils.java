@@ -71,17 +71,13 @@ public class InternetUtils {
         lock.acquire();
         return lock;
     }
-    public static void setWifiEnabled(Context context, boolean enabled) {
-        ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled);
-        // Workaround for some devices not turning it on unless the screen is on.
-        if (enabled)
-            RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
+    public static boolean setWifiEnabled(Context context, boolean enabled) {
+        RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
+        return ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled);
     }
-    public static void setDataEnabled(boolean enabled) {
-        RootUtils.setMobileDataConnection(enabled);
-        // Workaround for some devices not turning it on unless the screen is on.
-        if (enabled)
-            RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
+    public static boolean setDataEnabled(boolean enabled) {
+        RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
+        return RootUtils.setMobileDataConnection(enabled);
     }
 
     public static void revertToInitialState(Context context, DataState prevDataState, boolean prevWifiEnabled) {
@@ -98,6 +94,7 @@ public class InternetUtils {
                 || wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING;
     }
 
+    /**Will make changes to the WiFi/Data WITHOUT REVERTING IT. */
     public static boolean tryAssertHasInternet(Context context, DataState initialDataState, boolean initialWifiEnabled, boolean allowWifiChange, boolean allowDataChange) {
         // If connection is available in the current state (= without any changes), return true.
         if (isConnectionAvailable())
@@ -106,16 +103,11 @@ public class InternetUtils {
         if (allowWifiChange && !initialWifiEnabled) {
             // If connection is not available and the WIFI is off, turn it on
             // and return true if connection is now available.
-            WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-
-            boolean enableSucceeded = wifiManager.setWifiEnabled(true);
+            boolean enableSucceeded = setWifiEnabled(context, true);
             Log.i(TAG, "Wifi enable succeeded: " + enableSucceeded);
 
             if (enableSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
                 return true;
-
-            boolean disableSucceeded = wifiManager.setWifiEnabled(false);
-            Log.i(TAG, "Wifi disable succeeded: " + disableSucceeded);
         }
 
         if (allowDataChange) {
@@ -125,16 +117,12 @@ public class InternetUtils {
                 return false;
 
             // Enable data as a last try and return if the connection is available now.
-            boolean onSucceeded = RootUtils.setMobileDataConnection(true);
-            Log.i(TAG, "Data change allowed. Change succeeded: " + onSucceeded);
+            boolean enableSucceeded = setDataEnabled(true);
+            Log.i(TAG, "Data change allowed. Change succeeded: " + enableSucceeded);
 
             // If data enable succeeded and connection is available, return true.
-            if (onSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
+            if (enableSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
                 return true;
-
-            // Else turn the data back off (initial state).
-            boolean offSucceeded = RootUtils.setMobileDataConnection(false);
-            Log.i(TAG, "Data turn off succeeded: " + offSucceeded);
         }
 
         Log.i(TAG, "Could not establish internet connection.");
