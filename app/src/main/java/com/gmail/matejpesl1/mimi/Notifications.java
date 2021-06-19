@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
+import static android.app.NotificationManager.IMPORTANCE_LOW;
 
 public class Notifications {
     private Notifications() {}
@@ -25,7 +26,7 @@ public class Notifications {
     // I miss C#'s structs and properties... This is all so much boilerplate.
     public enum Channel {
         DEFAULT(new DefaultChannel()), ERROR(new ErrorChannel()), APP_UPDATE(new AppUpdateChannel()),
-        UPDATE_PROGRESS(new DefaultChannel());
+        UPDATE_PROGRESS(new UpdateProgressChannel());
 
         protected final IChannel channel;
         Channel(IChannel channel) { this.channel = channel; }
@@ -49,7 +50,7 @@ public class Notifications {
         public String getId() { return "mimibazar_updates_progress_channel"; }
         public int getNameRes() { return R.string.channel_update_progress_name; }
         public int getDescRes() { return R.string.channel_update_progress_desc; }
-        public int getImportance() { return IMPORTANCE_DEFAULT; }
+        public int getImportance() { return IMPORTANCE_LOW; }
     }
 
     private static class ErrorChannel implements IChannel {
