@@ -20,12 +20,15 @@ public class ProgressNotification {
         manager = NotificationManagerCompat.from(context);
 
         builder.setProgress(max, 0, false);
-        manager.notify(id, builder.build());
     }
 
     public void updateProgress(int progress, String text) {
         builder.setProgress(max, progress, false);
         builder.setContentText(text);
+        manager.notify(id, builder.build());
+    }
+
+    public void start() {
         manager.notify(id, builder.build());
     }
 
