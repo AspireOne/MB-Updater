@@ -49,7 +49,7 @@ public class UpdateArranger {
             return;
         }
 
-        String error = new Updater(context, mimibazarRequester).execute();
+        String error = new Updater(context, mimibazarRequester).startExecute();
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
         if (error != null) {
