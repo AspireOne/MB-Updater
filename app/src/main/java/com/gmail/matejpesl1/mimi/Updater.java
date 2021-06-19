@@ -44,7 +44,14 @@ public class Updater {
             ids = tryRecreateAndSavePrefIdList() ? getIdListFromPrefs() : null;
     }
 
-    public String execute() {
+    public String startExecute() {
+        progressNotification.start();
+        String result = execute();
+        progressNotification.cancel();
+        return result;
+    }
+
+    private String execute() {
         if (ids == null)
             return "Nelze vytvořit seznam ID položek z mimibazaru.";
 
