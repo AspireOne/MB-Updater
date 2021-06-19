@@ -3,7 +3,6 @@ package com.gmail.matejpesl1.mimi.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
@@ -21,6 +20,7 @@ import com.gmail.matejpesl1.mimi.R;
 import com.gmail.matejpesl1.mimi.UpdateArranger;
 import com.gmail.matejpesl1.mimi.UpdateServiceAlarmManager;
 import com.gmail.matejpesl1.mimi.utils.InternetUtils;
+import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +33,7 @@ public class UpdateService extends IntentService {
     private static final String TAG = UpdateService.class.getSimpleName();
     private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
+    private static final String PREF_RUNNING = "update_service_running";
 
     public UpdateService() {
         super(TAG);
@@ -46,8 +47,13 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        if (getBooleanPref(this, PREF_RUNNING, false)) {
+            Log.w(TAG, "Update Service is already running, returning.");
+            return;
+        }
+        Utils.writePref(this, PREF_RUNNING, true);
+
         PowerManager.WakeLock wakelock = acquireWakelock(5);
-        WifiManager.WifiLock wifilock = InternetUtils.acquireWifiLock(this, TAG);
         Log.i(TAG, "Update Service intent received.");
 
         if (UpdateServiceAlarmManager.isRegistered(this))
@@ -80,18 +86,16 @@ public class UpdateService extends IntentService {
 
             Notifications.postNotification(this, R.string.mimibazar_cannot_update,
                     "Nelze získat internetové připojení." +
-                            (retry ? " Aktualizace proběhne až bude dostupné." : ""),
+                            (retry ? " Aktualizace proběhne, až bude dostupné." : ""),
                     Notifications.Channel.ERROR);
 
-            if (retry) {
-                Log.i(TAG, "Enqueing worker to retry the update when connection is available.");
+            if (retry)
                 enqueueUpdateRetryWorker(this);
-            }
         }
 
         InternetUtils.revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
         AppUpdateManager.waitForDownloadThreadIfExists();
-        wifilock.release();
+        Utils.writePref(this, PREF_RUNNING, false);
         wakelock.release();
     }
 
