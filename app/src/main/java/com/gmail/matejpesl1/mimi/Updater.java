@@ -1,5 +1,7 @@
 package com.gmail.matejpesl1.mimi;
 
+import static com.gmail.matejpesl1.mimi.utils.Utils.getIntPref;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -8,8 +10,6 @@ import com.gmail.matejpesl1.mimi.utils.InternetUtils;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.util.LinkedHashSet;
-
-import static com.gmail.matejpesl1.mimi.utils.Utils.getIntPref;
 
 public class Updater {
     private static final String TAG = Updater.class.getSimpleName();
@@ -27,6 +27,7 @@ public class Updater {
     // update process.
     private int photoUpdateErrors = 0;
     private int remainingUpdates;
+    private String error = null;
     private int iterations = 0;
     private int currIdIndex;
     private String[] ids;
@@ -62,8 +63,8 @@ public class Updater {
                 return "Nelze znovu-vytvořit seznam ID položek z mimibazaru.";
 
             if (!mimibazarRequester.tryUpdatePhoto(ids[currIdIndex])) {
-                String error = handleUnsuccessfulPhotoUpdate();
-                if (error != null) return error;
+                if ((error = handleUnsuccessfulPhotoUpdate()) != null)
+                    break;
             }
             else if (--remainingUpdates <= 2)
                 remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
@@ -78,9 +79,14 @@ public class Updater {
 
         progressNotification.cancel();
         Utils.writePref(context, PREF_CURR_ID_INDEX, currIdIndex);
-        Log.i(TAG, String.format("Update finished. Iterations: %s. currIdIndex: %s. PhotoUpdate" + "Errors: %s.", iterations, currIdIndex, photoUpdateErrors));
+        Log.i(TAG, String.format("Update finished. " +
+                "Iterations: %s. " +
+                "currIdIndex: %s. " +
+                "Photo Update Errors: %s. " +
+                "Error: %s. ",
+                iterations, currIdIndex, photoUpdateErrors, error));
 
-        return null;
+        return error;
     }
 
     private String getFormattedRemainingText() {
