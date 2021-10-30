@@ -17,7 +17,7 @@ public class InternetUtils {
     private static final int internetAssertionPingingDurationSecs = 50;
     public enum DataState { UNKNOWN, ENABLED, DISABLED }
 
-    public static DataState getMobileDataState() {
+    public static DataState getMobileDataStateRoot() {
         try {
             Pair<Boolean, Process> pair = RootUtils.runCommandAsSu("dumpsys telephony.registry | grep mDataConnectionState");
             Process p = pair.second;
@@ -39,6 +39,10 @@ public class InternetUtils {
         }
 
         return DataState.UNKNOWN;
+    }
+
+    public static boolean setMobileDataConnectionRoot(boolean enabled) {
+        return RootUtils.runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first;
     }
 
     public static boolean waitForConnection(int durationSecs, int frequencySecs) {
@@ -66,8 +70,7 @@ public class InternetUtils {
     }
 
     public static WifiManager.WifiLock acquireWifiLock(Context context, String tag) {
-        WifiManager.WifiLock lock =
-                ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).createWifiLock(tag);
+        WifiManager.WifiLock lock = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).createWifiLock(tag);
         lock.acquire();
         return lock;
     }
@@ -77,21 +80,13 @@ public class InternetUtils {
     }
     public static boolean setDataEnabled(boolean enabled) {
         RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
-        return RootUtils.setMobileDataConnection(enabled);
-    }
-
-    public static void revertToInitialState(Context context, DataState prevDataState, boolean prevWifiEnabled) {
-        if (prevWifiEnabled != isWifiEnabled(context))
-            setWifiEnabled(context, prevWifiEnabled);
-
-        if (prevDataState != getMobileDataState())
-            setDataEnabled(prevDataState == DataState.ENABLED);
+        return setMobileDataConnectionRoot(enabled);
     }
 
     public static boolean isWifiEnabled(Context context) {
-        WifiManager wManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        return wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
-                || wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING;
+        WifiManager wManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        return wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED ||
+               wManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING;
     }
 
     /**Will make changes to the WiFi/Data WITHOUT REVERTING IT. */
@@ -100,6 +95,7 @@ public class InternetUtils {
         if (isConnectionAvailable())
             return true;
 
+        // WIFI
         if (allowWifiChange && !initialWifiEnabled) {
             // If connection is not available and the WIFI is off, turn it on
             // and return true if connection is now available.
@@ -110,15 +106,15 @@ public class InternetUtils {
                 return true;
         }
 
-        if (allowDataChange) {
-            // If the data were already enabled or we don't have permission to read it (and thus
-            // change it), we can't do anything else.
-            if (initialDataState == InternetUtils.DataState.ENABLED || initialDataState == InternetUtils.DataState.UNKNOWN)
+        // DATA
+        if (allowDataChange && initialDataState != DataState.ENABLED) {
+            // If we don't have permission to read it (and therefore change it), we can't do anything.
+            if (initialDataState == InternetUtils.DataState.UNKNOWN)
                 return false;
 
-            // Enable data as a last try and return if the connection is available now.
+            // Enable data and return if the connection is available now.
             boolean enableSucceeded = setDataEnabled(true);
-            Log.i(TAG, "Data change allowed. Change succeeded: " + enableSucceeded);
+            Log.i(TAG, "Data enable succeeded: " + enableSucceeded);
 
             // If data enable succeeded and connection is available, return true.
             if (enableSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
