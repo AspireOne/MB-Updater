@@ -1,5 +1,9 @@
 package com.gmail.matejpesl1.mimi.services;
 
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataStateRoot;
+import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
+
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
@@ -24,10 +28,6 @@ import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataState;
-import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 
 public class UpdateService extends IntentService {
     private static final String TAG = UpdateService.class.getSimpleName();
@@ -59,13 +59,13 @@ public class UpdateService extends IntentService {
         if (UpdateServiceAlarmManager.isRegistered(this))
             UpdateServiceAlarmManager.changeRepeatingAlarm(this, true);
 
-        InternetUtils.DataState prevMobileDataState = getMobileDataState();
+        InternetUtils.DataState prevDataState = getMobileDataStateRoot();
         boolean prevWifiEnabled = isWifiEnabled(this);
 
-        Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevMobileDataState.toString(), prevWifiEnabled));
+        Log.i(TAG, String.format("prev data: %s | prev wifi: %s", prevDataState.toString(), prevWifiEnabled));
 
         boolean hasInternet = InternetUtils.tryAssertHasInternet(
-                this, prevMobileDataState, prevWifiEnabled,
+                this, prevDataState, prevWifiEnabled,
                 getBooleanPref(this, R.string.setting_allow_wifi_change_key, true),
                 getBooleanPref(this, R.string.setting_allow_data_change_key, true));
 
@@ -93,7 +93,8 @@ public class UpdateService extends IntentService {
                 enqueueUpdateRetryWorker(this);
         }
 
-        InternetUtils.revertToInitialState(this, prevMobileDataState, prevWifiEnabled);
+        InternetUtils.setWifiEnabled(this, prevWifiEnabled);
+        InternetUtils.setDataEnabled(prevDataState == InternetUtils.DataState.ENABLED);
         AppUpdateManager.waitForDownloadThreadIfExists();
         Utils.writePref(this, PREF_RUNNING, false);
         wakelock.release();

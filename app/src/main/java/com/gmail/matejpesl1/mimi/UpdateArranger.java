@@ -1,5 +1,11 @@
 package com.gmail.matejpesl1.mimi;
 
+import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
+import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -8,12 +14,6 @@ import androidx.core.util.Pair;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import okhttp3.Response;
-
-import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
-import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
-import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
 
 public class UpdateArranger {
     private static final String TAG = UpdateArranger.class.getSimpleName();
@@ -49,16 +49,19 @@ public class UpdateArranger {
             return;
         }
 
-        String error = new Updater(context, mimibazarRequester).startExecute();
+        String error;
+
+        try {
+            error = new Updater(context, mimibazarRequester).startExecute();
+        }  catch (Exception e) {
+            error = "Neošetřená vyjímka při aktualizaci.";
+        }
         Log.i(TAG, "Update finished. Error (if any): " + error);
 
-        if (error != null) {
-            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_runtime_error,
-                    error, Notifications.Channel.ERROR);
-        } else if (getBooleanPref(context, R.string.setting_successful_update_notification_key, true)) {
-            Notifications.postNotification(context, R.string.mimibazar_sucesfully_updated, "",
-                    Notifications.Channel.DEFAULT);
-        }
+        if (error != null)
+            Notifications.postNotification(context, R.string.mimibazar_cannot_update_desc_runtime_error, error, Notifications.Channel.ERROR);
+        else if (getBooleanPref(context, R.string.setting_successful_update_notification_key, true))
+            Notifications.postNotification(context, R.string.mimibazar_sucesfully_updated, "", Notifications.Channel.DEFAULT);
 
         writePref(context, PREF_RUNNING, false);
     }

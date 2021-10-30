@@ -66,8 +66,4 @@ public class RootUtils {
 
         return new Pair<>(success, p);
     }
-
-    public static boolean setMobileDataConnection(boolean enabled) {
-        return runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first;
-    }
 }
