@@ -41,10 +41,6 @@ public class InternetUtils {
         return DataState.UNKNOWN;
     }
 
-    public static boolean setMobileDataConnectionRoot(boolean enabled) {
-        return RootUtils.runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first;
-    }
-
     public static boolean waitForConnection(int durationSecs, int frequencySecs) {
         int iterations = durationSecs/frequencySecs;
         int delayMs = (frequencySecs * 1000) - 200; //The check itself takes some time too, so subtract it.
@@ -69,18 +65,16 @@ public class InternetUtils {
         }
     }
 
-    public static WifiManager.WifiLock acquireWifiLock(Context context, String tag) {
-        WifiManager.WifiLock lock = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).createWifiLock(tag);
-        lock.acquire();
-        return lock;
-    }
-    public static boolean setWifiEnabled(Context context, boolean enabled) {
+    /**Will first try to enable it with WifiManager and then will try to use root.*/
+    public static boolean setWifiEnabledRoot(Context context, boolean enabled) {
         RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
-        return ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled);
+        return
+                ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).setWifiEnabled(enabled)
+                || RootUtils.runCommandAsSu("svc wifi " + (enabled ? "enable" : "disable")).first;
     }
-    public static boolean setDataEnabled(boolean enabled) {
+    public static boolean setDataEnabledRoot(boolean enabled) {
         RootUtils.runCommandAsSu("input keyevent KEYCODE_WAKEUP");
-        return setMobileDataConnectionRoot(enabled);
+        return RootUtils.runCommandAsSu("svc data " + (enabled ? "enable" : "disable")).first;
     }
 
     public static boolean isWifiEnabled(Context context) {
@@ -99,7 +93,7 @@ public class InternetUtils {
         if (allowWifiChange && !initialWifiEnabled) {
             // If connection is not available and the WIFI is off, turn it on
             // and return true if connection is now available.
-            boolean enableSucceeded = setWifiEnabled(context, true);
+            boolean enableSucceeded = setWifiEnabledRoot(context, true);
             Log.i(TAG, "Wifi enable succeeded: " + enableSucceeded);
 
             if (enableSucceeded && waitForConnection(internetAssertionPingingDurationSecs, internetAssertionPingingFreqSecs))
@@ -113,7 +107,7 @@ public class InternetUtils {
                 return false;
 
             // Enable data and return if the connection is available now.
-            boolean enableSucceeded = setDataEnabled(true);
+            boolean enableSucceeded = setDataEnabledRoot(true);
             Log.i(TAG, "Data enable succeeded: " + enableSucceeded);
 
             // If data enable succeeded and connection is available, return true.

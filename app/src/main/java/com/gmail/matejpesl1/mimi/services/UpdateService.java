@@ -93,8 +93,8 @@ public class UpdateService extends IntentService {
                 enqueueUpdateRetryWorker(this);
         }
 
-        InternetUtils.setWifiEnabled(this, prevWifiEnabled);
-        InternetUtils.setDataEnabled(prevDataState == InternetUtils.DataState.ENABLED);
+        InternetUtils.setWifiEnabledRoot(this, prevWifiEnabled);
+        InternetUtils.setDataEnabledRoot(prevDataState == InternetUtils.DataState.ENABLED);
         AppUpdateManager.waitForDownloadThreadIfExists();
         Utils.writePref(this, PREF_RUNNING, false);
         wakelock.release();
