@@ -38,12 +38,12 @@
     <string name="activity_settings_username_title">Uživatelské jméno</string>
     <string name="activity_settings_password_title">Uživatelské heslo</string>
         <!-- Category: Internet Manipulation -->
-    <string name="activity_settings_internet_manipulation_category_title">Manipulace s internetem</string>
+    <string name="activity_settings_internet_manipulation_category_title">Zapnutí internetu (vyžaduje root)</string>
     <string name="activity_settings_internet_manipulation_summary">Pokud v době aktualizace chybí internet, aplikace se může pokusit ho zapnout. Po aktualizaci bude uveden do původního stavu.</string>
     <string name="activity_settings_allow_change_wifi_title">Povolit zapnutí WiFi</string>
     <string name="activity_settings_allow_change_wifi_summaryOff">Aplikace se nepokusí zapnout WiFi.</string>
     <string name="activity_settings_allow_change_wifi_summaryOn">Aplikace může zapnout wifi.</string>
-    <string name="activity_settings_allow_change_data_title">Povolit zapnutí mobilních dat (vyžaduje root)</string>
+    <string name="activity_settings_allow_change_data_title">Povolit zapnutí mobilních dat</string>
     <string name="activity_settings_allow_change_data_summaryOff">Aplikace se nepokusí zapnout data.</string>
     <string name="activity_settings_allow_change_data_summaryOn">Aplikace může zapnout data.</string>
         <!-- Category: Other -->
@@ -52,9 +52,9 @@
     <string name="activity_settings_successful_update_notification_summaryOff">Po úspěšné aktualizaci se žádné oznámení nezobrazí.</string>
     <string name="activity_settings_successful_update_notification_summaryOn">Po úspěšné aktualizaci se zobrazí oznámení.</string>
     <string name="activity_settings_battery_exception_title">Povolení chodu na pozadí</string>
-    <string name="activity_settings_battery_exception_summary">Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat. Klikněte pro povolení.</string>
+    <string name="activity_settings_battery_exception_summary">Na některých zařízeních je třeba toto povolit, aby mohly automatické aktualizace fungovat. Pro povolení klikněte.</string>
     <string name="activity_settings_root_permission_title">Root oprávnění</string>
-    <string name="activity_settings_root_permission_summary">Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout data. Pro povolení klikněte.</string>
+    <string name="activity_settings_root_permission_summary">Pokud nemáte nainstalovaný root, nemůžete toto povolení udělit. Umožňuje aplikaci zapnout internet. Pro povolení klikněte.</string>
     
     <!-- Mimibazar-update related texts -->
     <string name="mimibazar_sucesfully_updated">Mimibazar úspěšně aktualizován</string>

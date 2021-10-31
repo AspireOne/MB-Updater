@@ -47,11 +47,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private Context context;
-        private Preference updateTimePref;
-        private Preference allowDataChangePref;
-        private Preference rootPermissionPref;
         private Preference batteryExceptionPref;
+        private Preference allowDataChangePref;
+        private Preference allowWifiChangePref;
+        private Preference rootPermissionPref;
+        private Preference updateTimePref;
+        private Context context;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -60,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
             updateTimePref = findPreference(getString(R.string.setting_update_time_key));
             rootPermissionPref = findPreference(getString(R.string.setting_root_permission_key));
             allowDataChangePref = findPreference(getString(R.string.setting_allow_data_change_key));
+            allowWifiChangePref = findPreference(getString(R.string.setting_allow_wifi_change_key));
             batteryExceptionPref = findPreference(getString(R.string.setting_battery_exception_key));
 
             // Update state.
@@ -109,6 +111,7 @@ public class SettingsActivity extends AppCompatActivity {
                 if (RootUtils.isRootAvailable()) {
                     getActivity().runOnUiThread(() -> {
                         rootPermissionPref.setSummary("Povoleno");
+                        allowDataChangePref.setEnabled(true);
                         allowDataChangePref.setEnabled(true);
                     });
                 }

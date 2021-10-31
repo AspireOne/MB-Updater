@@ -52,11 +52,12 @@
 
         <SwitchPreferenceCompat
             app:title="@string/activity_settings_allow_change_wifi_title"
-            app:defaultValue="true"
+            app:defaultValue="false"
             app:summaryOff="@string/activity_settings_allow_change_wifi_summaryOff"
             app:summaryOn="@string/activity_settings_allow_change_wifi_summaryOn"
             app:iconSpaceReserved="false"
             app:persistent="true"
+            app:enabled="false"
             app:key="@string/setting_allow_wifi_change_key" />
 
         <SwitchPreferenceCompat
