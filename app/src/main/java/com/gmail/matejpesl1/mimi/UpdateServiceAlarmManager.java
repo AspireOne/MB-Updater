@@ -22,7 +22,8 @@ public class UpdateServiceAlarmManager {
 
         Intent intent = new Intent(context, UpdateService.class);
         intent.setAction(UpdateService.ACTION_UPDATE);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         manager.cancel(pendingIntent);
 

@@ -1,5 +1,9 @@
 package com.gmail.matejpesl1.mimi;
 
+import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+import static android.app.NotificationManager.IMPORTANCE_HIGH;
+import static android.app.NotificationManager.IMPORTANCE_LOW;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,10 +19,6 @@ import androidx.core.app.NotificationManagerCompat;
 import com.gmail.matejpesl1.mimi.activities.MainActivity;
 
 import java.util.concurrent.ThreadLocalRandom;
-
-import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
-import static android.app.NotificationManager.IMPORTANCE_HIGH;
-import static android.app.NotificationManager.IMPORTANCE_LOW;
 
 public class Notifications {
     private Notifications() {}
@@ -80,7 +80,9 @@ public class Notifications {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             createNotificationChannel(context, channelType.channel);
 
-        PendingIntent appIntent = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0);
+        PendingIntent appIntent = PendingIntent.getActivity(context, 0,
+                new Intent(context, MainActivity.class),
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0);
 
         Notification notification =
                 new NotificationCompat.Builder(context, channelType.channel.getId())
