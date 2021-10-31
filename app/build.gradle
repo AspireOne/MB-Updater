@@ -5,21 +5,24 @@ plugins {
 android {
     signingConfigs {
         Release {
-            storeFile file('C:\\Users\\matej\\AndroidStudioProjects\\key.jks')
-            storePassword '1786117714159265'
-            keyAlias 'mimiKey'
-            keyPassword '1786117714159265'
+            storeFile file("C:\\Users\\matej\\AndroidStudioProjects\\keystore.jks")
+            keyAlias "mimi"
+            // These two lines make gradle believe that the signingConfigs
+            // section is complete. Without them, tasks like installRelease
+            // will not be available!
+            storePassword 'placeholder'
+            keyPassword 'placeholder'
         }
     }
     compileSdkVersion 31
-    buildToolsVersion "29.0.3"
+    buildToolsVersion '32.0.0 rc1'
 
     defaultConfig {
         applicationId "com.gmail.matejpesl1.mimi"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode 310
-        versionName '3.1.0'
+        versionCode 400
+        versionName '4.0.0'
 
         signingConfig signingConfigs.Release
         proguardFiles
@@ -27,13 +30,13 @@ android {
 
     buildTypes {
         release {
+            signingConfig signingConfigs.Release
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
-            signingConfig signingConfigs.Release
             multiDexEnabled false
         }
-        debug1 {
+        debug {
             signingConfig signingConfigs.Release
             debuggable true
         }
@@ -45,8 +48,23 @@ android {
     ndkVersion '21.1.6352462'
 }
 
+task askForPasswords {
+    doLast {
+        def storePw = System.in.newReader().readLine()
+        def keyPw  = System.in.newReader().readLine()
+
+        android.signingConfigs.Release.storePassword = storePw
+        android.signingConfigs.Release.keyPassword = keyPw
+    }
+}
+
+tasks.whenTaskAdded { theTask ->
+    if (theTask.name.equals("packageRelease")) {
+        theTask.dependsOn "askForPasswords"
+    }
+}
+
 dependencies {
-    def work_version = "2.5.0"
     // (Java only)
     implementation "androidx.work:work-runtime:2.7.0"
     // Kotlin + coroutines
