@@ -112,7 +112,7 @@ public class SettingsActivity extends AppCompatActivity {
                     getActivity().runOnUiThread(() -> {
                         rootPermissionPref.setSummary("Povoleno");
                         allowDataChangePref.setEnabled(true);
-                        allowDataChangePref.setEnabled(true);
+                        allowWifiChangePref.setEnabled(true);
                     });
                 }
             }).start();
