@@ -1,3 +1,13 @@
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+
 # Built application files
 *.apk
 *.aar
@@ -44,6 +54,7 @@ captures/
 .idea/assetWizardSettings.xml
 .idea/dictionaries
 .idea/libraries
+.idea/jarRepositories.xml
 # Android Studio 3 in .gitignore file.
 .idea/caches
 .idea/modules.xml
@@ -81,7 +92,6 @@ vcs.xml
 lint/intermediates/
 lint/generated/
 lint/outputs/
-lint/outputss/
 lint/tmp/
 # lint/reports/
 
