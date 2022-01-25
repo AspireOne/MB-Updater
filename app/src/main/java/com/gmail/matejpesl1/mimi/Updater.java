@@ -66,7 +66,7 @@ public class Updater {
                 if ((error = handleUnsuccessfulPhotoUpdate()) != null)
                     break;
             }
-            else if (--remainingUpdates <= 2)
+            else if (remainingUpdates-- <= 2)
                 remainingUpdates = mimibazarRequester.tryGetRemainingUpdates(null);
 
             ++currIdIndex;
