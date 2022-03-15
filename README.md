@@ -4,4 +4,5 @@
 1. Schedule automatic updating for every day or simply manually click the update button
 1. Profit!
 
+website: https://www.github.com/AspireOne/MB-Updater-website
 [Čeština](README.cs.md)
