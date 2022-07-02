@@ -3,6 +3,7 @@ package com.gmail.matejpesl1.mimi.services;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.getMobileDataStateRoot;
 import static com.gmail.matejpesl1.mimi.utils.InternetUtils.isWifiEnabled;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getLongPref;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -33,7 +34,9 @@ public class UpdateService extends IntentService {
     private static final String TAG = UpdateService.class.getSimpleName();
     private static final String RETRY_UPDATE_WORKER_TAG = "RetryUpdateWorker";
     public static final String ACTION_UPDATE = "com.gmail.matejpesl1.mimi.action.UPDATE";
+    public static final int UPDATE_APPROX_MAX_DURATION_MILLIS = 300000; // 5 minutes.
     private static final String PREF_RUNNING = "update_service_running";
+    private static final String PREF_LAST_START_TIME_MILLIS = "update_service_last_start_time";
 
     public UpdateService() {
         super(TAG);
@@ -47,11 +50,15 @@ public class UpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (getBooleanPref(this, PREF_RUNNING, false)) {
+        // To prevent a complete block if the app was killed during updating and Running flag would not be set back to false.
+        long timeSinceLastUpdate = System.currentTimeMillis() - getLongPref(this, PREF_LAST_START_TIME_MILLIS, 0);
+        if (getBooleanPref(this, PREF_RUNNING, false) && timeSinceLastUpdate <= UPDATE_APPROX_MAX_DURATION_MILLIS) {
             Log.w(TAG, "Update Service is already running, returning.");
             return;
         }
+
         Utils.writePref(this, PREF_RUNNING, true);
+        Utils.writePref(this, PREF_LAST_START_TIME_MILLIS, System.currentTimeMillis());
 
         PowerManager.WakeLock wakelock = acquireWakelock(5);
         Log.i(TAG, "Update Service intent received.");

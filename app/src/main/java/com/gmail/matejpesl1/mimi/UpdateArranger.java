@@ -2,6 +2,7 @@ package com.gmail.matejpesl1.mimi;
 
 import static com.gmail.matejpesl1.mimi.utils.Utils.getBooleanPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getLongPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.getPref;
 import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
 import static com.gmail.matejpesl1.mimi.utils.Utils.writePref;
@@ -11,6 +12,7 @@ import android.util.Log;
 
 import androidx.core.util.Pair;
 
+import com.gmail.matejpesl1.mimi.services.UpdateService;
 import com.gmail.matejpesl1.mimi.utils.Utils;
 
 import okhttp3.Response;
@@ -18,6 +20,7 @@ import okhttp3.Response;
 public class UpdateArranger {
     private static final String TAG = UpdateArranger.class.getSimpleName();
     private static final String PREF_RUNNING = "updater_running";
+    private static final String PREF_LAST_START_TIME_MILLIS = "updater_last_start_time";
     private static final int REQUEST_THROTTLE = 300;
     private Requester requester;
     private MimibazarRequester mimibazarRequester;
@@ -37,12 +40,15 @@ public class UpdateArranger {
     }*/
 
     public void arrangeAndUpdate() {
-        if (getBooleanPref(context, PREF_RUNNING, false)) {
+        // To prevent a complete block if the app was killed during updating and Running flag would not be set back to false.
+        long timeSinceLastUpdate = System.currentTimeMillis() - getLongPref(context, PREF_LAST_START_TIME_MILLIS, 0);
+        if (getBooleanPref(context, PREF_RUNNING, false) && timeSinceLastUpdate <= UpdateService.UPDATE_APPROX_MAX_DURATION_MILLIS) {
             Log.w(TAG, "Updater is already running, returning.");
             return;
         }
 
         writePref(context, PREF_RUNNING, true);
+        writePref(context, PREF_LAST_START_TIME_MILLIS, System.currentTimeMillis());
 
         if (!initAndCheck()) {
             writePref(context, PREF_RUNNING, false);
@@ -84,7 +90,7 @@ public class UpdateArranger {
     }
 
     private boolean initAndNotifyIfError() {
-        requester = new Requester(REQUEST_THROTTLE);
+        requester = new Requester(REQUEST_THROTTLE, context);
         String username = getPref(context, R.string.setting_username_key, "");
         String password = getPref(context, R.string.setting_password_key, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
@@ -94,8 +100,9 @@ public class UpdateArranger {
             return false;
         }
 
+        mimibazarRequester = new MimibazarRequester(requester, username, password);
         try {
-            mimibazarRequester = new MimibazarRequester(requester, username, password);
+            mimibazarRequester.init();
         } catch (MimibazarRequester.CouldNotGetAccIdException e) {
             Notifications.postNotification(context, R.string.mimibazar_cannot_update,
                     R.string.mimibazar_cannot_update_desc_invalid_credentials, Notifications.Channel.ERROR);

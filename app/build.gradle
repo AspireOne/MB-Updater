@@ -5,13 +5,10 @@ plugins {
 android {
     signingConfigs {
         Release {
-            storeFile file("C:\\Users\\matej\\AndroidStudioProjects\\keystore.jks")
+            storeFile file("C:\\Users\\matej\\AndroidStudioProjects\\common_keystore.jks")
             keyAlias "mimi"
-            // These two lines make gradle believe that the signingConfigs
-            // section is complete. Without them, tasks like installRelease
-            // will not be available!
-            storePassword 'placeholder'
-            keyPassword 'placeholder'
+            storePassword '17861177'
+            keyPassword '17861177'
         }
     }
     compileSdkVersion 31
@@ -21,8 +18,8 @@ android {
         applicationId "com.gmail.matejpesl1.mimi"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode 400
-        versionName '4.0.0'
+        versionCode 401
+        versionName '4.0.1'
 
         signingConfig signingConfigs.Release
         proguardFiles
@@ -48,24 +45,8 @@ android {
     ndkVersion '21.1.6352462'
 }
 
-task askForPasswords {
-    doLast {
-        def storePw = System.in.newReader().readLine()
-        def keyPw  = System.in.newReader().readLine()
-
-        android.signingConfigs.Release.storePassword = storePw
-        android.signingConfigs.Release.keyPassword = keyPw
-    }
-}
-
-tasks.whenTaskAdded { theTask ->
-    if (theTask.name.equals("packageRelease")) {
-        theTask.dependsOn "askForPasswords"
-    }
-}
-
 dependencies {
-    // (Java only)
+    implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
     implementation "androidx.work:work-runtime:2.7.0"
     // Kotlin + coroutines
     implementation "androidx.work:work-runtime-ktx:2.7.0"

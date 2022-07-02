@@ -1,5 +1,9 @@
 package com.gmail.matejpesl1.mimi.activities;
 
+import static com.gmail.matejpesl1.mimi.utils.Utils.dateToCzech;
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
+import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
+
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -26,14 +30,10 @@ import com.google.android.material.textview.MaterialTextView;
 
 import java.util.Date;
 
-import static com.gmail.matejpesl1.mimi.utils.Utils.dateToCzech;
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
-import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
-
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String PREFS_NAME = "com.gmail.matejpesl1.mimi_preferences";
-    private static final Requester requester = new Requester(0);
+    private static Requester requester;
 
     private static MimibazarRequester mimibazarRequester = null;
     private SwitchCompat updateSwitch;
@@ -47,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (requester == null)
+            requester = new Requester(0, this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -134,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         final boolean hasUsername = !isEmptyOrNull(username);
         final boolean hasPass = !isEmptyOrNull(pass);
 
-        final String error;
+        String error = "";
 
         if (!hasUsername && !hasPass)
             error = "Chybí přihlašovací údaje. Je třeba je v nastavení vyplnit.";
@@ -143,15 +146,13 @@ public class MainActivity extends AppCompatActivity {
         else if (!hasPass)
             error = "Chybí uživatelské heslo. Je třeba jej v nastavení vyplnit.";
         else {
-            boolean initErr = false;
+            mimibazarRequester = new MimibazarRequester(requester, username, pass);
             try {
-                mimibazarRequester = new MimibazarRequester(requester, username, pass);
+                mimibazarRequester.init();
             } catch (MimibazarRequester.CouldNotGetAccIdException e) {
-                initErr = true;
-                Log.e(TAG, "Could not create mimibazarRequester because credentials are not valid. E: " + getExAsStr(e));
+                error = "Aplikace nedokáže získat uživatele nebo uživatelské údaje nejsou správné. Zkuste je v nastavení změnit.";
+                Log.e(TAG, "Could not get account id. E: " + getExAsStr(e));
             }
-
-            error = initErr ? "Uživatelské údaje nejsou správné. Je třeba je v nastavení změnit." : "";
         }
 
         final boolean allValid = error.equals("");
@@ -161,16 +162,16 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i(TAG, String.format("Account info valid: %s | error (if any): %s", allValid, error));
 
-        boolean needsUpdate =
-                (allValid && !updateSwitch.isEnabled()) ||
-                        (!allValid && updateSwitch.isEnabled());
+        boolean needsUpdate = (allValid && !updateSwitch.isEnabled()) || (!allValid && updateSwitch.isEnabled());
 
         if (!allValid)
             Log.i(TAG, error);
 
+        final String errorFinal = error;
+
         runOnUiThread(() -> {
             if (needsUpdate) {
-                badCredentialsWarning.setText(error);
+                badCredentialsWarning.setText(errorFinal);
                 badCredentialsWarning.setVisibility(allValid ? View.INVISIBLE : View.VISIBLE);
                 updateSwitch.setEnabled(allValid);
             }
