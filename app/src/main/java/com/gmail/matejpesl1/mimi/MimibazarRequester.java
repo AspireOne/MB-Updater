@@ -1,5 +1,8 @@
 package com.gmail.matejpesl1.mimi;
 
+import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
+import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
+
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -13,12 +16,10 @@ import okhttp3.FormBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.gmail.matejpesl1.mimi.utils.Utils.getExAsStr;
-import static com.gmail.matejpesl1.mimi.utils.Utils.isEmptyOrNull;
-
 public class MimibazarRequester {
     private static final String TAG = MimibazarRequester.class.getSimpleName();
 
+    // ?modal=user-login
     // Patterns.
     private static final Pattern ITEM_ID_PATTERN = Pattern.compile("(?<=href=\"https://www\\.mimibazar\\.cz/inzerat/)\\d+(?=/.*\")");
         // Matches the amount of remaining updates.
@@ -26,14 +27,14 @@ public class MimibazarRequester {
         // Matches the amount of maximal possible updates (no matter how many are remaining).
     private static final Pattern UPDATES_MAX_PATTERN = Pattern.compile("(?<=Dostupné aktualizace\\s{0,400}<span class=\"text-orange\">\\s{0,400}\\(\\d{0,400}/)\\d+");
         // Matches the user's ID.
-    private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=</div>)");
+    private static final Pattern USER_ID_PATTERN = Pattern.compile("(?<=<div class=\"user__id\">ID )\\d+(?=<\\/div>)");
 
     // Internet.
     private static final String MAIN_PAGE_URL = "https://www.mimibazar.cz/";
     private static final String BAZAR_BASE_URL = MAIN_PAGE_URL + "bazar.php?";
     private final Requester requester;
     private final RequestBody reqBody;
-    private final String profileUrl;
+    private String profileUrl;
 
     // Other.
     public final String username;
@@ -41,12 +42,20 @@ public class MimibazarRequester {
 
     public static class CouldNotGetAccIdException extends Exception {}
 
-    public MimibazarRequester(Requester requester, String username, String password) throws CouldNotGetAccIdException {
+    public MimibazarRequester(Requester requester, String username, String password) {
         this.username = username;
         this.password = password;
         this.requester = requester;
-        reqBody = buildRequestBody(username, password);
+        reqBody = new FormBody.Builder()
+                .add("login", username)
+                .add("password", password)
+                .add("log_in", "ok")
+                .build();
+    }
 
+    public void init() throws CouldNotGetAccIdException {
+        // To log-in. Login will be preserved in subsequent requests.
+        requester.tryMakeRequest("https://www.mimibazar.cz/?modal=user-login", Requester.RequestMethod.POST, reqBody);
         int userId = tryGetUserId();
         if (userId == -1)
             throw new CouldNotGetAccIdException();
@@ -55,14 +64,14 @@ public class MimibazarRequester {
     }
 
     public int tryGetUserId() {
-        String body = requester.getWebsiteBodyOrNull(
-                MAIN_PAGE_URL,
-                Requester.RequestMethod.POST,
-                reqBody);
+        String body = requester.getWebsiteBodyOrNull(MAIN_PAGE_URL, Requester.RequestMethod.GET);
 
-        if (isEmptyOrNull(body))
+        if (isEmptyOrNull(body)) {
+            Log.e(TAG, "Could not get main page body (empty ot null)");
             return -1;
+        }
 
+        Log.e(TAG, "Getting user ID. User profile site body: " + body);
         Matcher matcher = USER_ID_PATTERN.matcher(body);
         if (matcher.find()) {
             try {
@@ -72,6 +81,7 @@ public class MimibazarRequester {
             }
         }
 
+        Log.e(TAG, "Could not find user id on website via regex.");
         return -1;
     }
 
@@ -82,17 +92,9 @@ public class MimibazarRequester {
         return new Pair<>(tryGetRemainingUpdates(pageBody), tryGetMaxUpdates(pageBody));
     }
 
-    private static RequestBody buildRequestBody(String username, String password) {
-        return new FormBody.Builder()
-                .add("login", username)
-                .add("password", password)
-                .add("log_in", "ok")
-                .build();
-    }
-
     public int tryGetRemainingUpdates(@Nullable String body) {
         if (isEmptyOrNull(body))
-            body = requester.getWebsiteBodyOrNull(profileUrl, Requester.RequestMethod.POST, reqBody);
+            body = requester.getWebsiteBodyOrNull(profileUrl, Requester.RequestMethod.GET);
 
         if (isEmptyOrNull(body))
             return -1;
@@ -111,7 +113,7 @@ public class MimibazarRequester {
 
     public int tryGetMaxUpdates(@Nullable String body) {
         if (isEmptyOrNull(body))
-            body = requester.getWebsiteBodyOrNull(profileUrl, Requester.RequestMethod.POST, reqBody);
+            body = requester.getWebsiteBodyOrNull(profileUrl, Requester.RequestMethod.GET);
 
         if (isEmptyOrNull(body))
             return -1;
@@ -130,11 +132,7 @@ public class MimibazarRequester {
 
     public boolean tryUpdatePhoto(String id) {
         String url = BAZAR_BASE_URL + "id=" + id + "&updfoto=ok";
-        Pair<Boolean, Response> result = requester.tryMakeRequest(
-                url,
-                Requester.RequestMethod.POST,
-                reqBody);
-
+        Pair<Boolean, Response> result = requester.tryMakeRequest(url, Requester.RequestMethod.GET);
         return result.first;
     }
 
@@ -159,8 +157,6 @@ public class MimibazarRequester {
 
     public @Nullable String getPageBodyOrNull(int page, boolean loggedIn) {
         String url = profileUrl + "&strana=" + page;
-        return loggedIn
-                ? requester.getWebsiteBodyOrNull(url, Requester.RequestMethod.POST, reqBody)
-                : requester.getWebsiteBodyOrNull(url, Requester.RequestMethod.GET, null);
+        return requester.getWebsiteBodyOrNull(url, Requester.RequestMethod.GET, null, null, loggedIn);
     }
 }

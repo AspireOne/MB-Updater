@@ -90,7 +90,7 @@ public class UpdateArranger {
     }
 
     private boolean initAndNotifyIfError() {
-        requester = new Requester(REQUEST_THROTTLE);
+        requester = new Requester(REQUEST_THROTTLE, context);
         String username = getPref(context, R.string.setting_username_key, "");
         String password = getPref(context, R.string.setting_password_key, "");
         if (isEmptyOrNull(username) || isEmptyOrNull(password)) {
@@ -100,8 +100,9 @@ public class UpdateArranger {
             return false;
         }
 
+        mimibazarRequester = new MimibazarRequester(requester, username, password);
         try {
-            mimibazarRequester = new MimibazarRequester(requester, username, password);
+            mimibazarRequester.init();
         } catch (MimibazarRequester.CouldNotGetAccIdException e) {
             Notifications.postNotification(context, R.string.mimibazar_cannot_update,
                     R.string.mimibazar_cannot_update_desc_invalid_credentials, Notifications.Channel.ERROR);
