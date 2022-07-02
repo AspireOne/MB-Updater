@@ -60,14 +60,16 @@ public class Requester {
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
-                .cookieJar(cookieJar)
                 .followRedirects(true)
+                .cookieJar(cookieJar)
                 .cache(cache)
                 .build();
 
-        noCookiesClient = httpClient.newBuilder()
-                .cookieJar(null)
-                .cache(null)
+        noCookiesClient = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .followRedirects(true)
                 .build();
     }
 
@@ -111,7 +113,7 @@ public class Requester {
         if (requestThrottleMs > 0)
             throttle();
 
-        if (cookied = null)
+        if (cookied == null)
             cookied = true;
 
         Request.Builder requestBuilder = new Request.Builder().url(url);

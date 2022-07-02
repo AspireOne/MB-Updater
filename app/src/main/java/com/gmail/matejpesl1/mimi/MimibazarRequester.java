@@ -70,8 +70,7 @@ public class MimibazarRequester {
             Log.e(TAG, "Could not get main page body (empty ot null)");
             return -1;
         }
-
-        Log.e(TAG, "Getting user ID. User profile site body: " + body);
+        
         Matcher matcher = USER_ID_PATTERN.matcher(body);
         if (matcher.find()) {
             try {

@@ -6,7 +6,7 @@ android {
     signingConfigs {
         Release {
             storeFile file("C:\\Users\\matej\\AndroidStudioProjects\\common_keystore.jks")
-            keyAlias "mimi"
+            keyAlias "common_keystore"
             storePassword '17861177'
             keyPassword '17861177'
         }
